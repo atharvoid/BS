@@ -1042,8 +1042,8 @@
 
 .sequence__inner {
   display: grid;
-  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1fr);
-  gap: clamp(2rem, 5vw, 5rem);
+  grid-template-columns: minmax(0, 1.06fr) minmax(0, 1fr);
+  gap: clamp(2rem, 4.5vw, 4.5rem);
   align-items: center;
   width: 100%;
 }
@@ -1054,8 +1054,8 @@
 
 .sequence__stage {
   position: relative;
-  aspect-ratio: 1 / 1;
-  max-height: 62vh;
+  aspect-ratio: 1 / 0.92;
+  max-height: 64vh;
   width: 100%;
   border-radius: 2px;
   background:

@@ -45,11 +45,17 @@ const ARC = { radius: 1.15, startAngle: -0.8, startY: -3.0, exitY: 2.9 }
  * a few degrees and is deliberately not perfectly level — a level comb would
  * read as a sloped layout.
  */
-const LOOK: Record<StageKind, { drift: number; spin: number; roll?: number }> = {
-  bolt: { drift: 0.2, spin: 0.06, roll: 0.028 },
-  shuttle: { drift: 0.26, spin: 0.1, roll: 0.04 },
-  spool: { drift: 0.22, spin: 0.13, roll: 0.03 },
-  reed: { drift: 0.07, spin: 0, roll: 0.008 },
+/*
+ * Idle presentation. `spin` is deliberately never used here: it adds an
+ * unbounded `spin * t` to the Y rotation, so an object left on screen for a
+ * minute ends up side-on. A bounded sine drift keeps every stage readable no
+ * matter how long a visitor stays on it.
+ */
+const LOOK: Record<StageKind, { drift: number; roll: number }> = {
+  bolt: { drift: 0.16, roll: 0.026 },
+  shuttle: { drift: 0.22, roll: 0.038 },
+  spool: { drift: 0.18, roll: 0.028 },
+  reed: { drift: 0.07, roll: 0.008 },
 }
 const ENTER = 0.11 // fraction of a stage's slice spent flying in
 const EXIT = 0.9
@@ -64,7 +70,7 @@ function ObjectBody({ kind }: { kind: StageKind }) {
       )
     case 'shuttle':
       return (
-        <group rotation={[-0.14, 0, 0.2]} position={[0, 0.12, 0]} scale={0.9}>
+        <group rotation={[-0.1, 0, 0.16]} position={[0, 0.02, 0]} scale={1.02}>
           <ShuttleObject />
         </group>
       )
@@ -84,7 +90,7 @@ function ObjectBody({ kind }: { kind: StageKind }) {
   }
 }
 
-const GROUND_Y: Record<StageKind, number> = { bolt: -0.84, shuttle: -0.95, spool: -1.08, reed: -0.96 }
+const GROUND_Y: Record<StageKind, number> = { bolt: -0.84, shuttle: -0.78, spool: -1.0, reed: -0.9 }
 
 /**
  * One stage slot. Its own progress `p` is 0 the moment its slice begins and 1
@@ -141,8 +147,8 @@ function Slot({
         drift={still ? 0 : LOOK[kind].drift}
         tilt={0.34}
         float={0.028}
-        spin={still ? 0 : LOOK[kind].spin}
-        roll={LOOK[kind].roll ?? 0.03}
+        spin={0}
+        roll={still ? 0 : LOOK[kind].roll}
       >
         <ObjectBody kind={kind} />
       </Draggable>
