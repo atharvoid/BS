@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useThree } from '@react-three/fiber'
 import { Stage } from '../three/Stage'
 import {
   ClothPanel,
@@ -81,14 +82,24 @@ function SwatchPlane({ palette, index }: { palette: 'indigo' | 'madder' | 'cotto
   )
 }
 
-function TextileObject() {
+/** The textile hero: one cloth, framed into whichever half of the hero it owns. */
+function TextileObject({ aside = false }: { aside?: boolean }) {
+  const viewport = useThree((s) => s.viewport)
+  const narrow = viewport.aspect < 1.2
+  // The page-hero canvas only occupies the right-hand column on wide screens,
+  // so the object is centred in its own canvas rather than the page.
+  const scale = narrow ? 0.82 : Math.min(1, 0.66 + viewport.aspect * 0.16)
+  const x = narrow || !aside ? 0 : -Math.min(0.5, viewport.width * 0.04)
+
   return (
     <>
       <Studio />
       <Lights intensity={1.02} />
       <Ground y={-1.35} scale={4} opacity={0.4} />
       <Draggable drift={0.18} tilt={0.4} float={0.03}>
-        <ClothPanel palette="verdigris" width={2.15} height={2.7} folds={3.4} seed={3.8} threads={16} />
+        <group scale={scale} position={[x, 0, 0]}>
+          <ClothPanel palette="verdigris" width={2.15} height={2.7} folds={3.4} seed={3.8} threads={16} />
+        </group>
       </Draggable>
     </>
   )
@@ -117,12 +128,13 @@ export default function Textiles() {
       <section className="page-hero page-hero--textile page-hero--right on-dark grain">
         <div className="page-hero__canvas" aria-hidden="false">
           <Stage
+            className="page-hero__stage"
             label="Interactive 3D cloth panel in a green dyed weave. Drag to turn it."
             z={6.2}
             fov={36}
             fallback={<div className="page-hero__fallback" aria-hidden="true" />}
           >
-            <TextileObject />
+            <TextileObject aside />
           </Stage>
         </div>
         <div className="shell page-hero__inner">

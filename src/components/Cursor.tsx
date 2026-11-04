@@ -27,6 +27,33 @@ export function Cursor() {
     let scale = 1
     let targetScale = 1
 
+    // The loop stops itself once the ring has caught up. A permanently running
+    // rAF that writes transforms even when the pointer is still keeps the
+    // compositor busy for no reason, and it is wasteful on battery.
+    const tick = () => {
+      rx += (x - rx) * 0.17
+      ry += (y - ry) * 0.17
+      scale += (targetScale - scale) * 0.15
+
+      const dx = Math.abs(x - rx)
+      const dy = Math.abs(y - ry)
+      const ds = Math.abs(targetScale - scale)
+
+      r.style.transform = `translate3d(${rx.toFixed(2)}px, ${ry.toFixed(2)}px, 0) translate(-50%, -50%) scale(${scale.toFixed(3)})`
+      d.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`
+
+      if (dx < 0.12 && dy < 0.12 && ds < 0.002) {
+        r.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%) scale(${targetScale})`
+        raf = 0
+        return
+      }
+      raf = requestAnimationFrame(tick)
+    }
+
+    const wake = () => {
+      if (!raf) raf = requestAnimationFrame(tick)
+    }
+
     const move = (e: PointerEvent) => {
       x = e.clientX
       y = e.clientY
@@ -39,34 +66,29 @@ export function Cursor() {
       }
       const el = e.target as HTMLElement | null
       const hot = el?.closest('a, button, input, textarea, label, [data-cursor="hot"]')
-      targetScale = hot ? 2.05 : 1
+      targetScale = hot ? 1.9 : 1
+      wake()
     }
 
     const leave = () => {
       visible = false
       r.style.opacity = '0'
       d.style.opacity = '0'
-    }
-
-    const tick = () => {
-      rx += (x - rx) * 0.16
-      ry += (y - ry) * 0.16
-      scale += (targetScale - scale) * 0.14
-      r.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%) scale(${scale.toFixed(3)})`
-      d.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`
-      raf = requestAnimationFrame(tick)
+      if (raf) {
+        cancelAnimationFrame(raf)
+        raf = 0
+      }
     }
 
     window.addEventListener('pointermove', move, { passive: true })
     window.addEventListener('pointerdown', move, { passive: true })
     document.addEventListener('pointerleave', leave)
-    raf = requestAnimationFrame(tick)
 
     return () => {
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerdown', move)
       document.removeEventListener('pointerleave', leave)
-      cancelAnimationFrame(raf)
+      if (raf) cancelAnimationFrame(raf)
     }
   }, [])
 

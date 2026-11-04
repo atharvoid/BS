@@ -172,25 +172,30 @@ export function makeWeaveBump(opts: WeaveOptions = {}) {
 }
 
 /** Diagonal yarn winding, for the bobbin. */
-export function makeWindingTexture(size = 512, repeat = 1) {
+/**
+ * Wound yarn. Kept to the site palette — a madder-root red rather than a
+ * saturated crimson, so the bobbin belongs to the same world as the cloth.
+ */
+export function makeWindingTexture(size = 512, repeat = 1, tint?: [string, string, string]) {
   const { el, ctx } = canvas2d(size)
+  const [a, b, c] = tint ?? ['#8d4132', '#a8563c', '#79382c']
   const g = ctx.createLinearGradient(0, 0, size, size)
-  g.addColorStop(0, '#9d2f30')
-  g.addColorStop(0.5, '#c14a3f')
-  g.addColorStop(1, '#8f2a29')
+  g.addColorStop(0, a)
+  g.addColorStop(0.5, b)
+  g.addColorStop(1, c)
   ctx.fillStyle = g
   ctx.fillRect(0, 0, size, size)
 
   const step = size / 26
   for (let k = -size; k < size * 2; k += step) {
-    ctx.strokeStyle = 'rgba(0,0,0,0.30)'
-    ctx.lineWidth = step * 0.30
+    ctx.strokeStyle = 'rgba(0,0,0,0.26)'
+    ctx.lineWidth = step * 0.3
     ctx.beginPath()
     ctx.moveTo(k, 0)
     ctx.lineTo(k + size * 0.62, size)
     ctx.stroke()
 
-    ctx.strokeStyle = 'rgba(255,236,214,0.20)'
+    ctx.strokeStyle = 'rgba(255,236,214,0.17)'
     ctx.lineWidth = step * 0.14
     ctx.beginPath()
     ctx.moveTo(k + step * 0.34, 0)

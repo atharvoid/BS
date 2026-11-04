@@ -7,6 +7,9 @@
 
 /* --------------------------------------------------------------------------
    Cursor
+   No mix-blend-mode: a blended fixed layer above the blurred nav makes the
+   compositor re-rasterise that region on every pointer frame. The ring is a
+   madder hairline with a soft cotton halo, which reads on both grounds.
    -------------------------------------------------------------------------- */
 .cursor { display: none; }
 
@@ -20,23 +23,20 @@
     z-index: 250;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 320ms var(--ease-out), width 320ms var(--ease-out),
-      height 320ms var(--ease-out), border-color 320ms var(--ease-out);
     border-radius: 50%;
-    will-change: transform;
+    transition: opacity 260ms var(--ease-out);
   }
   .cursor__ring {
-    width: 34px;
-    height: 34px;
-    border: 1px solid rgba(255, 255, 255, 0.42);
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.14);
-    mix-blend-mode: difference;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--madder);
+    box-shadow: 0 0 0 1px rgba(242, 235, 221, 0.55), 0 0 12px rgba(156, 58, 45, 0.18);
   }
   .cursor__dot {
-    width: 4px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.9);
-    mix-blend-mode: difference;
+    width: 3px;
+    height: 3px;
+    background: var(--madder);
+    box-shadow: 0 0 0 1px rgba(242, 235, 221, 0.7);
   }
 }
 
@@ -340,9 +340,9 @@
   transform: translateY(var(--parallax, 0));
 }
 
-.hero__canvas > div {
-  width: 100%;
-  height: 100%;
+.hero__stage {
+  position: absolute;
+  inset: 0;
 }
 
 .hero__inner {
@@ -503,10 +503,56 @@
 
 .u-link:hover::after { opacity: 1; transform: scaleX(1.02); }
 
-.drag-hint {
+.hero__controls {
   position: absolute;
   right: clamp(1.2rem, 4vw, 3rem);
   bottom: 2rem;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.7rem;
+}
+
+.hero__legend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-family: var(--f-mono);
+  font-size: 0.53rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(242, 235, 221, 0.5);
+}
+
+.hero__legend-n { color: rgba(224, 162, 98, 0.85); }
+.hero__legend-dash { width: 14px; height: 1px; background: rgba(242, 235, 221, 0.2); }
+
+.hero__replay {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.8rem 0.42rem 0.7rem;
+  border: 1px solid rgba(242, 235, 221, 0.2);
+  border-radius: 100px;
+  background: rgba(18, 16, 13, 0.35);
+  color: rgba(242, 235, 221, 0.78);
+  font-family: var(--f-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 300ms var(--ease-out), color 300ms var(--ease-out);
+}
+
+.hero__replay:hover { border-color: rgba(224, 162, 98, 0.6); color: var(--cotton-lit); }
+.hero__replay svg { width: 12px; height: 12px; }
+
+.drag-hint {
+  position: absolute;
+  right: clamp(1.2rem, 4vw, 3rem);
+  bottom: 6.4rem;
   z-index: 3;
   display: inline-flex;
   align-items: center;
@@ -864,8 +910,7 @@
   inset: 0;
   pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
-  mix-blend-mode: overlay;
-  opacity: 0.4;
+  opacity: 0.26;
 }
 
 .area__weave::after {
@@ -975,62 +1020,168 @@
   padding-left: 1.1rem;
 }
 
-.stages {
-  display: flex;
-  flex-direction: column;
+/* Pinned sequence: the canvas holds on the left while the four stages scroll. */
+.sequence {
+  position: relative;
+  /* one screen of travel per stage, plus a screen to settle in */
+  height: calc((var(--count) + 0.35) * 100vh);
+  height: calc((var(--count) + 0.35) * 100svh);
+  margin-top: clamp(1.6rem, 3vw, 3rem);
+  border-top: 1px solid rgba(242, 235, 221, 0.14);
 }
 
-.stage {
-  display: grid;
-  grid-template-columns: minmax(240px, 0.72fr) minmax(0, 1fr);
-  gap: clamp(1.4rem, 4vw, 4.5rem);
+.sequence__pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  display: flex;
   align-items: center;
-  padding-block: clamp(2rem, 3.6vw, 3.4rem);
-  border-bottom: 1px solid rgba(242, 235, 221, 0.1);
+  overflow: hidden;
+}
+
+.sequence__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: center;
+  width: 100%;
+}
+
+.sequence__visual {
   position: relative;
 }
 
-.stage:last-child { border-bottom: 0; }
-
-.stage__object {
+.sequence__stage {
   position: relative;
   aspect-ratio: 1 / 1;
-  max-height: 340px;
+  max-height: 62vh;
   width: 100%;
   border-radius: 2px;
   background:
-    radial-gradient(70% 60% at 50% 22%, rgba(255, 235, 205, 0.08) 0%, transparent 70%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(0, 0, 0, 0.22));
-  border: 1px solid rgba(242, 235, 221, 0.09);
+    radial-gradient(70% 60% at 50% 24%, rgba(255, 235, 205, 0.085) 0%, transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(0, 0, 0, 0.24));
+  border: 1px solid rgba(242, 235, 221, 0.1);
   overflow: hidden;
-  transition: border-color 600ms var(--ease-out), background 600ms var(--ease-out);
 }
 
-.stage:hover .stage__object {
-  border-color: rgba(217, 141, 79, 0.34);
+.sequence__stage > div { width: 100%; height: 100%; }
+
+.seq-step__mini { display: none; }
+
+.sequence__fallback {
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 9px);
 }
 
-.stage__object > div { width: 100%; height: 100%; }
-
-.stage__object-fallback,
-.stage__object-fallback + * {
-  background: repeating-linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.05) 0 2px,
-    transparent 2px 9px
-  );
-}
-
-.stage__object-label {
+/* the four-stop rail down the left edge of the frame */
+.sequence__rail {
   position: absolute;
-  left: 0.85rem;
-  bottom: 0.75rem;
+  left: 1.35rem;
+  top: 1.05rem;
+  bottom: 1.05rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+
+.sequence__rail li {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--f-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.16em;
+  color: #6b6153;
+  transition: color 500ms var(--ease-out);
+}
+
+.sequence__rail-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  transition: background 500ms var(--ease-out), transform 500ms var(--ease-out);
+}
+
+.sequence__rail li.is-done { color: #9a8f7c; }
+.sequence__rail li.is-active { color: #e0a262; }
+.sequence__rail li.is-active .sequence__rail-dot {
+  background: currentColor;
+  transform: scale(1.5);
+}
+
+/* a fill line tracing the same rail, so progress is legible at a glance */
+.sequence__progress {
+  position: absolute;
+  left: calc(1.35rem + 2.5px);
+  top: 1.9rem;
+  bottom: 1.9rem;
+  width: 1px;
+  background: rgba(242, 235, 221, 0.09);
+  pointer-events: none;
+}
+
+.sequence__progress span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(217, 141, 79, 0.85), rgba(156, 58, 45, 0.55));
+  transform: scaleY(calc((var(--p, 0) + 0.05) / 1.05));
+  transform-origin: top;
+  transition: transform 700ms var(--ease-out);
+}
+
+/* the text column */
+.sequence__text {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  position: relative;
+  min-height: 42vh;
+}
+
+.seq-step {
+  position: absolute;
+  inset: 0;
+  align-self: start;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 620ms var(--ease-out), transform 620ms var(--ease-out);
+  transform: translateY(18px);
+}
+
+.seq-step.is-active {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+.seq-step__object {
+  margin-top: 1.3rem;
   font-family: var(--f-mono);
   font-size: 0.55rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: #8f8471;
-  pointer-events: none;
+}
+
+.seq-step__object::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 1px;
+  background: rgba(217, 141, 79, 0.6);
+  vertical-align: middle;
+  margin-right: 0.6rem;
 }
 
 .stage__meta {
@@ -1067,7 +1218,7 @@
 
 .stage__text {
   color: #b7ab95;
-  max-width: 46ch;
+  max-width: 40ch;
   font-size: 0.98rem;
   line-height: 1.62;
 }
@@ -1477,7 +1628,7 @@
   z-index: 1;
 }
 
-.page-hero__canvas > div { width: 100%; height: 100%; }
+.page-hero__stage { position: absolute; inset: 0; }
 
 .page-hero__fallback {
   position: absolute;
@@ -2587,27 +2738,39 @@ fieldset .field__label { float: none; }
   .nav__toggle { display: flex; }
   .nav__inner { height: 4.1rem; }
 
-  .hero { min-height: auto; padding-block: 6.4rem 3.4rem; }
-  .hero__canvas { opacity: 0.5; }
-  .hero__canvas > div { width: 100%; height: 100%; }
-
-  /* On narrow screens the copy sits over its own scrim, so the cloth never
-     competes with the words. */
-  .hero__copy {
-    position: relative;
-    padding: 1.5rem 1.1rem 1.7rem;
-    margin-inline: -0.55rem;
-    border-radius: 3px;
-    background: linear-gradient(
-      180deg,
-      rgba(18, 16, 13, 0.9) 0%,
-      rgba(18, 16, 13, 0.84) 62%,
-      rgba(18, 16, 13, 0.72) 100%
-    );
-    backdrop-filter: blur(3px);
-    border: 1px solid rgba(242, 235, 221, 0.09);
+  /* On narrow screens the hero stacks: words first, then the weaving in its
+     own frame underneath. No scrim over live 3D — it reads as a muddy panel,
+     and the composition deserves to be seen rather than dimmed. */
+  .hero {
+    min-height: auto;
+    padding-block: 5.4rem 2.6rem;
+    display: flex;
+    flex-direction: column;
   }
-  .hero__inner { gap: 2.4rem; }
+  .hero__inner { order: 1; }
+  .hero__canvas { order: 2; }
+  .hero__controls { order: 3; }
+  .hero__stage {
+    position: relative;
+    inset: auto;
+    height: min(72vw, 360px);
+    margin-top: 1.6rem;
+  }
+  .hero__canvas { position: static; opacity: 1; }
+  .hero__copy { max-width: none; }
+  .hero__inner { gap: 1.4rem; display: flex; flex-direction: column; }
+  .hero__facts { margin-top: 1.6rem; }
+  .hero__controls {
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: var(--gutter);
+    margin-top: 0.9rem;
+    order: 3;
+  }
+  .hero__legend { display: none; }
+  .drag-hint { display: none; }
   .hero__title { font-size: clamp(2.6rem, 9.5vw, 4.6rem); }
   .hero__lede { font-size: 1.02rem; max-width: 30rem; }
 
@@ -2636,8 +2799,31 @@ fieldset .field__label { float: none; }
   .purpose__head { position: static; }
   .audience { grid-template-columns: minmax(0, 1fr); }
 
-  .stage { grid-template-columns: minmax(0, 1fr); gap: 1.4rem; }
-  .stage__object { max-height: 300px; max-width: 340px; }
+  /* No pinning on small screens: the rail becomes a plain stack again, with
+     one canvas per stage. */
+  .sequence { height: auto; }
+  .sequence__pin { position: static; height: auto; padding-block: 0; }
+  .sequence__inner { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; }
+  .sequence__stage { max-height: 46vh; margin-inline: auto; max-width: 420px; }
+  .sequence__progress { display: none; }
+  .sequence__text { min-height: 0; }
+  .seq-step { position: static; opacity: 1; visibility: visible; transform: none; }
+  .seq-step + .seq-step { margin-top: 2.2rem; padding-top: 2.2rem; border-top: 1px solid rgba(242, 235, 221, 0.1); }
+  .seq-step__object { display: none; }
+  .sequence__visual { display: none; }
+  .seq-step__mini {
+    display: block;
+    margin-top: 1.2rem;
+    aspect-ratio: 4 / 3;
+    max-height: 300px;
+    border-radius: 2px;
+    background:
+      radial-gradient(70% 60% at 50% 22%, rgba(255, 235, 205, 0.08) 0%, transparent 70%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(0, 0, 0, 0.22));
+    border: 1px solid rgba(242, 235, 221, 0.09);
+    overflow: hidden;
+  }
+  .seq-step__mini > div { width: 100%; height: 100%; }
 
   .process__intro { border-left: 0; padding-left: 0; }
 

@@ -1,6 +1,8 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Stage } from '../three/Stage'
+import { ProcessScene, SingleStageScene, STAGE_OBJECT_LABELS, type StageKind } from '../three/ProcessScene'
+import { useScrollProgress } from '../components/useScrollProgress'
 import { HeroScene } from '../three/HeroScene'
 import {
   BobbinObject,
@@ -30,6 +32,7 @@ import {
 
 function Hero() {
   const [engaged, setEngaged] = React.useState(false)
+  const [replay, setReplay] = React.useState(0)
   const ref = React.useRef<HTMLDivElement>(null)
   useParallax(ref, 0.06)
 
@@ -37,13 +40,32 @@ function Hero() {
     <section className="hero on-dark grain" ref={ref}>
       <div className="hero__canvas" aria-hidden="false">
         <Stage
-          label="Interactive 3D composition: a hanging indigo cloth, a madder cloth behind it, a brass ring and folded swatches. Drag any object to turn it."
+          className="hero__stage"
+          label="Animated 3D composition: yarn unwinds from a cone into a warp, a shuttle lays the weft, and the woven indigo cloth hangs from a brass rail. Drag the composition to turn it, or replay the weaving."
           z={7.4}
           fov={36}
           fallback={<HeroFallback />}
         >
-          <HeroScene onEngage={() => setEngaged(true)} />
+          <HeroScene onEngage={() => setEngaged(true)} replaySignal={replay} />
         </Stage>
+        <div className="hero__controls">
+          <p className="hero__legend" aria-hidden="true">
+            <span className="hero__legend-n">01</span>
+            Yarn
+            <span className="hero__legend-dash" />
+            <span className="hero__legend-n">02</span>
+            Warp and weft
+            <span className="hero__legend-dash" />
+            <span className="hero__legend-n">03</span>
+            Cloth
+          </p>
+          <button type="button" className="hero__replay" onClick={() => setReplay((n) => n + 1)}>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M13.2 8a5.2 5.2 0 1 1-1.6-3.75M13.4 2.2v3.2h-3.2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Replay the weaving
+          </button>
+        </div>
         <p className={`drag-hint ${engaged ? 'is-done' : ''}`} aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M9 11V6.5a1.5 1.5 0 0 1 3 0V11m0-2.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v5.2A4.8 4.8 0 0 1 13.2 20h-1.1a4 4 0 0 1-3.2-1.6L5.4 13.7a1.6 1.6 0 0 1 2.4-2l1.2 1.3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
@@ -279,70 +301,12 @@ function Areas() {
 
 /* -------------------------------------------------------------------------- */
 
-function StageObject({ kind }: { kind: string }) {
-  switch (kind) {
-    case 'bolt':
-      return (
-        <>
-          <Studio />
-          <Lights intensity={0.95} />
-          <Ground y={-0.86} scale={4.6} opacity={0.44} />
-          <Draggable drift={0.2} tilt={0.4} float={0.028}>
-            <group position={[0, -0.86, 0]} scale={1.02}>
-              <BoltObject palette="cotton" scale={1} />
-            </group>
-          </Draggable>
-        </>
-      )
-    case 'shuttle':
-      return (
-        <>
-          <Studio />
-          <Lights intensity={1} />
-          <Ground y={-0.95} scale={4.4} opacity={0.36} />
-          <Draggable drift={0.26} tilt={0.46} float={0.045}>
-            <group rotation={[-0.16, 0, 0.26]} position={[0, 0.12, 0]} scale={0.86}>
-              <ShuttleObject scale={1} />
-            </group>
-          </Draggable>
-        </>
-      )
-    case 'spool':
-      return (
-        <>
-          <Studio />
-          <Lights intensity={1} />
-          <Ground y={-1.12} scale={4.4} opacity={0.38} />
-          <Draggable drift={0.22} tilt={0.4} float={0.035}>
-            <group position={[0, 0.04, 0]} rotation={[0.04, 0, 0.05]} scale={0.82}>
-              <BobbinObject scale={1} />
-            </group>
-          </Draggable>
-        </>
-      )
-    case 'reed':
-    default:
-      return (
-        <>
-          <Studio />
-          <Lights intensity={1.05} />
-          <Ground y={-1.02} scale={4.4} opacity={0.34} />
-          <Draggable drift={0.24} tilt={0.5} float={0.05} squash={0.8}>
-            <group rotation={[0.2, 0, 0.03]} scale={0.88}>
-              <ReedObject scale={1} />
-            </group>
-          </Draggable>
-        </>
-      )
-  }
-}
-
 function Process() {
-  const ref = React.useRef<HTMLDivElement>(null)
-  useParallax(ref, 0.05)
+  const track = React.useRef<HTMLDivElement>(null)
+  const { progress, active } = useScrollProgress(track, STAGES.length)
 
   return (
-    <section className="process on-dark grain" id="process" ref={ref}>
+    <section className="process on-dark grain" id="process">
       <div className="shell">
         <div className="process__head">
           <p className="eyebrow reveal">How the sourcing conversation works</p>
@@ -351,38 +315,71 @@ function Process() {
           </h2>
           <p className="process__intro reveal">{PROCESS_CAVEAT}</p>
         </div>
+      </div>
 
-        <ol className="stages">
-          {STAGES.map((s, i) => (
-            <li
-              key={s.n}
-              className="stage reveal"
-              style={{ ['--reveal-delay' as string]: `${i * 70}ms` }}
-            >
-              <div className="stage__object">
+      {/* The pinned frame: one canvas on the left for the whole sequence,
+          the four stages scrolling past it on the right. */}
+      <div className="sequence" ref={track} style={{ ['--count' as string]: STAGES.length }}>
+        <div className="sequence__pin">
+          <div className="shell sequence__inner">
+            <div className="sequence__visual">
+              <div className="sequence__stage">
                 <Stage
-                  label={`Interactive 3D object for stage ${s.n}: ${s.objectLabel}. Drag to turn it.`}
-                  z={5.2}
+                  label="Four interactive 3D objects, one per stage: an unfolded bolt of cloth, a weaving shuttle, a spun yarn bobbin and a brass reed. Each swings in as you scroll and can be dragged to turn it."
+                  z={5.1}
                   fov={36}
-                  fallback={<div className="stage__object-fallback" aria-hidden="true" />}
+                  fallback={<div className="sequence__fallback" aria-hidden="true" />}
                 >
-                  <StageObject kind={s.object} />
+                  <ProcessScene progress={progress} />
                 </Stage>
-                <span className="stage__object-label" aria-hidden="true">{s.objectLabel}</span>
-              </div>
 
-              <div className="stage__body">
-                <div className="stage__meta">
-                  <span className="stage__n">{s.n}</span>
-                  <span className="stage__rule" aria-hidden="true" />
-                  <span className="stage__field">{s.field.join(' / ')}</span>
+                <ol className="sequence__rail" aria-hidden="true">
+                  {STAGES.map((s, i) => (
+                    <li key={s.n} className={i === active ? 'is-active' : i < active ? 'is-done' : ''}>
+                      <span className="sequence__rail-n">{s.n}</span>
+                      <span className="sequence__rail-dot" />
+                    </li>
+                  ))}
+                </ol>
+
+                <div className="sequence__progress" aria-hidden="true">
+                  <span style={{ ['--p' as string]: active / Math.max(1, STAGES.length - 1) }} />
                 </div>
-                <h3 className="stage__title">{s.title}</h3>
-                <p className="stage__text">{s.body}</p>
               </div>
-            </li>
-          ))}
-        </ol>
+            </div>
+
+            <ol className="sequence__text">
+              {STAGES.map((s, i) => (
+                <li
+                  key={s.n}
+                  className={`seq-step ${i === active ? 'is-active' : ''}`}
+                  aria-current={i === active ? 'step' : undefined}
+                >
+                  <div className="stage__meta">
+                    <span className="stage__n">{s.n}</span>
+                    <span className="stage__rule" aria-hidden="true" />
+                    <span className="stage__field">{s.field.join(' / ')}</span>
+                  </div>
+                  <h3 className="stage__title">{s.title}</h3>
+                  <p className="stage__text">{s.body}</p>
+                  <p className="seq-step__object">{STAGE_OBJECT_LABELS[s.object as StageKind]}</p>
+
+                  {/* Narrow screens get a canvas per stage, stacked with its text. */}
+                  <div className="seq-step__mini">
+                    <Stage
+                      label={`Interactive 3D object for stage ${s.n}: ${STAGE_OBJECT_LABELS[s.object as StageKind]}. Drag to turn it.`}
+                      z={5}
+                      fov={36}
+                      fallback={<div className="sequence__fallback" aria-hidden="true" />}
+                    >
+                      <SingleStageScene kind={s.object as StageKind} />
+                    </Stage>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
       </div>
     </section>
   )

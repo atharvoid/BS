@@ -101,21 +101,31 @@ input, textarea, select {
   ::-webkit-scrollbar-thumb:hover { background: var(--madder); }
 }
 
-/* ---- Paper grain -------------------------------------------------------- */
+/* ---- Paper grain --------------------------------------------------------
+   Deliberately *not* a full-viewport fixed layer with mix-blend-mode. That
+   combination sits above the nav, and a blended layer stacked over a
+   backdrop-filtered one makes the compositor re-blur the header region on
+   every scroll and pointer repaint — it showed up as a visible stutter across
+   the top bar. Each section that wants grain paints its own sand at low
+   opacity instead, so nothing widens the blur region.
+   ------------------------------------------------------------------------ */
+.grain { position: relative; isolation: isolate; }
+
 .grain::after {
   content: '';
-  position: fixed;
+  position: absolute;
   inset: 0;
-  z-index: 200;
+  /* Negative z inside the section's own stacking context: the grain paints
+     above the section background but below every child, so no child needs
+     touching — absolutely positioned children keep working. */
+  z-index: -1;
   pointer-events: none;
-  opacity: 0.32;
-  mix-blend-mode: multiply;
+  opacity: 0.3;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
 }
 
 .on-dark.grain::after,
 .grain.on-dark::after {
-  mix-blend-mode: screen;
   opacity: 0.16;
 }
 

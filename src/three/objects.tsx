@@ -114,6 +114,8 @@ type DraggableProps = {
   spin?: number
   float?: number
   squash?: number
+  /** Idle roll amplitude, radians. Flat objects want almost none. */
+  roll?: number
   onEngage?: () => void
 }
 
@@ -124,6 +126,7 @@ export function Draggable({
   spin = 0,
   float = 0.035,
   squash = 1,
+  roll = 0.035,
   onEngage,
 }: DraggableProps) {
   const group = React.useRef<THREE.Group>(null)
@@ -155,7 +158,7 @@ export function Draggable({
 
     g.rotation.y = drag.current.y
     g.rotation.x = drag.current.x * squash
-    g.rotation.z = Math.sin(t * 0.22 + seed.current) * 0.035 + drag.current.x * -0.18
+    g.rotation.z = Math.sin(t * 0.22 + seed.current) * roll + drag.current.x * -0.18
     g.position.y = Math.sin(t * 0.55 + seed.current) * float
 
     if (!engaged.current && drag.dragging) {
@@ -399,7 +402,7 @@ export function ShuttleObject({ scale = 1 }) {
 export function BobbinObject({ scale = 1 }) {
   const bobbin = React.useMemo(() => makeBobbinGeometry(1.55, 0.56, 0.36), [])
   const yarn = React.useMemo(() => makeYarnGeometry(1.55, 0.36), [])
-  const wind = React.useMemo(() => makeWindingTexture(512, 1), [])
+  const wind = React.useMemo(() => makeWindingTexture(512, 1, ['#7d4a3f', '#96604d', '#6b3f36']), [])
   const windBump = React.useMemo(() => makeWindingBump(512, 1), [])
 
   return (
@@ -417,9 +420,9 @@ export function BobbinObject({ scale = 1 }) {
         />
       </mesh>
       {/* a loose thread lifting off the bobbin */}
-      <mesh position={[0.44, 0.6, 0.1]} rotation={[0.1, 0.2, -0.5]}>
-        <torusGeometry args={[0.42, 0.008, 6, 64, Math.PI * 1.15]} />
-        <meshStandardMaterial color="#b9503a" roughness={0.8} />
+      <mesh position={[0.36, 0.52, 0.08]} rotation={[0.1, 0.2, -0.5]}>
+        <torusGeometry args={[0.34, 0.007, 6, 64, Math.PI * 1.1]} />
+        <meshStandardMaterial color="#9c6a58" roughness={0.85} />
       </mesh>
     </group>
   )
@@ -433,52 +436,52 @@ export function BobbinObject({ scale = 1 }) {
    Object 04 — the brass reed: the comb that spaces warp threads on a loom
    ========================================================================== */
 
-export function ReedObject({ scale = 1, wires = 40 }) {
+export function ReedObject({ scale = 1, wires = 30 }) {
   const slats = React.useMemo(
     () => Array.from({ length: wires }, (_, i) => {
       const t = i / (wires - 1)
-      return { x: (t - 0.5) * 2.05, h: 1.28 + Math.sin(t * Math.PI) * 0.16, lean: (t - 0.5) * 0.02 }
+      return { x: (t - 0.5) * 2.02, h: 1.12 + Math.sin(t * Math.PI) * 0.1, lean: (t - 0.5) * 0.012 }
     }),
     [wires],
   )
 
   return (
-    <group scale={scale} rotation={[0.04, 0, 0]}>
-      {/* brass rails */}
-      {[0.7, -0.7].map((y, i) => (
+    <group scale={scale} rotation={[0.05, 0, 0]}>
+      {/* dark brass rails top and bottom */}
+      {[0.62, -0.62].map((y, i) => (
         <mesh key={y} position={[0, y, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.045, 0.045, 2.42, 20]} />
+          <cylinderGeometry args={[0.05, 0.05, 2.34, 20]} />
           <meshStandardMaterial
-            color={i ? '#a97a3c' : '#c89450'}
-            roughness={0.26}
+            color={i ? '#8a6634' : '#9c7539'}
+            roughness={0.42}
             metalness={1}
-            envMapIntensity={1.6}
+            envMapIntensity={1.2}
           />
         </mesh>
       ))}
       {/* end posts */}
-      {[-1.21, 1.21].map((x) => (
+      {[-1.17, 1.17].map((x) => (
         <mesh key={x} position={[x, 0, 0]}>
-          <cylinderGeometry args={[0.055, 0.055, 1.62, 18]} />
-          <meshStandardMaterial color="#8f6a35" roughness={0.34} metalness={1} envMapIntensity={1.3} />
+          <boxGeometry args={[0.055, 1.34, 0.075]} />
+          <meshStandardMaterial color="#7c5a2d" roughness={0.46} metalness={1} envMapIntensity={1.1} />
         </mesh>
       ))}
-      {/* the reed wires */}
+      {/* the fine reed wires — thin and bright, so the comb reads as metal */}
       {slats.map((s, i) => (
         <mesh key={i} position={[s.x, 0, 0]} rotation={[0, 0, s.lean]}>
-          <cylinderGeometry args={[0.0125, 0.0125, s.h, 6]} />
+          <cylinderGeometry args={[0.0065, 0.0065, s.h, 5]} />
           <meshStandardMaterial
-            color={i % 6 === 0 ? '#e0b56f' : '#c99a55'}
-            roughness={0.3}
+            color={i % 5 === 0 ? '#eccb92' : '#d7af6c'}
+            roughness={0.24}
             metalness={1}
-            envMapIntensity={1.5}
+            envMapIntensity={1.8}
           />
         </mesh>
       ))}
-      {/* warp threads still threaded through the reed */}
-      <mesh position={[0, 0, 0.05]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.004, 0.004, 2.1, 5]} />
-        <meshStandardMaterial color="#efe3c9" roughness={0.95} transparent opacity={0.8} />
+      {/* a warp thread still threaded through the reed */}
+      <mesh position={[0, 0.06, 0.03]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.0032, 0.0032, 2.0, 5]} />
+        <meshStandardMaterial color="#efe3c9" roughness={0.95} transparent opacity={0.7} />
       </mesh>
     </group>
   )
