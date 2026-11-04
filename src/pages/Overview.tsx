@@ -350,11 +350,7 @@ function Process() {
 
             <ol className="sequence__text">
               {STAGES.map((s, i) => (
-                <li
-                  key={s.n}
-                  className={`seq-step ${i === active ? 'is-active' : ''}`}
-                  aria-current={i === active ? 'step' : undefined}
-                >
+                <li key={s.n} className={`seq-step ${i === active ? 'is-active' : ''}`}>
                   <div className="stage__meta">
                     <span className="stage__n">{s.n}</span>
                     <span className="stage__rule" aria-hidden="true" />
@@ -364,7 +360,10 @@ function Process() {
                   <p className="stage__text">{s.body}</p>
                   <p className="seq-step__object">{STAGE_OBJECT_LABELS[s.object as StageKind]}</p>
 
-                  {/* Narrow screens get a canvas per stage, stacked with its text. */}
+                  {/* Narrow screens stack the stages, so only the first carries a
+                      live canvas — a phone should not pay for four WebGL
+                      contexts to read four paragraphs. */}
+                  {i === 0 && (
                   <div className="seq-step__mini">
                     <Stage
                       label={`Interactive 3D object for stage ${s.n}: ${STAGE_OBJECT_LABELS[s.object as StageKind]}. Drag to turn it.`}
@@ -375,6 +374,7 @@ function Process() {
                       <SingleStageScene kind={s.object as StageKind} />
                     </Stage>
                   </div>
+                  )}
                 </li>
               ))}
             </ol>

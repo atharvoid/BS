@@ -1067,6 +1067,32 @@
 
 .sequence__stage > div { width: 100%; height: 100%; }
 
+/* corner ticks — a plate, not a card */
+.sequence__stage::before,
+.sequence__stage::after {
+  content: '';
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  border: 1px solid rgba(217, 141, 79, 0.55);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.sequence__stage::before {
+  top: 0.62rem;
+  right: 0.62rem;
+  border-left: 0;
+  border-bottom: 0;
+}
+
+.sequence__stage::after {
+  bottom: 0.62rem;
+  right: 0.62rem;
+  border-left: 0;
+  border-top: 0;
+}
+
 .seq-step__mini { display: none; }
 
 .sequence__fallback {

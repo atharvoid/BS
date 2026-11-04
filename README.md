@@ -43,10 +43,24 @@ so the form, the process steps and the disclaimers cannot drift apart.
 
 ## The 3D layer
 
-Six interactive objects across the site, each independently draggable:
+**The hero weaves.** Yarn unwinds from a mill cone, the strands level out into a
+warp, a shuttle crosses laying the weft, and the indigo cloth fills up from its
+hem and hangs. It runs on its own — nothing is asked of the visitor — and
+scrolling inside the hero nudges it forward. A `Replay the weaving` control
+starts it again.
 
-- **Overview hero** — hanging indigo and madder cloth, a floating brass ring, and a rail of folded swatches.
-- **Process, stage 01–04** — a cloth bolt, a weaving shuttle, a yarn bobbin, a brass reed.
+Mechanically it is two draw calls: one strand mesh whose vertices are
+interpolated in the vertex shader between "wound on the cone" and "held in the
+warp sheet", and one cloth mesh whose fragment shader reveals the weave from the
+hem upward. A whole cycle costs two uniform writes per frame.
+
+**The process pins.** The four stages share one canvas. The text scrolls past on
+the right; on the left, the active object swings in along a circular arc,
+settles level and idles until the next arrives. Only one object exists at a
+time, so this is one WebGL context where there used to be four.
+
+Four objects, each still independently draggable: a cloth bolt, a weaving
+shuttle, a yarn bobbin, a brass reed.
 
 ### Design decisions worth keeping
 
@@ -58,6 +72,9 @@ because the canvas is `touch-action: pan-y`, on a phone too.
 decayed, and rotation is damped toward a target. A hard flick settles. The composition
 cannot be left in a tipped, unreadable state. Idle drift stops the moment a visitor
 takes over, so their angle is respected.
+
+**Reduced motion lands on the finished cloth** rather than watching it weave,
+and the idle drift stops.
 
 **Everything is generated.** `src/three/textures.ts` draws the plain-weave patterns,
 the timber grain, the yarn windings and the studio environment into canvases at
