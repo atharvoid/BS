@@ -51,11 +51,13 @@ const ARC = { radius: 1.15, startAngle: -0.8, startY: -3.0, exitY: 2.9 }
  * minute ends up side-on. A bounded sine drift keeps every stage readable no
  * matter how long a visitor stays on it.
  */
-const LOOK: Record<StageKind, { drift: number; roll: number }> = {
-  bolt: { drift: 0.16, roll: 0.026 },
-  shuttle: { drift: 0.22, roll: 0.038 },
-  spool: { drift: 0.18, roll: 0.028 },
-  reed: { drift: 0.07, roll: 0.008 },
+const LOOK: Record<StageKind, { drift: number; roll: number; tilt: number }> = {
+  bolt: { drift: 0.16, roll: 0.026, tilt: 0.34 },
+  shuttle: { drift: 0.22, roll: 0.038, tilt: 0.34 },
+  spool: { drift: 0.18, roll: 0.028, tilt: 0.34 },
+  // The reed is a flat comb. Any pitch reads as a sloped layout, so it is
+  // allowed almost none.
+  reed: { drift: 0.07, roll: 0.006, tilt: 0.05 },
 }
 const ENTER = 0.11 // fraction of a stage's slice spent flying in
 const EXIT = 0.9
@@ -83,7 +85,7 @@ function ObjectBody({ kind }: { kind: StageKind }) {
     case 'reed':
     default:
       return (
-        <group rotation={[0.2, 0, 0.02]} scale={1.04}>
+        <group rotation={[0.09, 0, 0.015]} scale={1.02}>
           <ReedObject />
         </group>
       )
@@ -162,7 +164,7 @@ function Slot({
     <group ref={arc} visible={false}>
       <Draggable
         drift={still ? 0 : LOOK[kind].drift}
-        tilt={0.34}
+        tilt={LOOK[kind].tilt}
         float={0.028}
         spin={0}
         roll={still ? 0 : LOOK[kind].roll}

@@ -43,16 +43,30 @@ so the form, the process steps and the disclaimers cannot drift apart.
 
 ## The 3D layer
 
-**The hero weaves.** Yarn unwinds from a mill cone, the strands level out into a
-warp, a shuttle crosses laying the weft, and the indigo cloth fills up from its
-hem and hangs. It runs on its own — nothing is asked of the visitor — and
-scrolling inside the hero nudges it forward. A `Replay the weaving` control
-starts it again.
+**The hero is the Earth**, built from real geography rather than an
+approximation:
 
-Mechanically it is two draw calls: one strand mesh whose vertices are
-interpolated in the vertex shader between "wound on the cone" and "held in the
-warp sheet", and one cloth mesh whose fragment shader reveals the weave from the
-hem upward. A whole cycle costs two uniform writes per frame.
+- **Coastlines** are Natural Earth 1:50m vector loops, resampled onto the sphere.
+- **Land** is a 2048x1024 coverage mask sampled in the fragment shader, so the
+  continents stay solid at any angle.
+- **The sphere itself is carved** from that same mask: every vertex is displaced
+  by land coverage, so continents are real relief, and the normals are derived
+  so coasts catch the light.
+- **Gujarat and Tamil Nadu are exact coordinates** (Ahmedabad and Tiruppur), each
+  with a pulsing marker.
+- **Routes are true great circles** from those two points to Vietnam, the Gulf,
+  Sri Lanka, Bangladesh, Singapore, Europe, Australia and North America, each
+  carrying a travelling comet so the surface reads as supply in motion.
+
+Nothing is downloaded at runtime: `src/three/geo/` holds 22 KB of mask and
+108 KB of packed vectors. `scripts/build-geo.mjs` regenerates them from Natural
+Earth and is the only thing that needs the raw data:
+
+```bash
+# once, into /tmp/earth: land50.geojson and borders50.geojson from
+# https://github.com/nvkelso/natural-earth-vector (public domain)
+node scripts/build-geo.mjs
+```
 
 **The process pins.** The four stages share one canvas. The text scrolls past on
 the right; on the left, the active object swings in along a circular arc,
