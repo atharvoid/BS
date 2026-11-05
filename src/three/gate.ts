@@ -19,11 +19,7 @@ function hasOpening() {
   // module must be importable by the 3D layer without pulling in React.
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
   if (window.location.pathname !== '/') return false
-  try {
-    return sessionStorage.getItem('bs.opening.seen') === '1'
-  } catch {
-    return false
-  }
+  return true
 }
 
 const listeners = new Set<() => void>()

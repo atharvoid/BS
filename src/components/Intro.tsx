@@ -29,28 +29,31 @@ import { openSceneGate } from '../three/gate'
      the enquiry form never waits for a logo.
    ========================================================================== */
 
-const SESSION_KEY = 'bs.opening.seen'
+/* --------------------------------------------------------------------------
+   Duration, in artwork beats.
 
-/** Milliseconds from the first frame. One schedule, in one place. */
+   The sequence is one continuous drawing, so it wants room. Six beats:
+   the BS contours, the ship inside them, the wordmark, the fill rising, the
+   flight, the curtain. Roughly four seconds end to end, which is long for a
+   gate on a commercial site and is why it is skippable at any moment.
+   -------------------------------------------------------------------------- */
+const BEAT = 620
+
 const SCHEDULE = [
-  { at: 40, step: 1 }, // BS outlines begin to draw
-  { at: 560, step: 2 }, // the wordmark follows
-  { at: 940, step: 3 }, // gold rises through the letters
-  { at: 1560, step: 4 }, // the lockup travels to the header
-  { at: 2140, step: 5 }, // the curtain clears
-  { at: 2620, step: 6 }, // unmount
+  { at: 60, step: 1 }, // the BS contours sweep in
+  { at: BEAT + 60, step: 2 }, // the wordmark follows from the left
+  { at: BEAT * 2 + 60, step: 3 }, // gold rises through the letters
+  { at: BEAT * 3 + 120, step: 4 }, // the lockup measures, then travels
+  { at: BEAT * 4 + 200, step: 5 }, // the curtain clears
+  { at: BEAT * 5 + 200, step: 6 }, // unmount
 ] as const
 
 function shouldRun() {
   if (typeof window === 'undefined') return false
+  /* Every load of the homepage, including a refresh. The intent is that
+     arriving at the site introduces it, so there is no "already seen" rule. */
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
   if (window.location.pathname !== '/') return false
-  try {
-    if (sessionStorage.getItem(SESSION_KEY)) return false
-    sessionStorage.setItem(SESSION_KEY, '1')
-  } catch {
-    // Private mode with storage blocked: run once, do not fight it.
-  }
   return true
 }
 
@@ -106,7 +109,7 @@ export function Intro() {
     )
     /* Backstop: whatever else happens, the page is usable in under three
        seconds. */
-    const backstop = window.setTimeout(finish, 3200)
+    const backstop = window.setTimeout(finish, SCHEDULE[SCHEDULE.length - 1].at + 700)
 
     const skip = () => finish()
     window.addEventListener('pointerdown', skip)
@@ -121,19 +124,28 @@ export function Intro() {
       window.removeEventListener('keydown', skip)
       window.removeEventListener('wheel', skip)
       window.removeEventListener('touchstart', skip)
-      document.documentElement.classList.remove('opening-lock')
+      document.documentElement.classList.remove('opening-lock', 'opening-arrived')
     }
   }, [active, aim, finish])
 
   /* Open the gate the moment the curtain begins to lift, not when the component
      unmounts: the globe needs those milliseconds to build so it is already
-     turning as it is revealed, rather than popping in a beat late. */
+     turning as it is revealed, rather than popping in a beat late. The header's
+     own mark comes in on the same beat, so the flying lockup appears to become
+     it rather than dissolving into an empty slot. */
   React.useEffect(() => {
-    if (step >= 5) openSceneGate()
+    if (step >= 5) {
+      openSceneGate()
+      document.documentElement.classList.add('opening-arrived')
+    }
   }, [step])
 
+  /* The natural end of the sequence, as opposed to a skip. The lock has to come
+     off here too: it is the one piece of state that, left behind, stops the page
+     scrolling, and it was only being released on the skip path. */
   React.useEffect(() => {
     if (step < 6) return
+    document.documentElement.classList.remove('opening-lock')
     const t = window.setTimeout(() => {
       document.documentElement.classList.remove('opening-running')
     }, 520)
