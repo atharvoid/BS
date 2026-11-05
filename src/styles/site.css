@@ -3184,3 +3184,44 @@ html:not(.opening-running) [data-intro-target] {
   margin-bottom: 1.6rem;
 }
 
+
+/* --------------------------------------------------------------------------
+   Prose rows
+
+   The limits list used to be a table of label-and-definition, one bold term
+   per warning. Read aloud it was four headings and four restatements. As
+   numbered prose it is shorter and it says the same thing.
+   -------------------------------------------------------------------------- */
+.bounds__list--prose .bounds__row {
+  grid-template-columns: 3.6rem minmax(0, 1fr);
+  align-items: start;
+  padding-block: clamp(1rem, 1.8vw, 1.5rem);
+}
+
+.bounds__list--prose .bounds__def {
+  max-width: 62ch;
+  color: var(--fg-soft);
+}
+
+/* The aim line under the About copy. */
+.purpose__note {
+  margin-top: 0.4rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--rule);
+  font-family: var(--f-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--fg-mute);
+}
+
+/* The sequence's own heading. The numeral used to sit on its own line above the
+   title, which left a gap wide enough to read as a missing element. */
+.seq-step .stage__n {
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.stage__title {
+  margin-top: 0;
+}

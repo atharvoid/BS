@@ -213,7 +213,7 @@ export default function Textiles() {
                 Four lines, in <em className="display-italic">any</em> order.
               </h2>
               <ul className="checklist checklist--dark">
-                {FIRST_MESSAGE.map((item, i) => (
+                {FIRST_MESSAGE.items.map((item, i) => (
                   <li key={item} className="checklist__item reveal" style={{ ['--reveal-delay' as string]: `${i * 70}ms` }}>
                     <span className="checklist__box" aria-hidden="true">
                       <svg viewBox="0 0 12 12" fill="none">
@@ -225,12 +225,12 @@ export default function Textiles() {
                 ))}
               </ul>
               <p className="useful__note reveal">
-                A reference image you already like is often more useful than any of this. Say so in
-                the message; arrangements for sharing can follow in the reply.
+                A reference you already like is worth more than any of this. Mention it and we will
+                ask for it in the reply.
               </p>
               <div className="useful__cta reveal">
                 <Link to="/enquiry" className="btn">
-                  Textile enquiry
+                  Start an enquiry
                   <Arrow />
                 </Link>
               </div>
@@ -247,9 +247,7 @@ export default function Textiles() {
                   <ShuttleVignette />
                 </Stage>
               </div>
-              <p className="useful__caption">
-                A weaving shuttle. Representative of the craft, not of any supplier or product.
-              </p>
+              <p className="useful__caption">A weaving shuttle. Representative of the craft, not of any product.</p>
             </aside>
           </div>
         </div>
@@ -258,17 +256,16 @@ export default function Textiles() {
       <section className="bounds bounds--tight">
         <div className="shell">
           <header className="bounds__head">
-            <p className="eyebrow reveal">Read this alongside the focus</p>
+            <p className="eyebrow reveal">{BOUNDARIES.eyebrow}</p>
             <h2 className="bounds__title reveal">
-              What the textile focus <em className="display-italic">does not</em> mean.
+              What the focus <em className="display-italic">does not</em> mean.
             </h2>
           </header>
-          <ul className="bounds__list">
-            {BOUNDARIES.map((b, i) => (
-              <li key={b.t} className="bounds__row reveal" style={{ ['--reveal-delay' as string]: `${i * 60}ms` }}>
+          <ul className="bounds__list bounds__list--prose">
+            {BOUNDARIES.body.map((b, i) => (
+              <li key={i} className="bounds__row reveal" style={{ ['--reveal-delay' as string]: `${i * 60}ms` }}>
                 <span className="bounds__num">{String(i + 1).padStart(2, '0')}</span>
-                <h3 className="bounds__term">{b.t}</h3>
-                <p className="bounds__def">{b.d}</p>
+                <p className="bounds__def">{b}</p>
               </li>
             ))}
           </ul>
