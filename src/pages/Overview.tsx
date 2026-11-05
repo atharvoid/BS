@@ -89,10 +89,6 @@ function Hero() {
           ))}
         </dl>
       </div>
-
-      <div className="hero__scroll" aria-hidden="true">
-        <span />
-      </div>
     </section>
   )
 }
