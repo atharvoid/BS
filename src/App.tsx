@@ -3,6 +3,7 @@ import { Route, Routes, useLocation } from 'react-router-dom'
 import { Nav } from './components/Nav'
 import { Footer } from './components/Footer'
 import { Cursor } from './components/Cursor'
+import { LogoIntro } from './components/LogoIntro'
 import Overview from './pages/Overview'
 import Textiles from './pages/Textiles'
 import Enquiry from './pages/Enquiry'
@@ -56,6 +57,7 @@ export default function App() {
       </a>
       <ScrollManager />
       <Cursor />
+      <LogoIntro />
       <Nav />
       <main id="main">
         <Routes>

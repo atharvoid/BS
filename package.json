@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test scripts/globe-raycast.test.mjs"
   },
   "dependencies": {
     "@fontsource-variable/chivo-mono": "^5.3.0",

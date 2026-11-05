@@ -23,6 +23,25 @@ npm run typecheck  # types only
 
 Node 20+ recommended.
 
+### Targeted checks
+
+`npm test` checks globe picking without traversing decorative geometry, including
+transformed hits, misses and near/far clipping. It uses Node's built-in test
+runner and native TypeScript support (Node 22.18+ or 24).
+
+With Playwright available, `node scripts/logo-intro.check.cjs` checks startup,
+replay, interruptions, focus recovery, route/hash behavior and reduced motion.
+It defaults to `http://localhost:5173`; set `SITE_URL` to test a production preview.
+`node scripts/globe-hover.check.cjs` measures the actual pointer handler against
+the Vite development server and rejects recursive decorative picking. Set
+`PLAYWRIGHT_MODULE` to an existing Playwright package path if it is not installed
+locally. No additional runtime dependency is required.
+
+The supplied startup is adapted in `LogoIntro.tsx`; its inline outline geometry
+is in `Logo.tsx`. Only the logo package's artwork and animation were imported.
+The broader trade-homepage and textile-migration proposal is in
+`IMPLEMENTATION_PLAN.md`.
+
 ---
 
 ## What is on the site

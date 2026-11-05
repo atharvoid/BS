@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { BUSINESS } from '../content'
+import { Logo } from './Logo'
 
 const LINKS = [
   { to: '/', label: 'Overview', end: true },
@@ -54,14 +55,7 @@ export function Nav() {
       <header className={`nav ${lifted ? 'nav--lifted' : ''} ${open ? 'nav--open' : ''}`}>
         <div className="nav__inner shell">
           <Link to="/" className="brand" aria-label={`${BUSINESS.name}, overview`}>
-            <span className="brand__mark" aria-hidden="true">
-              <span />
-            </span>
-            <span className="brand__type">
-              <strong>{BUSINESS.wordmark}</strong>
-              <span className="brand__rule" aria-hidden="true" />
-              <span>{BUSINESS.wordmarkRest}</span>
-            </span>
+            <Logo />
           </Link>
 
           <nav className="nav__links" aria-label="Primary">

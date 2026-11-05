@@ -4,6 +4,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { Studio } from './objects'
 import { createDrag } from './drag'
 import { reducedMotion } from './motion'
+import { raycastGlobe } from './globe-raycast'
 import {
   carveVertex,
   facingCamera,
@@ -647,6 +648,7 @@ function Globe() {
   return (
     <group
       ref={root}
+      raycast={raycastGlobe}
       rotation={[0, startY, 0.04]}
       onPointerDown={(e) => {
         e.stopPropagation()

@@ -12,6 +12,7 @@ import '@fontsource-variable/chivo-mono/index.css'
 import './styles/tokens.css'
 import './styles/base.css'
 import './styles/site.css'
+import './styles/logo-intro.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
