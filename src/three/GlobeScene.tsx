@@ -449,15 +449,19 @@ function OriginMarker({ lon, lat, phase }: { lon: number; lat: number; phase: nu
 
 function Earth({ uniforms }: { uniforms: { uTime: THREE.IUniform<number>; uSun: THREE.IUniform<THREE.Vector3> } }) {
   const mask = React.useMemo(() => getLandMask(), [])
+  const viewport = useThree((s) => s.viewport)
 
   /* A denser sphere than before, because the displacement is no longer done in
      JavaScript: the vertex shader samples the mask, so 320x180 costs nothing at
-     startup and the coasts are smoother than the old 256x160. */
+     startup and the coasts are smoother than the old 256x160. A phone draws the
+     globe at a third of the width, where the extra tessellation is invisible,
+     so it gets a lighter mesh. */
+  const segments = viewport.aspect < 1.15 ? ([220, 124] as const) : ([320, 180] as const)
   const geometry = React.useMemo(() => {
-    const g = new THREE.SphereGeometry(1, 320, 180)
+    const g = new THREE.SphereGeometry(1, segments[0], segments[1])
     g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1.05)
     return g
-  }, [])
+  }, [segments])
   React.useEffect(() => () => geometry.dispose(), [geometry])
 
   const mat = React.useMemo(

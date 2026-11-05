@@ -154,13 +154,13 @@ export function EnquiryForm({ subject = 'textiles' }: { subject?: EnquirySubject
   return (
     <form className="form" onSubmit={submit} noValidate>
       <div className="form__head">
-        <p className="eyebrow eyebrow--index">Textile enquiry / form</p>
+        <p className="eyebrow eyebrow--index">The form</p>
         <h2 className="form__title">
-          Five answers. <em className="display-italic">No specification needed.</em>
+          Five answers. <em className="display-italic">That is all</em>.
         </h2>
         <p className="form__intro">
-          This enquiry is filed as a textiles and fabrics enquiry. Attachments are not accepted. If
-          a sample or document matters, say so here and arrangements can be discussed in the reply.
+          Nothing needs to be attached. If a sample or a document matters, mention it and we will
+          ask for it in the reply.
         </p>
       </div>
 
