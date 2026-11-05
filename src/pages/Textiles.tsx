@@ -14,15 +14,10 @@ import * as THREE from 'three'
 import React from 'react'
 import { useReveal } from '../components/useReveal'
 import { Arrow } from '../components/Nav'
-import { BOUNDARIES, FIRST_MESSAGE, LATER_DISCUSSIONS } from '../content'
+import { BOUNDARIES, FIRST_MESSAGE, LATER_DISCUSSIONS, TEXTILES_PAGE } from '../content'
 
 function SwatchWall() {
-  const swatches = [
-    { key: 'cotton' as const, label: 'Greige', note: 'Woven, unbleached' },
-    { key: 'gold' as const, label: 'Gold', note: 'A dyed or union family' },
-    { key: 'indigo' as const, label: 'Indigo', note: 'Vat dyed cotton' },
-    { key: 'ink' as const, label: 'Deep dye', note: 'Heavy, saturated shade' },
-  ]
+  const swatches = TEXTILES_PAGE.families
 
   return (
     <div className="wall" role="list">
@@ -128,7 +123,7 @@ export default function Textiles() {
         <div className="page-hero__canvas" aria-hidden="false">
           <Stage
             className="page-hero__stage"
-            label="Interactive 3D cloth panel in a green dyed weave. Drag to turn it."
+            label="A hanging panel of indigo cloth. Drag to turn it."
             z={6.2}
             fov={36}
             fallback={<div className="page-hero__fallback" aria-hidden="true" />}
@@ -137,14 +132,11 @@ export default function Textiles() {
           </Stage>
         </div>
         <div className="shell page-hero__inner">
-          <p className="eyebrow">Textiles &amp; fabrics</p>
+          <p className="eyebrow">{TEXTILES_PAGE.eyebrow}</p>
           <h1 className="page-hero__title">
-            The initial focus is <em className="display-italic">cloth</em> from India.
+            The focus is <em className="display-italic">cloth</em> from India.
           </h1>
-          <p className="page-hero__lede">
-            Composition, construction, weight, width and finish are the questions that shape a
-            sourcing conversation. None of them need an answer before the first message.
-          </p>
+          <p className="page-hero__lede">{TEXTILES_PAGE.lede}</p>
         </div>
       </section>
 
@@ -154,36 +146,32 @@ export default function Textiles() {
             <div>
               <p className="eyebrow reveal">Why textiles first</p>
               <h2 className="textile-intro__title reveal">
-                A category broad enough to be honest about.
+                Indian supply is too varied to <em className="display-italic">list</em>.
               </h2>
             </div>
             <div className="textile-intro__body">
               <p className="reveal">
-                Textiles and fabrics are the first category because Indian supply is varied enough
-                that a general promise would be meaningless. A single enquiry is specific: this
-                fabric, for this use, from this area.
+                That is why there is no fabric catalogue on this page. An enquiry is specific: this
+                cloth, for this use, from this area. The reply can be specific too.
               </p>
               <p className="reveal" style={{ ['--reveal-delay' as string]: '80ms' }}>
-                The site therefore does not present a fabric list. What follows are the dimensions
-                a conversation tends to move through, in roughly the order they become useful.
+                The swatches below are generated weaves, shown to give a sense of the families
+                rather than to offer anything.
               </p>
             </div>
           </div>
 
           <SwatchWall />
-          <p className="wall__note reveal">
-            These swatches are representative of material families. Generated weaves, not
-            photographs of stock. They are not an offer, and they do not indicate availability.
-          </p>
+          <p className="wall__note reveal">{TEXTILES_PAGE.familiesNote}</p>
         </div>
       </section>
 
-      <section className="dimensions on-indigo grain">
+      <section className="dimensions on-navy grain">
         <div className="shell">
           <header className="dimensions__head">
-            <p className="eyebrow reveal">What further discussions may cover</p>
+            <p className="eyebrow reveal">Later in the conversation</p>
             <h2 className="dimensions__title reveal">
-              Four dimensions of a <em className="display-italic">fabric</em>.
+              Four things a fabric <em className="display-italic">is</em>.
             </h2>
           </header>
           <dl className="dimensions__list">
@@ -198,8 +186,7 @@ export default function Textiles() {
             ))}
           </dl>
           <p className="dimensions__caveat reveal">
-            These are conversation topics, not a service list. Nothing here confirms that a given
-            specification, quantity or term can be met.
+            Topics, not a service list. Whether a specification can be met comes back in writing.
           </p>
         </div>
       </section>
@@ -208,7 +195,7 @@ export default function Textiles() {
         <div className="shell">
           <div className="useful__grid">
             <div className="useful__left">
-              <p className="eyebrow reveal">What is useful in an enquiry</p>
+              <p className="eyebrow reveal">{FIRST_MESSAGE.eyebrow}</p>
               <h2 className="useful__title reveal">
                 Four lines, in <em className="display-italic">any</em> order.
               </h2>

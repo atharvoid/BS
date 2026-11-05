@@ -404,7 +404,7 @@ export function ShuttleObject({ scale = 1 }) {
 export function BobbinObject({ scale = 1 }) {
   const bobbin = React.useMemo(() => makeBobbinGeometry(1.55, 0.56, 0.36), [])
   const yarn = React.useMemo(() => makeYarnGeometry(1.55, 0.36), [])
-  const wind = React.useMemo(() => makeWindingTexture(512, 1, ['#7d4a3f', '#96604d', '#6b3f36']), [])
+  const wind = React.useMemo(() => makeWindingTexture(512, 1, ['#8f7132', '#b8944b', '#6b5326']), [])
   const windBump = React.useMemo(() => makeWindingBump(512, 1), [])
 
   return (

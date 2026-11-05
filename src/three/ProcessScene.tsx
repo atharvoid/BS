@@ -2,6 +2,7 @@ import React from 'react'
 import * as THREE from 'three'
 import { useFrame, useThree } from '@react-three/fiber'
 import { reducedMotion } from './motion'
+import { STAGES } from '../content'
 import {
   BobbinObject,
   BoltObject,
@@ -29,12 +30,13 @@ import {
 const KINDS = ['bolt', 'shuttle', 'spool', 'reed'] as const
 export type StageKind = (typeof KINDS)[number]
 
-export const STAGE_OBJECT_LABELS: Record<StageKind, string> = {
-  bolt: 'Unfolded bolt',
-  shuttle: 'Weaving shuttle',
-  spool: 'Spun yarn bobbin',
-  reed: 'Brass reed',
-}
+/* Derived from the content file rather than repeated here. The label under each
+   stage and the one in its accessible name used to be two lists, and they had
+   already drifted apart. */
+export const STAGE_OBJECT_LABELS = STAGES.reduce(
+  (acc, s) => ({ ...acc, [s.object]: s.objectLabel }),
+  {} as Record<StageKind, string>,
+)
 
 const ARC = { radius: 1.15, startAngle: -0.8, startY: -3.0, exitY: 2.9 }
 

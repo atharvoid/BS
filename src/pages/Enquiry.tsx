@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { EnquiryForm } from '../components/EnquiryForm'
 import { useReveal } from '../components/useReveal'
-import { BUSINESS } from '../content'
+import { BUSINESS, ENQUIRY_PAGE } from '../content'
 
 export default function Enquiry() {
   useReveal([])
@@ -12,14 +12,11 @@ export default function Enquiry() {
         <div className="shell">
           <div className="enquiry-hero__grid">
             <div>
-              <p className="eyebrow">Textile enquiry</p>
+              <p className="eyebrow">{ENQUIRY_PAGE.eyebrow}</p>
               <h1 className="enquiry-hero__title">
-                Say what the fabric <em className="display-italic">has to do</em>.
+                Tell us what the cloth <em className="display-italic">has to do</em>.
               </h1>
-              <p className="enquiry-hero__lede">
-                This form is filed as a textiles and fabrics enquiry. Five answers are required, and
-                a finished specification is not one of them.
-              </p>
+              <p className="enquiry-hero__lede">{ENQUIRY_PAGE.lede}</p>
             </div>
             <div className="enquiry-hero__aside">
               <p className="enquiry-hero__aside-label">Prefer email?</p>
@@ -27,9 +24,9 @@ export default function Enquiry() {
                 {BUSINESS.email}
               </a>
               <ul className="enquiry-hero__facts">
-                <li>Filed as textiles and fabrics</li>
-                <li>Attachments not accepted</li>
-                <li>Replies come from the business inbox</li>
+                <li>No attachments needed</li>
+                <li>A person reads each one</li>
+                <li>Reply comes from the inbox above</li>
               </ul>
             </div>
           </div>
@@ -49,28 +46,26 @@ export default function Enquiry() {
                 <ol className="side-steps">
                   <li>
                     <span>01</span>
-                    A person reads it and replies from the business inbox.
+                    Someone reads it and replies from the inbox.
                   </li>
                   <li>
                     <span>02</span>
-                    The reply usually asks one or two clarifying questions.
+                    The reply usually asks a question or two.
                   </li>
                   <li>
                     <span>03</span>
-                    Material options and samples may then be discussed.
+                    Samples and options follow from there.
                   </li>
                 </ol>
                 <p className="side-card__note">
-                  The acknowledgement page that follows this form confirms the page was reached. It
-                  does not confirm that the message arrived in the inbox.
+                  {ENQUIRY_PAGE.aside[0]} If nothing arrives, write to the address above.
                 </p>
               </div>
 
               <div className="side-card side-card--quiet reveal">
                 <p className="eyebrow eyebrow--bare">Please do not send</p>
                 <p className="side-card__warn">
-                  Passwords, payment details, or sensitive personal documents. Share relevant
-                  business information only.
+                  Passwords, payment details or personal documents. Business information is enough.
                 </p>
                 <Link to="/privacy" className="tlink">
                   Enquiry privacy

@@ -2461,6 +2461,13 @@ fieldset .field__label { float: none; }
   max-width: 22ch;
 }
 
+.ack__lede {
+  max-width: 44ch;
+  margin-top: 1rem;
+  color: var(--fg-soft);
+  font-size: var(--fs-lead);
+}
+
 .ack__notice {
   margin-top: clamp(1.5rem, 2.6vw, 2rem);
   padding: 1.1rem 1.2rem;
@@ -2873,6 +2880,16 @@ fieldset .field__label { float: none; }
      stage gets its own plate, stacked under its own words, so scrolling a
      paragraph never leaves a different stage's object on screen. */
   .sequence { height: auto; }
+  /* The pin stops being a 100svh frame. Left at full viewport height with its
+     contents hidden it still occupied a screen of scroll, which is where the
+     empty band above the first stage came from. */
+  .sequence__pin {
+    position: static;
+    height: auto;
+    display: block;
+    overflow: visible;
+    padding-block: 0 1rem;
+  }
   .sequence__visual { display: none; }
   .sequence__inner { display: block; }
   .sequence__text { min-height: 0; }
@@ -3038,20 +3055,25 @@ fieldset .field__label { float: none; }
 .opening__fill--mark {
   -webkit-mask-image: url('/logo/logo.png');
   mask-image: url('/logo/logo.png');
-  -webkit-mask-size: 1024px 752px;
-  mask-size: 1024px 752px;
-  -webkit-mask-position: -5.4px -3.2px;
-  mask-position: -5.4px -3.2px;
+  /* 172 / 968: the artwork's lockup, scaled into a 172 x 91 box. Offsets are the
+     same scale applied to where the lockup starts inside the file. */
+  --k: 0.17769;
+  -webkit-mask-size: calc(1024px * var(--k)) calc(752px * var(--k));
+  mask-size: calc(1024px * var(--k)) calc(752px * var(--k));
+  -webkit-mask-position: calc(-32px * var(--k)) calc(-19px * var(--k));
+  mask-position: calc(-32px * var(--k)) calc(-19px * var(--k));
 }
 
 .opening__edge--word,
 .opening__fill--word {
   -webkit-mask-image: url('/logo/logo.png');
   mask-image: url('/logo/logo.png');
-  -webkit-mask-size: 1024px 752px;
-  mask-size: 1024px 752px;
-  -webkit-mask-position: -5px -155px;
-  mask-position: -5px -155px;
+  /* 246 / 991 for the wordmark. */
+  --k: 0.24823;
+  -webkit-mask-size: calc(1024px * var(--k)) calc(752px * var(--k));
+  mask-size: calc(1024px * var(--k)) calc(752px * var(--k));
+  -webkit-mask-position: calc(-20px * var(--k)) calc(-600px * var(--k));
+  mask-position: calc(-20px * var(--k)) calc(-600px * var(--k));
 }
 
 .opening__edge {
@@ -3066,14 +3088,12 @@ fieldset .field__label { float: none; }
 .opening[data-step="2"] .opening__edge--mark,
 .opening[data-step="3"] .opening__edge--mark {
   opacity: 1;
-  -webkit-mask-size: 1024px 752px;
   animation: opening-sweep 780ms cubic-bezier(0.22, 0.9, 0.24, 1) forwards;
 }
 
 .opening[data-step="2"] .opening__edge--mark,
 .opening[data-step="3"] .opening__edge--mark {
   animation: none;
-  -webkit-mask-position: -5.4px -3.2px;
   clip-path: inset(-10% -10% -10% -10%);
 }
 
