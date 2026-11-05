@@ -25,12 +25,14 @@ import { createDrag } from './drag'
    Shared resources
    ========================================================================== */
 
+/* Same two families as the rest of the site, expressed as cloth. A material
+   now differs by weight and finish rather than by hue: undyed, gold, and
+   indigo. That is also honest, since natural cloth is mostly those. */
 export const PALETTES = {
-  cotton: { warp: '#d5c2a0', weft: '#bda781', sheen: '#fbf3e0' },
-  indigo: { warp: '#35456f', weft: '#26314f', sheen: '#7285b8' },
-  madder: { warp: '#943f2e', weft: '#78322a', sheen: '#c07a5e' },
-  saffron: { warp: '#c08a3a', weft: '#a06f23', sheen: '#ecc681' },
-  verdigris: { warp: '#4c7b68', weft: '#3a6353', sheen: '#88b7a2' },
+  cotton: { warp: '#e8e1d2', weft: '#cfc6b2', sheen: '#fbf8f1' },
+  gold: { warp: '#dabc72', weft: '#b8944b', sheen: '#f0dca8' },
+  indigo: { warp: '#2a3a63', weft: '#16203a', sheen: '#8fa0c4' },
+  ink: { warp: '#232a38', weft: '#11151e', sheen: '#5d6577' },
 } as const
 
 export type PaletteKey = keyof typeof PALETTES

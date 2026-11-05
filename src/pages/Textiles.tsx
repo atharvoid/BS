@@ -18,11 +18,10 @@ import { BOUNDARIES, FIRST_MESSAGE, LATER_DISCUSSIONS } from '../content'
 
 function SwatchWall() {
   const swatches = [
-    { key: 'indigo' as const, label: 'Indigo', note: 'A dyed cotton family' },
-    { key: 'madder' as const, label: 'Madder', note: 'A root-dyed red family' },
-    { key: 'cotton' as const, label: 'Raw cotton', note: 'Undyed, unbleached' },
-    { key: 'saffron' as const, label: 'Saffron', note: 'A warm dyed family' },
-    { key: 'verdigris' as const, label: 'Verdigris', note: 'A green dyed family' },
+    { key: 'cotton' as const, label: 'Greige', note: 'Woven, unbleached' },
+    { key: 'gold' as const, label: 'Gold', note: 'A dyed or union family' },
+    { key: 'indigo' as const, label: 'Indigo', note: 'Vat dyed cotton' },
+    { key: 'ink' as const, label: 'Deep dye', note: 'Heavy, saturated shade' },
   ]
 
   return (
@@ -46,7 +45,7 @@ function SwatchWall() {
 }
 
 /** A rendered swatch: the same procedural weave used in the 3D scenes, on a flat plane. */
-function SwatchPlane({ palette, index }: { palette: 'indigo' | 'madder' | 'cotton' | 'saffron' | 'verdigris'; index: number }) {
+function SwatchPlane({ palette, index }: { palette: 'indigo' | 'gold' | 'cotton' | 'ink'; index: number }) {
   const host = React.useRef<HTMLDivElement>(null)
   const [src, setSrc] = React.useState<string | null>(null)
 
@@ -98,7 +97,7 @@ function TextileObject({ aside = false }: { aside?: boolean }) {
       <Ground y={-1.35} scale={4} opacity={0.4} />
       <Draggable drift={0.18} tilt={0.4} float={0.03}>
         <group scale={scale} position={[x, 0, 0]}>
-          <ClothPanel palette="verdigris" width={2.15} height={2.7} folds={3.4} seed={3.8} threads={16} />
+          <ClothPanel palette="indigo" width={2.15} height={2.7} folds={3.4} seed={3.8} threads={16} />
         </group>
       </Draggable>
     </>

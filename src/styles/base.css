@@ -75,7 +75,7 @@ input, textarea, select {
 }
 
 ::selection {
-  background: var(--madder);
+  background: var(--gold-deep);
   color: var(--cotton-lit);
 }
 
@@ -94,11 +94,11 @@ input, textarea, select {
   ::-webkit-scrollbar { width: 11px; height: 11px; }
   ::-webkit-scrollbar-track { background: var(--cotton-deep); }
   ::-webkit-scrollbar-thumb {
-    background: #b3a48c;
+    background: #adb4c0;
     border: 3px solid var(--cotton-deep);
     border-radius: 10px;
   }
-  ::-webkit-scrollbar-thumb:hover { background: var(--madder); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--gold-deep); }
 }
 
 /* ---- Paper grain --------------------------------------------------------
@@ -234,7 +234,7 @@ input, textarea, select {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: var(--madder);
+  background: var(--gold-deep);
   transform: translateY(101%);
   transition: transform var(--dur) var(--ease-out);
 }
@@ -386,4 +386,59 @@ input, textarea, select {
     opacity: 1;
     transform: none;
   }
+}
+
+/* --------------------------------------------------------------------------
+   The mark
+
+   Both pieces are the supplied artwork used as a mask, so the gold is a colour
+   rather than a baked-in fill. `currentColor` is what makes one file work on
+   ink, on navy and on cotton.
+
+   `--k` is the scale from artwork pixels to CSS pixels; the component sets it
+   from the requested height, and the mask offset is that same scale times where
+   the piece sits inside the artwork. Exact at any size, and no letter-spacing
+   guess can drift it.
+   -------------------------------------------------------------------------- */
+.logo-mark,
+.logo-word {
+  display: block;
+  background-color: currentColor;
+  -webkit-mask-image: url('/logo/logo.png');
+  mask-image: url('/logo/logo.png');
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: calc(1024px * var(--k)) calc(752px * var(--k));
+  mask-size: calc(1024px * var(--k)) calc(752px * var(--k));
+}
+
+/* 32, 19 is where the lockup starts in the artwork. */
+.logo-mark {
+  -webkit-mask-position: calc(-32px * var(--k)) calc(-19px * var(--k));
+  mask-position: calc(-32px * var(--k)) calc(-19px * var(--k));
+}
+
+/* 20, 600 is where the wordmark starts. */
+.logo-word {
+  -webkit-mask-position: calc(-20px * var(--k)) calc(-600px * var(--k));
+  mask-position: calc(-20px * var(--k)) calc(-600px * var(--k));
+}
+
+.logo-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.logo-brand__rule {
+  width: 1px;
+  height: 17px;
+  background: currentColor;
+  opacity: 0.3;
+}
+
+.logo-brand__mark,
+.logo-brand__word {
+  display: block;
+  color: var(--gold);
 }

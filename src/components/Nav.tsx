@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { BUSINESS } from '../content'
+import { Brand, Mark, Wordmark } from './Logo'
 
 const LINKS = [
   { to: '/', label: 'Overview', end: true },
@@ -10,6 +11,7 @@ const LINKS = [
 ]
 
 export function Nav() {
+  const bar = React.useRef<HTMLDivElement>(null)
   const [open, setOpen] = React.useState(false)
   const [lifted, setLifted] = React.useState(false)
   const { pathname } = useLocation()
@@ -50,18 +52,19 @@ export function Nav() {
 
   return (
     <>
-      <div className="progress" aria-hidden="true" />
+      <div className="progress" ref={bar} aria-hidden="true" />
       <header className={`nav ${lifted ? 'nav--lifted' : ''} ${open ? 'nav--open' : ''}`}>
         <div className="nav__inner shell">
-          <Link to="/" className="brand" aria-label={`${BUSINESS.name}, overview`}>
-            <span className="brand__mark" aria-hidden="true">
-              <span />
-            </span>
-            <span className="brand__type">
-              <strong>{BUSINESS.wordmark}</strong>
-              <span className="brand__rule" aria-hidden="true" />
-              <span>{BUSINESS.wordmarkRest}</span>
-            </span>
+          {/* The mark itself, not a text lockup. `data-intro-target` is where the
+              opening sequence parks it, so the flight lands on the real element
+              rather than a copy of it. */}
+          <Link
+            to="/"
+            className="brand"
+            aria-label={`${BUSINESS.name}, overview`}
+            data-intro-target=""
+          >
+            <Brand name={BUSINESS.name} />
           </Link>
 
           <nav className="nav__links" aria-label="Primary">
@@ -116,6 +119,10 @@ export function Nav() {
           ))}
         </nav>
         <div className="drawer__foot">
+          <span className="drawer__brand" aria-hidden="true">
+            <Mark height={26} />
+            <Wordmark height={11} />
+          </span>
           <Link to="/enquiry" className="btn btn--light drawer__cta">
             Start an enquiry
             <Arrow />

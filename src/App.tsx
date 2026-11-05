@@ -3,6 +3,7 @@ import { Route, Routes, useLocation } from 'react-router-dom'
 import { Nav } from './components/Nav'
 import { Footer } from './components/Footer'
 import { Cursor } from './components/Cursor'
+import { Intro } from './components/Intro'
 import Overview from './pages/Overview'
 import Textiles from './pages/Textiles'
 import Enquiry from './pages/Enquiry'
@@ -13,13 +14,22 @@ import NotFound from './pages/NotFound'
 function ScrollManager() {
   const { pathname, hash } = useLocation()
 
+  /* The reading bar is the only thing that consumes scroll progress, so the
+     value is written onto the bar itself rather than onto <html>. Setting a
+     custom property on the root invalidates style for the entire document, and
+     doing that on every scroll frame is enough on its own to make a long page
+     feel heavy. Written to one leaf element, the cost is a single style
+     recalculation of a 2px strip. */
   React.useEffect(() => {
     let raf = 0
+    let bar: HTMLElement | null = null
     const update = () => {
       raf = 0
+      if (!bar) bar = document.querySelector<HTMLElement>('.progress')
+      if (!bar) return
       const max = document.documentElement.scrollHeight - window.innerHeight
       const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0
-      document.documentElement.style.setProperty('--progress', p.toFixed(4))
+      bar.style.setProperty('--progress', p.toFixed(4))
     }
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update)
@@ -56,6 +66,7 @@ export default function App() {
       </a>
       <ScrollManager />
       <Cursor />
+      <Intro />
       <Nav />
       <main id="main">
         <Routes>

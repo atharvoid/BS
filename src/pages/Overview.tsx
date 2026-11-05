@@ -537,7 +537,7 @@ function CloseEnquiry() {
             <Studio />
             <Lights intensity={1} />
             <Draggable drift={0.16} tilt={0.38} float={0.025}>
-              <ClothPanel palette="saffron" width={2.1} height={2.5} folds={3.2} seed={2.4} threads={18} />
+              <ClothPanel palette="gold" width={2.1} height={2.5} folds={3.2} seed={2.4} threads={18} />
             </Draggable>
           </Stage>
         </div>

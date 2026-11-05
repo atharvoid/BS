@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { BUSINESS } from '../content'
 import { Arrow } from './Nav'
+import { Mark } from './Logo'
 
 export function Footer() {
   return (
@@ -53,9 +54,10 @@ export function Footer() {
           </div>
         </div>
 
+        {/* The artwork rather than a typographic stand-in. It is a mask, so it
+            picks up the footer's own colour. */}
         <div className="footer__wordmark" aria-hidden="true">
-          <span>BS</span>
-          <span className="footer__wordmark-rest">EXIMNEXUS</span>
+          <Mark height={82} />
         </div>
 
         <div className="footer__base">

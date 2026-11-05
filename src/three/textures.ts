@@ -63,7 +63,7 @@ export function makeWeaveTexture(opts: WeaveOptions = {}) {
   const rnd = mulberry32(seed)
   const cell = size / threads
 
-  ctx.fillStyle = '#8d7characters'
+  ctx.fillStyle = '#8a7440'
   ctx.fillStyle = warp
   ctx.fillRect(0, 0, size, size)
 
@@ -178,7 +178,7 @@ export function makeWeaveBump(opts: WeaveOptions = {}) {
  */
 export function makeWindingTexture(size = 512, repeat = 1, tint?: [string, string, string]) {
   const { el, ctx } = canvas2d(size)
-  const [a, b, c] = tint ?? ['#8d4132', '#a8563c', '#79382c']
+  const [a, b, c] = tint ?? ['#b8944b', '#c9a45c', '#8f7132']
   const g = ctx.createLinearGradient(0, 0, size, size)
   g.addColorStop(0, a)
   g.addColorStop(0.5, b)
@@ -270,10 +270,10 @@ export function makeTimberTexture(size = 512, repeat = 1) {
   const { el, ctx } = canvas2d(size)
   const rnd = mulberry32(31)
   const g = ctx.createLinearGradient(0, 0, size, 0)
-  g.addColorStop(0, '#4a2a18')
-  g.addColorStop(0.35, '#6b3d22')
-  g.addColorStop(0.6, '#57301b')
-  g.addColorStop(1, '#3f2313')
+  g.addColorStop(0, '#3a2f1e')
+  g.addColorStop(0.35, '#5a4a30')
+  g.addColorStop(0.6, '#493d28')
+  g.addColorStop(1, '#33291b')
   ctx.fillStyle = g
   ctx.fillRect(0, 0, size, size)
 
@@ -333,10 +333,10 @@ export function makeStudioEnvironment(size = 512) {
     ctx.globalAlpha = 1
   }
 
-  blob(size * 0.22, el.height * 0.26, size * 0.26, '#fff4e0', 0.95)
-  blob(size * 0.68, el.height * 0.18, size * 0.16, '#ffe2b0', 0.75)
-  blob(size * 0.9, el.height * 0.55, size * 0.2, '#9fb6d0', 0.35)
-  blob(size * 0.05, el.height * 0.62, size * 0.18, '#c98a5a', 0.3)
+  blob(size * 0.22, el.height * 0.26, size * 0.26, '#fbf4e2', 0.95)
+  blob(size * 0.68, el.height * 0.18, size * 0.16, '#f0dca8', 0.75)
+  blob(size * 0.9, el.height * 0.55, size * 0.2, '#7d8aa8', 0.35)
+  blob(size * 0.05, el.height * 0.62, size * 0.18, '#c9a45c', 0.3)
 
   const tex = new THREE.CanvasTexture(el)
   tex.mapping = THREE.EquirectangularReflectionMapping

@@ -22,10 +22,12 @@ export function RegionWeave({ motif }: { motif: Motif }) {
 
   const isTamil = motif === 'tamil-nadu'
 
-  const ground = isTamil ? '#2f5d74' : '#7a4128'
-  const deep = isTamil ? '#213f52' : '#57301b'
-  const light = isTamil ? '#9fc4c9' : '#d9a05f'
-  const accent = isTamil ? '#d9c79a' : '#e8c07a'
+  /* Navy for the south, gold for the west: the same two families as
+     everything else, so the pair reads as one set rather than two posters. */
+  const ground = isTamil ? '#1e2b4d' : '#3a2f1e'
+  const deep = isTamil ? '#16203a' : '#241d12'
+  const light = isTamil ? '#b8c6d6' : '#dabc72'
+  const accent = isTamil ? '#dabc72' : '#f0dca8'
 
   const warps = warpLines(isTamil ? 46 : 34, w, h)
 
@@ -109,16 +111,16 @@ export function RegionWeave({ motif }: { motif: Motif }) {
               return (
                 <g key={`${r}-${c}`} opacity={on ? 0.8 : 0.24}>
                   <rect x={x} y={y} width="26" height="3.4" fill={accent} rx="1.2" />
-                  <rect x={x + 3} y={y + 4.4} width="20" height="2.2" fill="#f3e7c8" opacity="0.5" rx="1" />
+                  <rect x={x + 3} y={y + 4.4} width="20" height="2.2" fill="#f0e6d2" opacity="0.5" rx="1" />
                 </g>
               )
             }),
           )}
           {/* border stripes, like a sari edge */}
-          <rect x="0" y="0" width="46" height={h} fill="#171b22" opacity="0.34" />
+          <rect x="0" y="0" width="46" height={h} fill="#0b0e14" opacity="0.34" />
           <rect x="46" y="0" width="7" height={h} fill={accent} opacity="0.62" />
-          <rect x="56" y="0" width="3" height={h} fill="#f3e7c8" opacity="0.4" />
-          <rect x={w - 30} y="0" width="30" height={h} fill="#171b22" opacity="0.3" />
+          <rect x="56" y="0" width="3" height={h} fill="#f0e6d2" opacity="0.4" />
+          <rect x={w - 30} y="0" width="30" height={h} fill="#0b0e14" opacity="0.3" />
         </g>
       ) : (
         <g>
@@ -130,16 +132,16 @@ export function RegionWeave({ motif }: { motif: Motif }) {
               const rr = big ? 5.4 : 3.1
               return (
                 <g key={`${r}-${c}`} opacity={big ? 0.92 : 0.5}>
-                  <circle cx={x} cy={y} r={rr} fill="#f6ecd6" opacity="0.82" />
+                  <circle cx={x} cy={y} r={rr} fill="#f6f1e5" opacity="0.82" />
                   <circle cx={x} cy={y} r={rr * 0.52} fill={accent} />
-                  <circle cx={x + 1.1} cy={y + 1.2} r={rr * 0.24} fill="#5a2a17" opacity="0.55" />
+                  <circle cx={x + 1.1} cy={y + 1.2} r={rr * 0.24} fill="#2a2013" opacity="0.55" />
                 </g>
               )
             }),
           )}
           {/* bandhani tie texture */}
           <rect width={w} height={h} fill={`url(#${id}-grid)`} opacity="0.5" />
-          <rect x="0" y={h - 58} width={w} height="58" fill="#3d1f11" opacity="0.32" />
+          <rect x="0" y={h - 58} width={w} height="58" fill="#1a1810" opacity="0.32" />
           <rect x="0" y={h - 58} width={w} height="4" fill={accent} opacity="0.6" />
         </g>
       )}

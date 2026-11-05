@@ -37,13 +37,13 @@
   .cursor__dot {
     width: 3px;
     height: 3px;
-    background: #f0e3cb;
+    background: #f6f1e5;
     box-shadow: 0 0 0 1px rgba(18, 16, 13, 0.4);
   }
 
   /* Over anything clickable the ring gains weight rather than ballooning. */
   .cursor--hot .cursor__ring {
-    border-color: var(--madder);
+    border-color: var(--gold-deep);
     background: rgba(156, 58, 45, 0.12);
     box-shadow: 0 0 0 1px rgba(242, 235, 221, 0.35);
   }
@@ -65,7 +65,7 @@
   z-index: calc(var(--z-nav) + 1);
   height: 2px;
   pointer-events: none;
-  background: linear-gradient(90deg, var(--saffron), var(--madder));
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold), var(--gold-lit));
   transform: scaleX(var(--progress, 0));
   transform-origin: left;
   opacity: 0.85;
@@ -78,9 +78,16 @@
   position: fixed;
   inset: 0 0 auto;
   z-index: var(--z-nav);
-  transition: background 520ms var(--ease-out), backdrop-filter 520ms var(--ease-out),
-    box-shadow 520ms var(--ease-out), color 520ms var(--ease-out);
+  /* No transition on `background` or `backdrop-filter`. A transitioned
+     background sitting under a blur makes the compositor re-blur the header
+     region on every frame of the transition, and because the transition is
+     triggered by scrolling it re-blurred while the page was moving. The state
+     is swapped as a class instead: one step, no animation, nothing to
+     re-rasterise. */
+  transition: color 520ms var(--ease-out);
   color: var(--cotton-lit);
+  /* Promote once, so the blur is cached rather than re-composited. */
+  will-change: backdrop-filter;
 }
 
 .nav::after {
@@ -88,15 +95,15 @@
   position: absolute;
   inset: auto 0 0;
   height: 1px;
-  background: rgba(242, 235, 221, 0.16);
+  background: rgba(246, 241, 229, 0.16);
   opacity: 0;
-  transition: opacity 520ms var(--ease-out);
+  transition: opacity 380ms var(--ease-out);
 }
 
 .nav--lifted {
-  background: rgba(18, 16, 13, 0.82);
-  backdrop-filter: blur(18px) saturate(1.3);
-  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  background: rgba(11, 14, 20, 0.84);
+  backdrop-filter: blur(14px) saturate(1.25);
+  -webkit-backdrop-filter: blur(14px) saturate(1.25);
   color: var(--cotton-lit);
 }
 
@@ -113,45 +120,18 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.66rem;
   flex: none;
+  /* A hair of lift on hover, and nothing else: the mark is the one thing on the
+     page that must not be re-drawn or re-set in another typeface. */
+  transition: transform 420ms var(--ease-out);
 }
 
-.brand__mark {
-  position: relative;
-  width: 26px;
-  height: 26px;
-  border: 1px solid currentColor;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  transition: transform 700ms var(--ease-out);
+.brand:hover { transform: translateY(-1px); }
+
+.brand:focus-visible {
+  outline: 1px solid var(--gold);
+  outline-offset: 6px;
 }
-
-.brand__mark span {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--accent);
-  transition: transform 700ms var(--ease-out);
-}
-
-.brand:hover .brand__mark { transform: rotate(120deg); }
-.brand:hover .brand__mark span { transform: scale(1.35); }
-
-.brand__type {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-family: var(--f-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.19em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.brand__type strong { font-weight: 600; }
-.brand__rule { width: 12px; height: 1px; background: currentColor; opacity: 0.45; }
 
 /* Links */
 .nav__links {
@@ -249,8 +229,8 @@
   background: var(--ink);
   /* the drawer sits outside .on-dark, so it re-declares the dark palette */
   --fg: var(--cotton);
-  --fg-soft: #cdc2ae;
-  --fg-mute: #948974;
+  --fg-soft: #c2c8d4;
+  --fg-mute: #8891a3;
   --rule: rgba(242, 235, 221, 0.14);
   color: var(--cotton);
   padding: 6rem var(--gutter) 2.4rem;
@@ -288,7 +268,7 @@
 }
 
 .drawer--open .drawer__link { opacity: 1; transform: none; }
-.drawer__link.is-active { color: #d98d4f; }
+.drawer__link.is-active { color: #dabc72; }
 
 /* Hover has to be as alive as the click. The whole row leans in, the number
    lifts to saffron and a hairline draws across from the label. */
@@ -311,7 +291,7 @@
 
 .drawer__link:hover,
 .drawer__link:focus-visible {
-  color: #f6ecd8;
+  color: #f6f1e5;
   padding-left: 1rem;
   letter-spacing: 0.004em;
 }
@@ -331,7 +311,7 @@
 .drawer__link:focus-visible::before { width: 100%; }
 
 .drawer__link:hover .drawer__num,
-.drawer__link:focus-visible .drawer__num { color: #e0a262; }
+.drawer__link:focus-visible .drawer__num { color: #dabc72; }
 
 .drawer__num { transition: color 320ms var(--ease-out); }
 
@@ -339,7 +319,7 @@
   font-family: var(--f-mono);
   font-size: 0.62rem;
   letter-spacing: 0.16em;
-  color: #948974;
+  color: #8891a3;
 }
 
 .drawer__foot {
@@ -349,7 +329,7 @@
   gap: 1.1rem;
   padding-top: 2rem;
   border-top: 1px solid rgba(242, 235, 221, 0.12);
-  color: #cdc2ae;
+  color: #c2c8d4;
 }
 
 .drawer__cta { margin-bottom: 0.2rem; }
@@ -361,7 +341,7 @@
 
 .drawer__mail::after { display: none; }
 
-.drawer__desc { color: #948974; }
+.drawer__desc { color: #8891a3; }
 
 /* --------------------------------------------------------------------------
    Hero
@@ -374,8 +354,8 @@
   overflow: hidden;
   padding-block: 8.5rem 5rem;
   background:
-    radial-gradient(120% 90% at 78% 12%, #2a2620 0%, transparent 58%),
-    radial-gradient(90% 80% at 8% 92%, #241d18 0%, transparent 62%),
+    radial-gradient(120% 90% at 78% 12%, #1b2130 0%, transparent 58%),
+    radial-gradient(90% 80% at 8% 92%, #12161f 0%, transparent 62%),
     var(--ink);
 }
 
@@ -401,9 +381,22 @@
   transform: translateY(var(--parallax, 0));
 }
 
+/* The globe owns the right side of the hero and stops at the copy. Full-bleed
+   it would sit behind the headline, which is unreadable over a lit hemisphere
+   no matter how it is toned. */
 .hero__stage {
   position: absolute;
-  inset: 0;
+  inset: 0 0 0 auto;
+  width: 62%;
+}
+
+@media (max-width: 900px) {
+  .hero__stage {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: min(58vh, 420px);
+  }
 }
 
 .hero__inner {
@@ -425,7 +418,7 @@
   font-size: var(--fs-micro);
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #b7ab95;
+  color: #b3bac6;
   margin-bottom: 1.6rem;
   flex-wrap: wrap;
 }
@@ -436,7 +429,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #d98d4f;
+  background: #dabc72;
   box-shadow: 0 0 0 0 rgba(217, 141, 79, 0.6);
   animation: pulse 3.4s var(--ease-out) infinite;
   flex: none;
@@ -472,7 +465,7 @@
   font-size: var(--fs-lead);
   font-weight: 300;
   line-height: 1.48;
-  color: #cdc2ae;
+  color: #c2c8d4;
 }
 
 .hero__actions {
@@ -491,7 +484,7 @@
   font-size: 0.71rem;
   letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: #cdc2ae;
+  color: #c2c8d4;
   transition: color 320ms var(--ease-out);
 }
 
@@ -531,7 +524,7 @@
   font-size: 0.62rem;
   letter-spacing: 0.17em;
   text-transform: uppercase;
-  color: #8f8471;
+  color: #8a909d;
   margin-bottom: 0.5rem;
 }
 
@@ -540,7 +533,7 @@
   font-family: var(--f-serif);
   font-size: 0.98rem;
   line-height: 1.45;
-  color: #e2d8c5;
+  color: #e8e1d2;
   font-weight: 300;
 }
 
@@ -627,7 +620,7 @@
   font-size: 0.6rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #cdc2ae;
+  color: #c2c8d4;
   transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out);
   pointer-events: none;
 }
@@ -675,7 +668,7 @@
   height: 74%;
   background:
     repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 7px),
-    linear-gradient(160deg, #35456f 0%, #26314f 55%, #1a2338 100%);
+    linear-gradient(160deg, #2a3a63 0%, #1e2b4d 55%, #1a2338 100%);
   border-radius: 2px;
   filter: blur(0.3px);
   transform: perspective(700px) rotateY(-12deg) rotateZ(1.5deg);
@@ -689,7 +682,7 @@
   width: 170px;
   height: 170px;
   border-radius: 50%;
-  border: 10px solid #b0864a;
+  border: 10px solid #b8944b;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.35);
 }
 
@@ -753,7 +746,7 @@
   font-style: italic;
   font-variation-settings: 'SOFT' 40, 'WONK' 1;
   letter-spacing: 0.01em;
-  color: #5c4f3f;
+  color: #3d4454;
   white-space: nowrap;
 }
 
@@ -761,7 +754,7 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--madder);
+  background: var(--gold-deep);
   opacity: 0.55;
   flex: none;
 }
@@ -773,7 +766,7 @@
   font-size: 0.58rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #6b5f4e;
+  color: #4a5160;
   max-width: var(--maxw);
   margin-inline: auto;
 }
@@ -848,7 +841,7 @@
   bottom: 0;
   height: 2px;
   width: 100%;
-  background: var(--madder);
+  background: var(--gold-deep);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 560ms var(--ease-out);
@@ -924,7 +917,7 @@
 }
 
 .areas__intro {
-  color: #c3cadb;
+  color: #c6cbdd;
   max-width: 44ch;
   font-size: 0.99rem;
   line-height: 1.6;
@@ -953,7 +946,7 @@
   position: relative;
   height: clamp(160px, 19vw, 236px);
   overflow: hidden;
-  background: #23303f;
+  background: #1b2130;
   transition: transform 900ms var(--ease-out);
 }
 
@@ -1003,7 +996,7 @@
   font-size: 0.6rem;
   letter-spacing: 0.19em;
   text-transform: uppercase;
-  color: #98a3bb;
+  color: #9198b1;
   margin-bottom: 0.55rem;
 }
 
@@ -1015,7 +1008,7 @@
 }
 
 .area__note {
-  color: #c3cadb;
+  color: #c6cbdd;
   font-size: 0.96rem;
   line-height: 1.6;
   max-width: 44ch;
@@ -1029,7 +1022,7 @@
   font-size: 0.6rem;
   letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: #8c98b1;
+  color: #9198b1;
 }
 
 .areas__foot {
@@ -1037,7 +1030,7 @@
   font-family: var(--f-serif);
   font-style: italic;
   font-size: 1.02rem;
-  color: #b9c2d6;
+  color: #bcc3d4;
   max-width: 56ch;
 }
 
@@ -1048,7 +1041,7 @@
   padding-block: var(--section-y);
   position: relative;
   background:
-    radial-gradient(100% 60% at 50% 0%, #201c17 0%, transparent 60%),
+    radial-gradient(100% 60% at 50% 0%, #0f131b 0%, transparent 60%),
     var(--ink);
 }
 
@@ -1075,7 +1068,7 @@
   font-style: italic;
   font-size: 1.02rem;
   line-height: 1.55;
-  color: #a89d89;
+  color: #a0a7b3;
   max-width: 40ch;
   border-left: 1px solid rgba(217, 141, 79, 0.5);
   padding-left: 1.1rem;
@@ -1185,7 +1178,7 @@
   font-family: var(--f-mono);
   font-size: 0.5rem;
   letter-spacing: 0.16em;
-  color: #6b6153;
+  color: #6b7180;
   transition: color 500ms var(--ease-out);
 }
 
@@ -1197,8 +1190,8 @@
   transition: background 500ms var(--ease-out), transform 500ms var(--ease-out);
 }
 
-.sequence__rail li.is-done { color: #9a8f7c; }
-.sequence__rail li.is-active { color: #e0a262; }
+.sequence__rail li.is-done { color: #939ba8; }
+.sequence__rail li.is-active { color: #dabc72; }
 .sequence__rail li.is-active .sequence__rail-dot {
   background: currentColor;
   transform: scale(1.5);
@@ -1258,7 +1251,7 @@
   font-size: 0.55rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #8f8471;
+  color: #8a909d;
 }
 
 .seq-step__plate { display: none; }
@@ -1284,7 +1277,7 @@
   font-family: var(--f-display);
   font-size: clamp(1.4rem, 2vw, 1.8rem);
   font-variation-settings: 'SOFT' 20, 'WONK' 1;
-  color: #d98d4f;
+  color: #dabc72;
   line-height: 1;
 }
 
@@ -1295,7 +1288,7 @@
   font-size: 0.58rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #8f8471;
+  color: #8a909d;
 }
 
 .stage__title {
@@ -1306,7 +1299,7 @@
 }
 
 .stage__text {
-  color: #b7ab95;
+  color: #b3bac6;
   max-width: 40ch;
   font-size: 0.98rem;
   line-height: 1.62;
@@ -1363,7 +1356,7 @@
   transition: color 300ms var(--ease-out), padding-left 420ms var(--ease-out);
 }
 
-.checklist__item:hover { padding-left: 0.35rem; color: var(--madder); }
+.checklist__item:hover { padding-left: 0.35rem; color: var(--gold-deep); }
 
 .checklist__box {
   flex: none;
@@ -1381,8 +1374,8 @@
 .checklist__box svg { width: 10px; height: 10px; }
 
 .checklist__item:hover .checklist__box {
-  background: var(--madder);
-  border-color: var(--madder);
+  background: var(--gold-deep);
+  border-color: var(--gold-deep);
   color: var(--cotton-lit);
 }
 
@@ -1421,7 +1414,7 @@
   font-size: 0.6rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--madder);
+  color: var(--gold-deep);
 }
 
 .later dd {
@@ -1570,7 +1563,7 @@
   font-size: clamp(0.56rem, 0.82vw, 0.68rem);
   letter-spacing: 0.42em;
   text-transform: uppercase;
-  color: var(--madder);
+  color: var(--gold-deep);
   padding-left: 0.42em;
 }
 
@@ -1614,7 +1607,7 @@
   height: 26px;
   background:
     repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.18) 0 2px, transparent 2px 6px),
-    linear-gradient(180deg, var(--indigo-2), var(--indigo));
+    linear-gradient(180deg, var(--navy-2), var(--navy));
   border-top: 1px solid rgba(26, 22, 17, 0.2);
 }
 
@@ -1662,7 +1655,7 @@
   overflow: hidden;
   background:
     radial-gradient(70% 55% at 50% 20%, rgba(255, 236, 200, 0.7), transparent 66%),
-    linear-gradient(180deg, #efe4cf, #d9cbb2);
+    linear-gradient(180deg, #f6f1e5, #d9d1bf);
   border: 1px solid var(--rule);
 }
 
@@ -1673,7 +1666,7 @@
   height: 100%;
   background:
     repeating-linear-gradient(90deg, rgba(120, 90, 40, 0.16) 0 2px, transparent 2px 8px),
-    linear-gradient(140deg, #c08a3a, #a06f23);
+    linear-gradient(140deg, #b8944b, #8f7132);
 }
 
 .closing__title {
@@ -1707,7 +1700,7 @@
   padding-block: clamp(7.5rem, 12vw, 11rem) clamp(3rem, 6vw, 5.5rem);
   overflow: hidden;
   background:
-    radial-gradient(110% 80% at 82% 6%, #2b2620 0%, transparent 58%),
+    radial-gradient(110% 80% at 82% 6%, #1b2130 0%, transparent 58%),
     var(--ink);
 }
 
@@ -1724,7 +1717,7 @@
   inset: 0;
   background:
     repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 9px),
-    linear-gradient(140deg, #4c7b68, #2c4a3e);
+    linear-gradient(140deg, #8f7132, #5c4a1f);
   opacity: 0.5;
 }
 
@@ -1752,7 +1745,7 @@
   font-size: var(--fs-lead);
   font-weight: 300;
   line-height: 1.48;
-  color: #cdc2ae;
+  color: #c2c8d4;
   max-width: 40ch;
 }
 
@@ -1846,7 +1839,7 @@
 .wall__placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(140deg, #d9cbb2, #b3a48c);
+  background: linear-gradient(140deg, #d9d1bf, #adb4c0);
   animation: shimmer 1.8s linear infinite;
 }
 
@@ -1931,12 +1924,12 @@
   font-family: var(--f-mono);
   font-size: 0.6rem;
   letter-spacing: 0.16em;
-  color: #e8b464;
+  color: #dabc72;
 }
 
 .dimensions__row dd {
   margin: 0;
-  color: #c3cadb;
+  color: #c6cbdd;
   font-size: 0.99rem;
   line-height: 1.6;
   max-width: 58ch;
@@ -1947,7 +1940,7 @@
   font-family: var(--f-serif);
   font-style: italic;
   font-size: 0.94rem;
-  color: #9aa5bd;
+  color: #959db0;
   max-width: 58ch;
 }
 
@@ -1985,7 +1978,7 @@
   border: 1px solid var(--rule);
   background:
     radial-gradient(70% 60% at 50% 22%, rgba(255, 236, 200, 0.6), transparent 68%),
-    linear-gradient(180deg, #efe4cf, #d5c6ad);
+    linear-gradient(180deg, #f6f1e5, #cdc4b0);
   overflow: hidden;
 }
 
@@ -2013,7 +2006,7 @@
 .enquiry-hero {
   padding-block: clamp(7rem, 11vw, 10rem) clamp(2rem, 4vw, 3.4rem);
   background:
-    radial-gradient(100% 80% at 88% 0%, #2a2520 0%, transparent 55%),
+    radial-gradient(100% 80% at 88% 0%, #1b2130 0%, transparent 55%),
     var(--ink);
 }
 
@@ -2040,7 +2033,7 @@
   font-size: var(--fs-lead);
   font-weight: 300;
   line-height: 1.48;
-  color: #cdc2ae;
+  color: #c2c8d4;
   max-width: 40ch;
 }
 
@@ -2054,7 +2047,7 @@
   font-size: 0.6rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #8f8471;
+  color: #8a909d;
   margin-bottom: 0.5rem;
 }
 
@@ -2068,7 +2061,7 @@
   transition: color 300ms var(--ease-out), border-color 300ms var(--ease-out);
 }
 
-.enquiry-hero__mail:hover { color: #e8b464; border-color: #e8b464; }
+.enquiry-hero__mail:hover { color: #dabc72; border-color: #dabc72; }
 
 .enquiry-hero__facts {
   margin-top: 1.1rem;
@@ -2079,7 +2072,7 @@
   font-size: 0.6rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #8f8471;
+  color: #8a909d;
 }
 
 .enquiry-hero__facts li::before {
@@ -2133,7 +2126,7 @@
   font-family: var(--f-mono);
   font-size: 0.58rem;
   letter-spacing: 0.12em;
-  color: var(--madder);
+  color: var(--gold-deep);
   padding-top: 0.22rem;
 }
 
@@ -2208,7 +2201,7 @@ fieldset .field__label { float: none; }
   font-family: var(--f-mono);
   font-size: 0.58rem;
   letter-spacing: 0.14em;
-  color: var(--madder);
+  color: var(--gold-deep);
   flex: none;
 }
 
@@ -2251,7 +2244,7 @@ fieldset .field__label { float: none; }
 
 .field input::placeholder,
 .field textarea::placeholder {
-  color: #6f6353;
+  color: #6b7180;
   opacity: 1;
   font-size: 0.91rem;
 }
@@ -2262,15 +2255,15 @@ fieldset .field__label { float: none; }
 .field input:focus,
 .field textarea:focus {
   outline: none;
-  border-color: var(--madder);
+  border-color: var(--gold-deep);
   background: var(--cotton-lit);
   box-shadow: 0 0 0 3px rgba(156, 58, 45, 0.1);
 }
 
 .field input[aria-invalid='true'],
 .field textarea[aria-invalid='true'] {
-  border-color: var(--madder);
-  background: #fbeee9;
+  border-color: var(--gold-deep);
+  background: #f8f4ea;
 }
 
 .field__foot {
@@ -2290,7 +2283,7 @@ fieldset .field__label { float: none; }
 .field__error {
   margin-top: 0.5rem;
   font-size: 0.82rem;
-  color: var(--madder);
+  color: var(--gold-deep);
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -2304,7 +2297,7 @@ fieldset .field__label { float: none; }
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--madder);
+  background: var(--gold-deep);
   color: var(--cotton-lit);
   font-family: var(--f-mono);
   font-size: 0.54rem;
@@ -2335,9 +2328,9 @@ fieldset .field__label { float: none; }
 .choice:hover { border-color: rgba(26, 22, 17, 0.3); transform: translateY(-1px); }
 
 .choice.is-checked {
-  border-color: var(--madder);
+  border-color: var(--gold-deep);
   background: var(--cotton-lit);
-  box-shadow: inset 0 0 0 1px var(--madder);
+  box-shadow: inset 0 0 0 1px var(--gold-deep);
 }
 
 .choice input {
@@ -2348,7 +2341,7 @@ fieldset .field__label { float: none; }
 }
 
 .choice input:focus-visible + .choice__dot {
-  outline: 2px solid var(--madder);
+  outline: 2px solid var(--gold-deep);
   outline-offset: 3px;
 }
 
@@ -2357,7 +2350,7 @@ fieldset .field__label { float: none; }
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  border: 1px solid #a0947f;
+  border: 1px solid #98a0ad;
   margin-top: 0.18rem;
   position: relative;
   transition: border-color 260ms var(--ease-out);
@@ -2368,12 +2361,12 @@ fieldset .field__label { float: none; }
   position: absolute;
   inset: 3px;
   border-radius: 50%;
-  background: var(--madder);
+  background: var(--gold-deep);
   transform: scale(0);
   transition: transform 320ms var(--ease-spring);
 }
 
-.choice.is-checked .choice__dot { border-color: var(--madder); }
+.choice.is-checked .choice__dot { border-color: var(--gold-deep); }
 .choice.is-checked .choice__dot::after { transform: scale(1); }
 
 .choice__text { display: flex; flex-direction: column; gap: 0.15rem; }
@@ -2438,8 +2431,8 @@ fieldset .field__label { float: none; }
 .notice strong { color: var(--fg); }
 .notice a { border-bottom: 1px solid currentColor; }
 
-.notice--error { border-color: var(--madder); background: #fbeee9; }
-.notice--warn { border-color: var(--saffron); background: #fbf3e3; }
+.notice--error { border-color: var(--gold-deep); background: #f8f4ea; }
+.notice--warn { border-color: var(--gold); background: #fbf8f1; }
 
 /* --------------------------------------------------------------------------
    Acknowledgement
@@ -2447,7 +2440,7 @@ fieldset .field__label { float: none; }
 .ack {
   padding-block: clamp(7rem, 11vw, 10rem) clamp(3rem, 6vw, 6rem);
   background:
-    radial-gradient(100% 80% at 12% 0%, #2a2520 0%, transparent 55%),
+    radial-gradient(100% 80% at 12% 0%, #1b2130 0%, transparent 55%),
     var(--ink);
 }
 
@@ -2471,16 +2464,16 @@ fieldset .field__label { float: none; }
 .ack__notice {
   margin-top: clamp(1.5rem, 2.6vw, 2rem);
   padding: 1.1rem 1.2rem;
-  border-left: 2px solid #e8b464;
+  border-left: 2px solid #dabc72;
   background: rgba(232, 180, 100, 0.08);
   font-size: 0.94rem;
   line-height: 1.62;
-  color: #ddd2bd;
+  color: #e2dbcb;
   max-width: 52ch;
 }
 
-.ack__notice strong { color: #f2ebdd; }
-.ack__notice a { color: #e8b464; border-bottom: 1px solid currentColor; }
+.ack__notice strong { color: #f4efe4; }
+.ack__notice a { color: #dabc72; border-bottom: 1px solid currentColor; }
 
 .ack__receipt {
   margin-top: 1.6rem;
@@ -2504,21 +2497,21 @@ fieldset .field__label { float: none; }
   font-size: 0.58rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #8f8471;
+  color: #8a909d;
 }
 
 .ack__receipt dd {
   margin: 0;
   font-family: var(--f-serif);
   font-size: 0.99rem;
-  color: #e2d8c5;
+  color: #e8e1d2;
   font-weight: 300;
 }
 
 .ack__no-receipt {
   margin-top: 1.4rem;
   font-size: 0.92rem;
-  color: #b7ab95;
+  color: #b3bac6;
   max-width: 46ch;
   line-height: 1.6;
 }
@@ -2531,7 +2524,7 @@ fieldset .field__label { float: none; }
   margin-top: clamp(1.8rem, 3vw, 2.6rem);
 }
 
-.ack__link { color: #cdc2ae; }
+.ack__link { color: #c2c8d4; }
 
 .ack__canvas {
   aspect-ratio: 1 / 1.05;
@@ -2582,7 +2575,7 @@ fieldset .field__label { float: none; }
   line-height: 1.4;
 }
 
-.privacy__toc a:hover { color: var(--madder); padding-left: 0.3rem; }
+.privacy__toc a:hover { color: var(--gold-deep); padding-left: 0.3rem; }
 
 .privacy__toc span {
   font-family: var(--f-mono);
@@ -2613,7 +2606,7 @@ fieldset .field__label { float: none; }
   font-family: var(--f-mono);
   font-size: 0.58rem;
   letter-spacing: 0.14em;
-  color: var(--madder);
+  color: var(--gold-deep);
   flex: none;
 }
 
@@ -2635,8 +2628,8 @@ fieldset .field__label { float: none; }
   margin-block: 0.8rem 1rem;
   font-family: var(--f-serif);
   font-size: clamp(1.05rem, 1.6vw, 1.35rem);
-  border-bottom: 1px solid var(--madder);
-  color: var(--madder);
+  border-bottom: 1px solid var(--gold-deep);
+  color: var(--gold-deep);
   padding-bottom: 2px;
 }
 
@@ -2656,7 +2649,7 @@ fieldset .field__label { float: none; }
   display: grid;
   place-items: center;
   padding-block: 9rem 6rem;
-  background: radial-gradient(90% 70% at 50% 0%, #2a2520, var(--ink));
+  background: radial-gradient(90% 70% at 50% 0%, #1b2130, var(--ink));
 }
 
 .notfound__inner { text-align: center; display: flex; flex-direction: column; align-items: center; }
@@ -2676,7 +2669,7 @@ fieldset .field__label { float: none; }
   font-family: var(--f-serif);
   font-weight: 300;
   font-size: var(--fs-lead);
-  color: #cdc2ae;
+  color: #c2c8d4;
   max-width: 40ch;
 }
 
@@ -2724,7 +2717,7 @@ fieldset .field__label { float: none; }
   margin-top: clamp(1.6rem, 3vw, 2.2rem);
 }
 
-.footer__mail { color: #cdc2ae; }
+.footer__mail { color: #c2c8d4; }
 
 .footer__cols {
   display: grid;
@@ -2739,7 +2732,7 @@ fieldset .field__label { float: none; }
   font-size: 0.58rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #8f8471;
+  color: #8a909d;
   margin-bottom: 0.8rem;
 }
 
@@ -2748,7 +2741,7 @@ fieldset .field__label { float: none; }
   flex-direction: column;
   gap: 0.45rem;
   font-size: 0.92rem;
-  color: #ddd2bd;
+  color: #e2dbcb;
 }
 
 .footer__list a {
@@ -2756,47 +2749,35 @@ fieldset .field__label { float: none; }
   position: relative;
 }
 
-.footer__list a:hover { color: #e8b464; }
+.footer__list a:hover { color: #dabc72; }
 
-.footer__list--muted { color: #a89d89; }
+.footer__list--muted { color: #a0a7b3; }
 
 .footer__list-note {
   font-family: var(--f-mono);
   font-size: 0.55rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #8f8471;
+  color: #8a909d;
   line-height: 1.6;
   margin-top: 0.25rem;
   max-width: 22ch;
 }
 
+/* The artwork, at the weight the typographic mark used to carry. It is a mask,
+   so it inherits the footer's colour and fades with it. */
 .footer__wordmark {
-  display: flex;
-  align-items: baseline;
-  gap: clamp(0.4rem, 1.4vw, 1.2rem);
-  padding-block: clamp(1.8rem, 3.4vw, 3rem) clamp(0.8rem, 1.6vw, 1.4rem);
-  line-height: 0.8;
+  padding-block: clamp(1.8rem, 3.4vw, 3rem) clamp(0.8rem, 1.6vw, 1.6rem);
   user-select: none;
+  color: var(--gold);
+  opacity: 0.2;
 }
 
-.footer__wordmark span:first-child {
-  font-family: var(--f-display);
-  font-size: clamp(3.4rem, 11vw, 10rem);
-  font-variation-settings: 'SOFT' 22, 'WONK' 1;
-  letter-spacing: -0.055em;
-  color: var(--cotton-lit);
-  opacity: 0.92;
+.footer__wordmark .logo-mark {
+  height: clamp(3.4rem, 9vw, 8.2rem) !important;
+  width: auto !important;
 }
 
-.footer__wordmark-rest {
-  font-family: var(--f-mono);
-  font-size: clamp(0.75rem, 1.9vw, 1.5rem);
-  letter-spacing: 0.42em;
-  text-transform: uppercase;
-  color: #d98d4f;
-  padding-left: 0.3em;
-}
 
 .footer__base {
   display: flex;
@@ -2807,7 +2788,7 @@ fieldset .field__label { float: none; }
   flex-wrap: wrap;
 }
 
-.footer__base .small { color: #8f8471; font-size: 0.73rem; }
+.footer__base .small { color: #8a909d; font-size: 0.73rem; }
 
 .footer__disclaimer { max-width: 62ch; line-height: 1.6; }
 
@@ -2966,12 +2947,11 @@ fieldset .field__label { float: none; }
   .form { padding: 1.1rem; }
   .btn--submit { width: 100%; }
   .drawer { padding-top: 5rem; }
-  .footer__wordmark span:first-child { font-size: clamp(3rem, 22vw, 6rem); }
 }
 
 @media (max-width: 420px) {
-  .brand__type { font-size: 0.6rem; letter-spacing: 0.14em; }
-  .brand__rule { width: 7px; }
+  .brand .logo-brand { gap: 0.4rem; }
+  .brand .logo-brand__rule { height: 13px; }
   .hero__title { font-size: clamp(2.2rem, 11vw, 3.2rem); }
 }
 
@@ -2986,3 +2966,221 @@ fieldset .field__label { float: none; }
   body { background: #fff; color: #000; }
   .reveal { opacity: 1 !important; transform: none !important; }
 }
+
+/* ==========================================================================
+   The opening
+
+   Two masked elements, four transforms, one clip-path. The sequence is timed
+   from the component, and every visual difference between steps is expressed
+   here as a `data-step` rule, so the whole thing is inspectable in one place.
+   ========================================================================== */
+
+.opening {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-intro);
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.opening__curtain {
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  transform-origin: 50% 50%;
+  transition: opacity 480ms var(--ease-out);
+}
+
+/* The lockup, in artwork coordinates scaled to a comfortable size. */
+.opening__lock {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  transform-origin: 50% 50%;
+  /* The flight. Set by the component from the header's measured position. */
+  --tx: 0px;
+  --ty: 0px;
+  --ts: 0.3;
+  transition: transform 760ms cubic-bezier(0.6, 0.02, 0.16, 1), opacity 300ms var(--ease-out);
+}
+
+.opening__mark {
+  position: relative;
+  display: block;
+  width: 172px;
+  height: 91px;
+}
+
+.opening__word {
+  position: relative;
+  display: block;
+  width: 246px;
+  height: 32px;
+}
+
+.opening__mark > span,
+.opening__word > span {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background-color: var(--gold);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+/* The shape starts from the artwork's own box, so the outline lines up with
+   the fill exactly. A hair over the fill's size is not needed: both are the
+   same image, and the edge file is already the outline of it. */
+.opening__edge--mark,
+.opening__fill--mark {
+  -webkit-mask-image: url('/logo/logo.png');
+  mask-image: url('/logo/logo.png');
+  -webkit-mask-size: 1024px 752px;
+  mask-size: 1024px 752px;
+  -webkit-mask-position: -5.4px -3.2px;
+  mask-position: -5.4px -3.2px;
+}
+
+.opening__edge--word,
+.opening__fill--word {
+  -webkit-mask-image: url('/logo/logo.png');
+  mask-image: url('/logo/logo.png');
+  -webkit-mask-size: 1024px 752px;
+  mask-size: 1024px 752px;
+  -webkit-mask-position: -5px -155px;
+  mask-position: -5px -155px;
+}
+
+.opening__edge {
+  -webkit-mask-image: url('/logo/logo-edge.png');
+  mask-image: url('/logo/logo-edge.png');
+  background-color: var(--gold-lit);
+  opacity: 0;
+}
+
+/* ---- Step 1: the BS outlines sweep in from the left ---- */
+.opening[data-step="1"] .opening__edge--mark,
+.opening[data-step="2"] .opening__edge--mark,
+.opening[data-step="3"] .opening__edge--mark {
+  opacity: 1;
+  -webkit-mask-size: 1024px 752px;
+  animation: opening-sweep 780ms cubic-bezier(0.22, 0.9, 0.24, 1) forwards;
+}
+
+.opening[data-step="2"] .opening__edge--mark,
+.opening[data-step="3"] .opening__edge--mark {
+  animation: none;
+  -webkit-mask-position: -5.4px -3.2px;
+  clip-path: inset(-10% -10% -10% -10%);
+}
+
+/* ---- Step 2: the wordmark follows ---- */
+.opening[data-step="2"] .opening__edge--word,
+.opening[data-step="3"] .opening__edge--word {
+  opacity: 1;
+  clip-path: inset(-20% -10% -20% -10%);
+  animation: opening-sweep-word 700ms cubic-bezier(0.22, 0.9, 0.24, 1) forwards;
+}
+
+.opening[data-step="3"] .opening__edge--word {
+  animation: none;
+  clip-path: inset(-20% -10% -20% -10%);
+}
+
+/* ---- Step 3: gold rises through the letters, from the keel up ---- */
+.opening__fill {
+  opacity: 0;
+  /* The edge layer is the outline; the fill is the same artwork, flat. */
+  -webkit-mask-image: url('/logo/logo.png');
+  mask-image: url('/logo/logo.png');
+}
+
+.opening[data-step="3"] .opening__fill,
+.opening[data-step="4"] .opening__fill,
+.opening[data-step="5"] .opening__fill {
+  opacity: 1;
+  animation: opening-fill 620ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.opening[data-step="4"] .opening__fill,
+.opening[data-step="5"] .opening__fill {
+  animation: none;
+  clip-path: inset(0 0 0 0);
+}
+
+.opening[data-step="3"] .opening__fill--word {
+  animation-delay: 90ms;
+}
+
+/* ---- Step 4: travel to the header ---- */
+.opening[data-step="4"] .opening__lock,
+.opening[data-step="5"] .opening__lock {
+  transform: translate(var(--tx), var(--ty)) scale(var(--ts));
+}
+
+.opening[data-step="5"] .opening__lock {
+  opacity: 0;
+}
+
+/* The wordmark has no seat in the header, so it dissolves as the mark flies. */
+.opening[data-step="4"] .opening__word {
+  opacity: 0;
+  transition: opacity 240ms linear;
+}
+
+/* ---- Step 5: the curtain lifts ---- */
+.opening[data-step="5"] .opening__curtain,
+.opening[data-step="6"] .opening__curtain {
+  opacity: 0;
+}
+
+@keyframes opening-sweep {
+  from { clip-path: inset(-10% 100% -10% 0); }
+  to { clip-path: inset(-10% -10% -10% 0); }
+}
+
+@keyframes opening-sweep-word {
+  from { clip-path: inset(-20% 100% -20% 0); }
+  to { clip-path: inset(-20% -10% -20% 0); }
+}
+
+@keyframes opening-fill {
+  from { clip-path: inset(100% 0 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* While the curtain is up the page underneath must not scroll or flash its own
+   content. Restored by the component in every exit path, including error. */
+html.opening-lock,
+html.opening-lock body {
+  overflow: hidden;
+}
+
+/* The header's own brand is revealed on the same beat as the flight, so the
+   two never appear twice at once. */
+html.opening-running [data-intro-target] {
+  opacity: 0;
+}
+
+html:not(.opening-running) [data-intro-target] {
+  opacity: 1;
+  transition: opacity 420ms var(--ease-out) 180ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opening { display: none; }
+  html.opening-running [data-intro-target] { opacity: 1; }
+}
+
+/* The drawer's own copy of the mark, above the call to action. */
+.drawer__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--gold);
+  margin-bottom: 1.6rem;
+}
+

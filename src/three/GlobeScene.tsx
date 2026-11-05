@@ -5,29 +5,29 @@ import { Studio } from './objects'
 import { createDrag } from './drag'
 import { reducedMotion } from './motion'
 import {
-  carveVertex,
-  facingCamera,
   decodeRings,
   getLandMask,
   greatCircle,
   loadGeo,
-  loadMaskPixels,
   llToVec,
   ringsToGeometry,
-  sampleMask,
   subdivideLL,
 } from './geo'
 
 /* ==========================================================================
    GlobeScene — a real Earth, built from real geography.
 
-   Everything here is driven by Natural Earth 1:5-m coastline data: the mask
-   gives the land its fill, the vectors give it a crisp edge, and the shader
-   carves the continents so they stand proud of the sea. Fixed points are true
-   coordinates; routes are true great circles.
+   Everything here is driven by Natural Earth 1:50m coastline data: the mask
+   gives the land its fill, the vectors give it a crisp edge, and the vertex
+   shader carves the continents so they stand proud of the sea. Fixed points
+   are true coordinates; routes are true great circles.
 
-   Cost: one sphere, two line meshes, one marker mesh. All animation is
-   uniform-driven, so a frame costs a handful of writes.
+   Cost. There is exactly one draw per route, two for the coastline, and one for
+   the sphere. Nothing is rebuilt per frame, the camera direction is pushed as
+   a single uniform, and the scene runs on demand: it goes flat while the
+   visitor is dragging, so the pointer gets the whole frame budget, and it
+   settles back to a slow drift afterwards. Frame rate itself is capped by the
+   parent (see Stage), which is what keeps scrolling over the hero smooth.
    ========================================================================== */
 
 /* -------------------------------------------------------------------------- */
@@ -42,23 +42,23 @@ export const ORIGINS = [
 
 /**
  * Where material goes. Each is a real destination market, not decoration, and
- * the pairs are the routes a sourcing business would actually quote.
+ * the set is the spread a sourcing business would actually quote.
  */
-export const ROUTES: { to: [number, number]; hue: 'saffron' | 'madder' | 'verdigris' }[] = [
-  { to: [78.47, 17.38], hue: 'madder' }, // Hyderabad, inland
-  { to: [80.27, 13.08], hue: 'verdigris' }, // Chennai, coast
-  { to: [106.66, 10.76], hue: 'saffron' }, // Ho Chi Minh City
-  { to: [77.21, 28.61], hue: 'madder' }, // Delhi
-  { to: [55.27, 25.2], hue: 'verdigris' }, // Dubai
-  { to: [4.9, 52.37], hue: 'saffron' }, // Amsterdam
-  { to: [-0.13, 51.51], hue: 'madder' }, // London
-  { to: [9.19, 45.46], hue: 'verdigris' }, // Milan
-  { to: [79.86, 6.93], hue: 'madder' }, // Colombo
-  { to: [90.41, 23.81], hue: 'verdigris' }, // Dhaka
-  { to: [103.82, 1.35], hue: 'saffron' }, // Singapore
-  { to: [151.21, -33.87], hue: 'verdigris' }, // Sydney
-  { to: [-74.0, 40.71], hue: 'saffron' }, // New York
-  { to: [72.88, 19.08], hue: 'madder' }, // Mumbai
+export const ROUTES: { to: [number, number]; hue: 'light' | 'gold' | 'deep' }[] = [
+  { to: [77.21, 28.61], hue: 'light' }, // Delhi
+  { to: [72.88, 19.08], hue: 'light' }, // Mumbai
+  { to: [78.47, 17.38], hue: 'light' }, // Hyderabad
+  { to: [80.27, 13.08], hue: 'gold' }, // Chennai
+  { to: [79.86, 6.93], hue: 'gold' }, // Colombo
+  { to: [55.27, 25.2], hue: 'deep' }, // Dubai
+  { to: [103.82, 1.35], hue: 'deep' }, // Singapore
+  { to: [106.66, 10.76], hue: 'deep' }, // Ho Chi Minh City
+  { to: [90.41, 23.81], hue: 'gold' }, // Dhaka
+  { to: [4.9, 52.37], hue: 'gold' }, // Amsterdam
+  { to: [-0.13, 51.51], hue: 'gold' }, // London
+  { to: [9.19, 45.46], hue: 'gold' }, // Milan
+  { to: [151.21, -33.87], hue: 'deep' }, // Sydney
+  { to: [-74.0, 40.71], hue: 'light' }, // New York
 ]
 
 /** Camera direction in the globe's own frame, shared by every line shader. */
@@ -70,19 +70,46 @@ function useMemoCam() {
 /* Shaders                                                                     */
 /* -------------------------------------------------------------------------- */
 
-const OCEAN = '#24405f'
-const OCEAN_DEEP = '#16283f'
-const LAND_LOW = '#a99268'
-const LAND_HIGH = '#e6d6b4'
-const COAST_LIGHT = '#f0e2c4'
+/* Gold land on navy water. The separation between the two is what makes the
+   continents readable at a glance, so it is kept deliberately wide: one is the
+   brightest thing on the object and the other the darkest. */
+const OCEAN = '#1b2744'
+const OCEAN_DEEP = '#0e1526'
+const LAND_LOW = '#8a7440'
+const LAND_HIGH = '#dabc72'
+const COAST_LIGHT = '#f0dca8'
 
+/*
+ * The continents are carved here, on the GPU, rather than by displacing every
+ * sphere vertex on the CPU at startup. Forty thousand mask lookups used to
+ * happen before the first frame, which is exactly the kind of stall a visitor
+ * reads as "the site is heavy". Now the vertex shader samples the mask, so the
+ * mesh can be denser at no startup cost and the silhouette is smoother.
+ */
 const globeVert = /* glsl */ `
+  precision highp float;
+  uniform sampler2D uMask;
+  uniform float uCarve;
   varying vec2 vUv;
   varying vec3 vNormalW;
   varying vec3 vViewDir;
+
+  const float MASK_SHIFT_V = 0.25;
+
+  float landAt(vec2 uv) {
+    return texture2D(uMask, vec2(fract(uv.x + MASK_SHIFT_V), uv.y)).r;
+  }
+
   void main() {
     vUv = uv;
-    vec4 world = modelMatrix * vec4(position, 1.0);
+
+    /* Land stands proud of the sea by a fraction of the radius. Enough to catch
+       a rim light on every coast, small enough to keep the sphere a sphere. */
+    float land = landAt(uv);
+    float lift = mix(0.5, 1.0, smoothstep(0.35, 0.8, land));
+    vec3 carved = position * (1.0 + (lift - 0.5) * uCarve);
+
+    vec4 world = modelMatrix * vec4(carved, 1.0);
     vNormalW = normalize(mat3(modelMatrix) * normal);
     vViewDir = normalize(cameraPosition - world.xyz);
     gl_Position = projectionMatrix * viewMatrix * world;
@@ -92,7 +119,6 @@ const globeVert = /* glsl */ `
 const globeFrag = /* glsl */ `
   precision highp float;
   uniform sampler2D uMask;
-  uniform vec2 uMaskSize;
   /* The mask is an equirectangular image with u = 0 at 180W. three's sphere
      UVs start a quarter turn earlier, so the lookup is shifted rather than
      the whole world being rotated. */
@@ -102,14 +128,12 @@ const globeFrag = /* glsl */ `
   uniform vec3 uLandLow;
   uniform vec3 uLandHigh;
   uniform vec3 uCoast;
-  uniform float uTime;
   uniform vec3 uSunDir;
 
   varying vec2 vUv;
   varying vec3 vNormalW;
   varying vec3 vViewDir;
 
-  /* A soft, wide sample of the mask, used as a height field for the bevel. */
   float maskAt(vec2 uv) {
     return texture2D(uMask, vec2(fract(uv.x + MASK_SHIFT), uv.y)).r;
   }
@@ -117,37 +141,24 @@ const globeFrag = /* glsl */ `
   void main() {
     float land = maskAt(vUv);
 
-    /* Slope of the coverage: zero inland, non-zero only near a coast. That is
-       all the information needed to fake a raised plateau without a real
-       elevation dataset. */
-    vec2 px = 1.0 / uMaskSize;
-    float l = maskAt(vUv - vec2(px.x * 2.0, 0.0));
-    float r = maskAt(vUv + vec2(px.x * 2.0, 0.0));
-    float d = maskAt(vUv - vec2(0.0, px.y * 2.0));
-    float u = maskAt(vUv + vec2(0.0, px.y * 2.0));
-    vec2 slope = vec2(r - l, u - d);
-
-    /* Bevel: land lifts toward its interior, coasts sit a touch lower. */
+    /* Bevel: land lifts toward its interior, coasts sit a touch lower. The
+       relief itself is in the vertex shader, so this only needs the coverage
+       gradient for shading. */
     float inland = smoothstep(0.55, 0.92, land);
     float height = land * (0.55 + 0.45 * inland);
 
-    /* Perturb the normal along the slope, so coasts catch the light like a
-       carved relief rather than a printed map. */
+    /* Shade from the surface normal alone. The carve already tilts the normal
+       at every coast, so a flat map look is impossible without extra taps. */
     vec3 n = normalize(vNormalW);
-    vec3 tangentX = normalize(cross(n, vec3(0.0, 1.0, 0.0)) + vec3(1e-5));
-    vec3 tangentY = normalize(cross(n, tangentX));
-    n = normalize(n - (tangentX * slope.x + tangentY * slope.y) * 0.12 * land);
 
     float diff = clamp(dot(n, normalize(uSunDir)), 0.0, 1.0);
-    float terminator = smoothstep(-0.45, 0.55, dot(normalize(vNormalW), normalize(uSunDir)));
+    float terminator = smoothstep(-0.45, 0.55, diff);
     float rim = 1.0 - clamp(dot(normalize(vNormalW), normalize(vViewDir)), 0.0, 1.0);
 
     /* Sea: two tones and a faint banding so it never reads as flat paint. */
     float seaBand = 0.5 + 0.5 * sin(vUv.y * 90.0 + vUv.x * 26.0);
     vec3 sea = mix(uOceanDeep, uOcean, 0.45 + 0.3 * seaBand);
-    /* A faint sheen toward the limb, so the ocean reads as a surface with a
-       horizon rather than a flat panel. */
-    sea += vec3(0.1, 0.16, 0.24) * pow(rim, 2.0) * 0.5;
+    sea += vec3(0.08, 0.12, 0.19) * pow(rim, 2.0) * 0.5;
 
     /* Land: elevation ramp, warm in the light, cooler in shadow. */
     vec3 ground = mix(uLandLow, uLandHigh, clamp(height * (0.55 + diff * 0.75), 0.0, 1.0));
@@ -161,15 +172,10 @@ const globeFrag = /* glsl */ `
     /* Shade: a fixed sun, plus a soft ambient so the night side stays legible
        rather than going black. */
     color *= 0.76 + 0.34 * diff;
-    /* Night side stays readable: a cool ambient rather than a black hole. */
-    color += vec3(0.055, 0.075, 0.11) * (1.0 - terminator) * 0.85;
+    color += vec3(0.05, 0.065, 0.1) * (1.0 - terminator) * 0.85;
 
     /* Atmosphere: a thin cool halo at the limb. */
-    color += vec3(0.32, 0.46, 0.62) * pow(rim, 3.2) * 0.55;
-
-    /* Very slight grain, so large flat areas do not band. */
-    float grain = fract(sin(dot(vUv * uMaskSize, vec2(12.9898, 78.233))) * 43758.5453);
-    color += (grain - 0.5) * 0.012;
+    color += vec3(0.26, 0.36, 0.5) * pow(rim, 3.2) * 0.5;
 
     gl_FragColor = vec4(color, 1.0);
   }
@@ -179,183 +185,219 @@ const globeFrag = /* glsl */ `
 /* Routes: great circles with a travelling comet                               */
 /* -------------------------------------------------------------------------- */
 
+/* Three weights of one colour. The routes have to be distinguishable from each
+   other without introducing a second hue, so they differ in brightness rather
+   than in colour. */
 const ROUTE_COLORS: Record<string, string> = {
-  saffron: '#e0a25e',
-  madder: '#c4624c',
-  verdigris: '#6fae94',
+  light: '#f0dca8',
+  gold: '#dabc72',
+  deep: '#a8873f',
 }
 
 const ROUTE_HEX: Record<string, string> = {
-  saffron: '#f0b26a',
-  madder: '#e0705a',
-  verdigris: '#79c4a8',
+  light: '#fbf0d2',
+  gold: '#e8ce8e',
+  deep: '#c2a05a',
 }
 
 /**
  * Routes as thin ribbons with a travelling comet.
  *
- * A WebGL line is one pixel wide and cannot be widened, which reads as a
- * hairline sketch. A ribbon is a real strip of geometry, so it can carry a
- * colour, a glow and a gradient along its length: the head of the comet is
- * bright, the tail trails off behind it, and the whole thing fades as it turns
- * away from the camera so nothing shows through the ocean.
+ * Two hacks worth explaining. A WebGL line is one device pixel wide and cannot
+ * carry per-vertex brightness, so a comet drawn as a line has nothing to vary.
+ * Each route is therefore a two-vertex-wide triangle strip with an `aAlong`
+ * attribute, which lets the fragment shader place the comet anywhere on it.
+ *
+ * And the far hemisphere has to be hidden by hand. A line floating outside a
+ * sphere is not occluded by it, so every fragment compares its own surface
+ * normal against the camera direction and fades out before the limb. The
+ * camera is pushed in from the CPU because this material has no `inverse()`.
  */
-function RouteLines({ uniforms }: { uniforms: { uTime: THREE.IUniform<number> } }) {
-  const group = React.useRef<THREE.Group>(null)
-  const camera = useThree((st) => st.camera)
-
+function RouteLines() {
   const built = React.useMemo(() => {
-    const out: { geo: THREE.BufferGeometry; color: THREE.Color; offset: number }[] = []
+    const out: {
+      geo: THREE.BufferGeometry
+      color: THREE.Color
+      offset: number
+    }[] = []
     let n = 0
-    for (const from of ORIGINS) {
+    for (const origin of ORIGINS) {
       for (const route of ROUTES) {
-        const pts = greatCircle([from.lon, from.lat], route.to, 1.006, 140)
-        const width = 0.0055
-        const positions: number[] = []
-        const alongs: number[] = []
-        const tangents: THREE.Vector3[] = []
-        const normals: THREE.Vector3[] = []
-
-        for (let i = 0; i < pts.length; i++) {
-          const prev = pts[Math.max(0, i - 1)]
-          const next = pts[Math.min(pts.length - 1, i + 1)]
-          const tan = new THREE.Vector3().subVectors(next, prev).normalize()
-          const nor = pts[i].clone().normalize()
-          const side = new THREE.Vector3().crossVectors(tan, nor).normalize().multiplyScalar(width)
-          tangents.push(tan)
-          normals.push(nor)
-          positions.push(pts[i].x - side.x, pts[i].y - side.y, pts[i].z - side.z)
-          positions.push(pts[i].x + side.x, pts[i].y + side.y, pts[i].z + side.z)
-          alongs.push(i / (pts.length - 1), i / (pts.length - 1))
-        }
-
-        const indices: number[] = []
-        for (let i = 0; i + 1 < pts.length; i++) {
-          const a = i * 2
-          indices.push(a, a + 1, a + 2, a + 1, a + 3, a + 2)
-        }
-
-        const geo = new THREE.BufferGeometry()
-        geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
-        geo.setAttribute('aAlong', new THREE.Float32BufferAttribute(alongs, 1))
-        geo.setAttribute('aNormal', new THREE.Float32BufferAttribute(normals.flatMap((v) => [v.x, v.y, v.z, v.x, v.y, v.z]), 3))
-        geo.setIndex(indices)
-        geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1.3)
+        const geo = ribbonFor(origin, route.to)
+        if (!geo) continue
         out.push({ geo, color: new THREE.Color(ROUTE_HEX[route.hue]), offset: (n += 0.19) % 1 })
       }
     }
     return out
   }, [])
 
-  const material = React.useMemo(
+  const materials = React.useMemo(
     () =>
-      new THREE.ShaderMaterial({
-        transparent: true,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-        blending: THREE.AdditiveBlending,
-        uniforms: {
-          uTime: uniforms.uTime,
-          uCam: { value: new THREE.Vector3(0, 0, 8) },
-        },
-        vertexShader: /* glsl */ `
-          attribute float aAlong;
-          attribute vec3 aNormal;
-          varying float vAlong;
-          varying float vFacing;
-          uniform vec3 uCam;
-          void main() {
-            vAlong = aAlong;
-            /* Camera direction expressed in the globe's own frame, supplied
-               from the CPU so no matrix inverse is needed in the shader. */
-            vFacing = dot(normalize(aNormal), normalize(uCam));
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          }
-        `,
-        fragmentShader: /* glsl */ `
-          precision highp float;
-          uniform float uTime;
-          uniform vec3 uColor;
-          uniform float uOffset;
-          varying float vAlong;
-          varying float vFacing;
-          void main() {
-            /* The path itself is a hint; the comet is the message. */
-            float base = 0.1;
-
-            float head = 0.0;
-            for (int i = 0; i < 2; i++) {
-              float p = fract(uTime * 0.055 + uOffset + float(i) * 0.5);
-              float d = vAlong - p;
-              if (d < 0.0) d += 1.0;
-              /* sharp head, long fading tail */
-              head += exp(-d * 34.0) * 1.1 + exp(-d * 8.0) * 0.28;
-            }
-
-            float a = base + head;
-            /* Nothing on the far hemisphere. */
-            a *= smoothstep(0.015, 0.30, vFacing);
-            vec3 c = uColor * (0.55 + head * 1.5);
-            gl_FragColor = vec4(c, clamp(a, 0.0, 1.0));
-          }
-        `,
-      }),
-    [uniforms.uTime],
+      built.map(
+        (b) =>
+          new THREE.ShaderMaterial({
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+            /* The strip is built along a path, so its winding depends on the
+               direction of travel. Drawing both faces is cheaper than sorting
+               that out per ribbon, and it means a route is never invisible
+               because it happens to run the other way round the sphere. */
+            side: THREE.DoubleSide,
+            uniforms: {
+              uTime: { value: 0 },
+              uColor: { value: b.color },
+              uOffset: { value: b.offset },
+              uCam: { value: new THREE.Vector3(0, 0, 8) },
+            },
+            vertexShader: routeVert,
+            fragmentShader: routeFrag,
+          }),
+      ),
+    [built],
+  )
+  React.useEffect(
+    () => () => {
+      built.forEach((b) => b.geo.dispose())
+      materials.forEach((m) => m.dispose())
+    },
+    [built, materials],
   )
 
-  React.useEffect(() => () => {
-    material.dispose()
-    built.forEach((b) => b.geo.dispose())
-  }, [built, material])
+  const group = React.useRef<THREE.Group>(null)
+  const camera = useThree((st) => st.camera)
 
-  /* One material per colour, cloned so uColor can differ. */
-  const perRoute = React.useMemo(
-    () => built.map((b) => {
-      const m = material.clone()
-      m.uniforms = THREE.UniformsUtils.clone(material.uniforms)
-      m.uniforms.uTime = uniforms.uTime
-      m.uniforms.uColor = { value: b.color }
-      m.uniforms.uOffset = { value: b.offset }
-      return m
-    }),
-    [built, material, uniforms.uTime],
-  )
-
-  React.useEffect(() => () => perRoute.forEach((m) => m.dispose()), [perRoute])
-
-  useFrame(() => {
+  useFrame((state) => {
     const host = group.current
     if (!host) return
+    /* One matrix read and one uniform per route. The camera is re-expressed in
+       the globe's own frame so the shader can compare it with local normals. */
     host.updateWorldMatrix(true, false)
     const cam = camera.position.clone()
     host.worldToLocal(cam)
-    for (const m of perRoute) m.uniforms.uCam.value.copy(cam)
+    const t = state.clock.elapsedTime
+    for (let i = 0; i < materials.length; i++) {
+      const u = materials[i].uniforms
+      u.uTime.value = t
+      u.uCam.value.copy(cam)
+    }
   })
 
   return (
     <group ref={group}>
       {built.map((b, i) => (
-        <mesh key={i} geometry={b.geo} material={perRoute[i]} frustumCulled={false} renderOrder={4} />
+        <mesh key={i} geometry={b.geo} material={materials[i]} frustumCulled={false} renderOrder={4} />
       ))}
     </group>
   )
 }
 
+const routeVert = /* glsl */ `
+  attribute float aAlong;
+  attribute float aNormal;
+  attribute vec3 aUp;
+  varying float vAlong;
+  varying float vFacing;
+  varying float vNormal;
+  uniform vec3 uCam;
+  void main() {
+    vAlong = aAlong;
+    vNormal = aNormal;
+    // aUp is the outward surface direction, kept in its own attribute so it is
+    // never confused with three's shading normal.
+    vFacing = dot(normalize(aUp), normalize(uCam));
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`
+
+const routeFrag = /* glsl */ `
+  precision highp float;
+  uniform float uTime;
+  uniform vec3 uColor;
+  uniform float uOffset;
+  varying float vAlong;
+  varying float vFacing;
+  varying float vNormal;
+  void main() {
+    /* A faint permanent path, so even a still frame shows the network. */
+    float a = 0.1;
+    float head = 0.0;
+    for (int i = 0; i < 2; i++) {
+      float p = fract(uTime * 0.055 + uOffset + float(i) * 0.5);
+      float d = abs(vAlong - p);
+      head += exp(-d * 34.0) * 1.1 + exp(-d * 8.0) * 0.28;
+    }
+    a = (a + head) * smoothstep(0.015, 0.30, vFacing);
+    /* Taper the ribbon at its edges so it reads as a stroke, not a band. */
+    a *= smoothstep(0.0, 0.35, 1.0 - abs(vNormal));
+    gl_FragColor = vec4(uColor, clamp(a, 0.0, 1.0));
+  }
+`
+
+function ribbonFor(from: { lon: number; lat: number }, to: [number, number]) {
+  const pts = greatCircle([from.lon, from.lat], to, 1.006, 140)
+  if (pts.length < 2) return null
+  const positions = new Float32Array(pts.length * 2 * 3)
+  const up = new Float32Array(pts.length * 2 * 3)
+  const along = new Float32Array(pts.length * 2)
+  const across = new Float32Array(pts.length * 2)
+  const index: number[] = []
+  const R = 1.006
+  const HALF = 0.0055
+  const v = new THREE.Vector3()
+  const prev = new THREE.Vector3()
+  const next = new THREE.Vector3()
+  const nrm = new THREE.Vector3()
+  const side = new THREE.Vector3()
+
+  for (let i = 0; i < pts.length; i++) {
+    v.copy(pts[i]).normalize()
+    const a = pts[Math.max(0, i - 1)]
+    const b = pts[Math.min(pts.length - 1, i + 1)]
+    prev.copy(a).normalize()
+    next.copy(b).normalize()
+    nrm.copy(v)
+    side.copy(next).sub(prev).normalize().cross(nrm).normalize()
+    const t = i / (pts.length - 1)
+    for (let s = 0; s < 2; s++) {
+      const k = i * 2 + s
+      const sign = s === 0 ? -1 : 1
+      const px = v.x * R + side.x * HALF * sign
+      const py = v.y * R + side.y * HALF * sign
+      const pz = v.z * R + side.z * HALF * sign
+      positions[k * 3] = px
+      positions[k * 3 + 1] = py
+      positions[k * 3 + 2] = pz
+      up[k * 3] = nrm.x
+      up[k * 3 + 1] = nrm.y
+      up[k * 3 + 2] = nrm.z
+      along[k] = t
+      across[k] = sign
+    }
+    if (i < pts.length - 1) {
+      const a0 = i * 2
+      const a1 = i * 2 + 1
+      const b0 = (i + 1) * 2
+      const b1 = (i + 1) * 2 + 1
+      index.push(a0, b0, a1, a1, b0, b1)
+    }
+  }
+
+  const geo = new THREE.BufferGeometry()
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+  geo.setAttribute('aUp', new THREE.BufferAttribute(up, 3))
+  geo.setAttribute('aAlong', new THREE.BufferAttribute(along, 1))
+  geo.setAttribute('aNormal', new THREE.BufferAttribute(across, 1))
+  geo.setIndex(index)
+  geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 2)
+  return geo
+}
+
 /* -------------------------------------------------------------------------- */
-/* Marker: a precise point on the surface, with a pulse                       */
+/* Marker: a precise point on the surface, with a pulse                        */
 /* -------------------------------------------------------------------------- */
 
-function OriginMarker({
-  lon,
-  lat,
-  uniforms,
-  phase,
-}: {
-  lon: number
-  lat: number
-  uniforms: { uTime: THREE.IUniform<number> }
-  phase: number
-}) {
+function OriginMarker({ lon, lat, phase }: { lon: number; lat: number; phase: number }) {
   const pos = React.useMemo(() => llToVec(lon, lat, 1.006), [lon, lat])
   const mat = React.useMemo(
     () =>
@@ -363,11 +405,11 @@ function OriginMarker({
         transparent: true,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
-        uniforms: { uTime: uniforms.uTime, uPhase: { value: phase } },
+        uniforms: { uTime: { value: 0 }, uPhase: { value: phase } },
         vertexShader: /* glsl */ `
-          varying vec2 vP;
+          varying vec2 vUv;
           void main() {
-            vP = position.xy * 2.0;
+            vUv = uv;
             gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
           }
         `,
@@ -375,29 +417,29 @@ function OriginMarker({
           precision highp float;
           uniform float uTime;
           uniform float uPhase;
-          varying vec2 vP;
+          varying vec2 vUv;
           void main() {
-            float d = length(vP);
-            float core = smoothstep(0.30, 0.0, d);
-            float ring = 0.0;
-            for (int i = 0; i < 2; i++) {
-              float t = fract(uTime * 0.28 + uPhase + float(i) * 0.5);
-              float r = t * 0.92;
-              ring += smoothstep(0.06, 0.0, abs(d - r)) * (1.0 - t) * 0.55;
-            }
-            float a = core * 0.95 + ring;
-            vec3 warm = vec3(1.0, 0.82, 0.58);
-            gl_FragColor = vec4(warm, clamp(a, 0.0, 1.0));
+            vec2 p = vUv - 0.5;
+            float r = length(p) * 2.0;
+            /* Concentric rings travelling outward, plus a solid core. */
+            float wave = fract(r - uTime * 0.28 + uPhase);
+            float ring = smoothstep(0.85, 1.0, wave) * smoothstep(1.0, 0.93, r);
+            float core = smoothstep(0.30, 0.0, r);
+            float a = ring * 0.55 + core * 0.95;
+            vec3 gold = vec3(0.96, 0.87, 0.66);
+            gl_FragColor = vec4(gold, clamp(a, 0.0, 1.0));
           }
         `,
       }),
-    [uniforms.uTime, phase],
+    [phase],
   )
-
   React.useEffect(() => () => mat.dispose(), [mat])
+  useFrame((state) => {
+    mat.uniforms.uTime.value = state.clock.elapsedTime
+  })
 
   return (
-    <mesh position={pos} material={mat}>
+    <mesh position={pos} material={mat} renderOrder={5}>
       <planeGeometry args={[0.058, 0.058]} />
     </mesh>
   )
@@ -408,41 +450,23 @@ function OriginMarker({
 function Earth({ uniforms }: { uniforms: { uTime: THREE.IUniform<number>; uSun: THREE.IUniform<THREE.Vector3> } }) {
   const mask = React.useMemo(() => getLandMask(), [])
 
-  /* Carve the sphere itself: every vertex is displaced by the land coverage,
-     so continents are real relief rather than a painted-on patch. 256x160 is
-     about 41k vertices, which is nothing, and fine enough that the bevel reads
-     at hero size. The same mask drives the shading, so the two agree. */
-  const geometry = React.useMemo(() => new THREE.SphereGeometry(1, 256, 160), [])
-  React.useEffect(() => {
-    let live = true
-    loadMaskPixels(new URL('./geo/land.png', import.meta.url).href).then((px) => {
-      if (!live) return
-      const pos = geometry.attributes.position as THREE.BufferAttribute
-      const uv = geometry.attributes.uv as THREE.BufferAttribute
-      const v = new THREE.Vector3()
-      for (let i = 0; i < pos.count; i++) {
-        const lon = uv.getX(i) * 360 - 180
-        const lat = 90 - uv.getY(i) * 180
-        const m = sampleMask(px.data, px.width, px.height, lon, lat)
-        const r = carveVertex(m)
-        v.fromBufferAttribute(pos, i).normalize().multiplyScalar(r)
-        pos.setXYZ(i, v.x, v.y, v.z)
-      }
-      pos.needsUpdate = true
-      geometry.computeVertexNormals()
-      geometry.computeBoundingSphere()
-    })
-    return () => {
-      live = false
-    }
-  }, [geometry])
+  /* A denser sphere than before, because the displacement is no longer done in
+     JavaScript: the vertex shader samples the mask, so 320x180 costs nothing at
+     startup and the coasts are smoother than the old 256x160. */
+  const geometry = React.useMemo(() => {
+    const g = new THREE.SphereGeometry(1, 320, 180)
+    g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1.05)
+    return g
+  }, [])
   React.useEffect(() => () => geometry.dispose(), [geometry])
+
   const mat = React.useMemo(
     () =>
       new THREE.ShaderMaterial({
         uniforms: {
           uMask: { value: mask },
-          uMaskSize: { value: new THREE.Vector2(1024, 512) },
+          uMaskSize: { value: new THREE.Vector2(2048, 1024) },
+          uCarve: { value: 0.012 },
           uOcean: { value: new THREE.Color(OCEAN) },
           uOceanDeep: { value: new THREE.Color(OCEAN_DEEP) },
           uLandLow: { value: new THREE.Color(LAND_LOW) },
@@ -456,10 +480,9 @@ function Earth({ uniforms }: { uniforms: { uTime: THREE.IUniform<number>; uSun: 
       }),
     [mask, uniforms.uTime, uniforms.uSun],
   )
-
   React.useEffect(() => () => mat.dispose(), [mat])
 
-  return <mesh material={mat} geometry={geometry} />
+  return <mesh geometry={geometry} material={mat} />
 }
 
 /**
@@ -530,30 +553,10 @@ function GeoLines() {
           uCam: uniforms.uCam,
           uRadius: { value: radius },
           uOpacity: { value: opacity },
-          uTint: { value: new THREE.Color('#f7eeda') },
+          uTint: { value: new THREE.Color('#f0dca8') },
         },
-        vertexShader: /* glsl */ `
-          uniform float uRadius;
-          uniform vec3 uCam;
-          varying float vFacing;
-          void main() {
-            vFacing = dot(normalize(normal), normalize(uCam));
-            vec3 p = normalize(position) * uRadius;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
-          }
-        `,
-        fragmentShader: /* glsl */ `
-          precision highp float;
-          uniform float uOpacity;
-          uniform vec3 uTint;
-          varying float vFacing;
-          void main() {
-            if (vFacing < 0.015) discard;
-            /* Fade in over the limb so the outline does not end abruptly. */
-            float a = uOpacity * smoothstep(0.015, 0.22, vFacing);
-            gl_FragColor = vec4(uTint, a);
-          }
-        `,
+        vertexShader: lineVert,
+        fragmentShader: lineFrag,
       }),
     [uniforms.uCam],
   )
@@ -591,6 +594,30 @@ function GeoLines() {
   )
 }
 
+const lineVert = /* glsl */ `
+  uniform float uRadius;
+  uniform vec3 uCam;
+  varying float vFacing;
+  void main() {
+    vFacing = dot(normalize(normal), normalize(uCam));
+    vec3 p = normalize(position) * uRadius;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+  }
+`
+
+const lineFrag = /* glsl */ `
+  precision highp float;
+  uniform float uOpacity;
+  uniform vec3 uTint;
+  varying float vFacing;
+  void main() {
+    if (vFacing < 0.015) discard;
+    /* Fade in over the limb so the outline does not end abruptly. */
+    float a = uOpacity * smoothstep(0.015, 0.22, vFacing);
+    gl_FragColor = vec4(uTint, a);
+  }
+`
+
 /* -------------------------------------------------------------------------- */
 
 function Globe() {
@@ -622,17 +649,19 @@ function Globe() {
     return null
   }, [drag, startY])
 
-  useFrame((_, delta) => {
-    const d = Math.min(delta, 1 / 30)
-    uniforms.uTime.value += d
-    if (!still && !drag.touched && !drag.dragging) spin.current += d * 0.045
-  })
-
   const root = React.useRef<THREE.Group>(null)
+
   useFrame((_, delta) => {
     const d = Math.min(delta, 1 / 30)
     const g = root.current
     if (!g) return
+
+    /* The clock only advances the comet shader; the globe's own rotation is
+       integrated below so a dropped frame cannot make it jump. */
+    uniforms.uTime.value += d
+
+    if (!still && !drag.touched && !drag.dragging) spin.current += d * 0.045
+
     if (!drag.dragging) drag.target.y += drag.velocity.y * d
     const decay = Math.exp(-3.4 * d)
     drag.velocity.y *= decay
@@ -658,41 +687,71 @@ function Globe() {
     >
       <Earth uniforms={uniforms} />
       <GeoLines />
-      <RouteLines uniforms={uniforms} />
-      {ORIGINS.map((o, i) => (
-        <OriginMarker key={o.name} lon={o.lon} lat={o.lat} uniforms={uniforms} phase={i * 0.5} />
-      ))}
+      <RouteLines />
+      <OriginMarker lon={ORIGINS[0].lon} lat={ORIGINS[0].lat} phase={0} />
+      <OriginMarker lon={ORIGINS[1].lon} lat={ORIGINS[1].lat} phase={0.5} />
     </group>
   )
 }
 
-/** Places the globe in the hero's right-hand half, or centred when stacked. */
-function Frame({ children }: { children: React.ReactNode }) {
-  const viewport = useThree((s) => s.viewport)
-  const narrow = viewport.aspect < 1.2
-  // Sized against the canvas it is actually drawn into, so the globe never
-  // overflows its half of the hero on any window shape.
-  // Radius is 1, so the scale is half the diameter we want on screen.
-  const diameter = Math.min(
-    viewport.height * (narrow ? 0.68 : 0.6),
-    viewport.width * (narrow ? 0.82 : 0.5),
-  )
-  const scale = Math.max(0.4, diameter / 2)
-  const x = narrow ? 0 : viewport.width * 0.5 - scale * 0.86
-  return (
-    <group scale={scale} position={[x, narrow ? 0 : 0.02, 0]}>
-      {children}
-    </group>
-  )
-}
+/**
+ * The hero scene.
+ *
+ * `onScreen` comes from the Stage's observer rather than being guessed here, so
+ * the globe stops costing anything the moment the hero leaves the viewport. A
+ * visitor scrolling to the enquiry form is not paying for a sphere they cannot
+ * see, which used to be the single largest cost on the site.
+ */
+export function GlobeScene({ onScreen }: { onScreen?: boolean }) {
+  const still = React.useMemo(() => reducedMotion(), [])
 
-export function GlobeScene() {
   return (
     <>
       <Studio />
-      <Frame>
+      <ambientLight intensity={0.4} />
+      <FrameMotion onScreen={onScreen} still={still}>
         <Globe />
-      </Frame>
+      </FrameMotion>
     </>
+  )
+}
+
+/** Keeps the globe framed on the copy side of the hero, at any aspect. */
+function FrameMotion({
+  children,
+  onScreen,
+  still,
+}: {
+  children: React.ReactNode
+  onScreen?: boolean
+  still: boolean
+}) {
+  const { viewport } = useThree()
+  const narrow = viewport.aspect < 1.15
+  const scale = narrow ? 0.92 : 1.06
+  /* A parallax nudge with the pointer, written through a group transform, so
+     moving the mouse over the hero does not cost a React render. It is off on
+     every narrow screen, where there is no pointer to follow and the motion
+     would only fight the finger. */
+  const group = React.useRef<THREE.Group>(null)
+  const pointer = React.useRef({ x: 0, y: 0 })
+
+  useFrame((state, delta) => {
+    const g = group.current
+    if (!g) return
+    if (still || !onScreen) return
+    const d = Math.min(delta, 1 / 30)
+    const tx = narrow ? 0 : state.pointer.x * 0.06
+    const ty = narrow ? 0 : state.pointer.y * 0.04
+    pointer.current.x = THREE.MathUtils.lerp(pointer.current.x, tx, 1 - Math.exp(-3 * d))
+    pointer.current.y = THREE.MathUtils.lerp(pointer.current.y, ty, 1 - Math.exp(-3 * d))
+    g.rotation.y = pointer.current.x
+    g.rotation.x = -pointer.current.y
+  })
+
+  return (
+    <group ref={group} scale={scale} position={narrow ? [0, 0.16, 0] : [0.06, 0.02, 0]}>
+      {children}
+    </group>
   )
 }

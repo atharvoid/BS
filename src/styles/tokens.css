@@ -1,43 +1,46 @@
 /* ==========================================================================
    BS EXIMNEXUS — design tokens
-   Palette drawn from Indian textile dyes: indigo vat, madder root,
-   raw cotton, saffron, verdigris and brass.
+
+   Two colour families, and nothing else. Ink and gold, with cotton as the
+   paper underneath. Every value below is either a step of one of those three
+   or a transparency of ink used as a rule. If a colour cannot be traced back
+   here, it is a bug.
    ========================================================================== */
 
 :root {
-  /* ---- Raw material colours -------------------------------------------- */
-  --cotton: #f2ebdd;
-  --cotton-lit: #faf5ea;
-  --cotton-deep: #e6dbc7;
-  --cotton-shade: #d9cbb2;
+  /* ---- Gold: taken from the logo, #DABC72, which is its only flat ----- */
+  --gold: #dabc72;
+  --gold-lit: #f0dca8;
+  --gold-deep: #b8944b;
+  --gold-ghost: rgba(218, 188, 114, 0.14);
 
-  --ink: #12100d;
-  --ink-2: #1a1713;
-  --ink-3: #241f19;
-  --ink-line: #342c23;
+  /* ---- Ink: near black, carrying the navy rather than a warm brown ----- */
+  --ink: #0b0e14;
+  --ink-2: #11151e;
+  --ink-3: #181e2a;
+  --ink-line: #232a38;
 
-  --indigo: #1d2a45;
-  --indigo-2: #263454;
-  --indigo-3: #33446a;
-  --indigo-soft: #8f9cbb;
+  /* ---- Navy: the surface family ---------------------------------------- */
+  --navy: #16203a;
+  --navy-2: #1e2b4d;
+  --navy-3: #2a3a63;
 
-  --madder: #9c3a2d;
-  --madder-lit: #b8493a;
-  --saffron: #c47b1c;
-  --verdigris: #4c7a68;
-  --brass: #b0864a;
+  /* ---- Cotton: the paper ------------------------------------------------ */
+  --cotton: #f4efe4;
+  --cotton-lit: #fbf8f1;
+  --cotton-deep: #e8e1d2;
+  --cotton-shade: #d9d1bf;
 
   /* ---- Semantic (light sections) --------------------------------------- */
   --bg: var(--cotton);
   --bg-lit: var(--cotton-lit);
   --bg-deep: var(--cotton-deep);
-  --fg: #1a1611;
-  --fg-soft: #4b4136;
-  --fg-mute: #6f6353;
-  --rule: rgba(26, 22, 17, 0.14);
-  --rule-soft: rgba(26, 22, 17, 0.075);
-  --accent: var(--madder);
-  --accent-quiet: var(--saffron);
+  --fg: #0b0e14;
+  --fg-soft: #3d4454;
+  --fg-mute: #6b7180;
+  --rule: rgba(11, 14, 20, 0.14);
+  --rule-soft: rgba(11, 14, 20, 0.07);
+  --accent: var(--gold-deep);
 
   /* ---- Type scale (fluid) ---------------------------------------------- */
   --fs-hero: clamp(2.9rem, 7.1vw, 7.6rem);
@@ -80,33 +83,42 @@
   --z-content: 2;
   --z-nav: 60;
   --z-overlay: 90;
+  --z-intro: 100;
 
   --maxw: 1560px;
+
+  /* Header height. The intro sequence measures this, so it lives here rather
+     than being repeated as a magic number in two places. */
+  --nav-h: 76px;
 }
 
-/* Dark substrate used by the hero, the process stage and the footer. */
+/* Dark substrate used by the hero, the process stage, the intro and the footer. */
 .on-dark {
   --bg: var(--ink);
-  --fg: var(--cotton);
-  --fg-soft: #cdc2ae;
-  --fg-mute: #948974;
-  --rule: rgba(242, 235, 221, 0.16);
-  --rule-soft: rgba(242, 235, 221, 0.075);
-  --accent: #d98d4f;
-  --accent-quiet: var(--brass);
+  --fg: #f6f1e5;
+  --fg-soft: #c2c8d4;
+  --fg-mute: #8891a3;
+  --rule: rgba(246, 241, 229, 0.15);
+  --rule-soft: rgba(246, 241, 229, 0.07);
+  --accent: var(--gold);
   color: var(--fg);
   background-color: var(--bg);
 }
 
-.on-indigo {
-  --bg: var(--indigo);
-  --fg: #eef0f6;
-  --fg-soft: #c3cadb;
-  --fg-mute: #98a3bb;
-  --rule: rgba(238, 240, 246, 0.18);
-  --rule-soft: rgba(238, 240, 246, 0.08);
-  --accent: #e8b464;
-  --accent-quiet: var(--indigo-soft);
+.on-navy {
+  --bg: var(--navy);
+  --fg: #f6f1e5;
+  --fg-soft: #c6cbdd;
+  --fg-mute: #9198b1;
+  --rule: rgba(246, 241, 229, 0.17);
+  --rule-soft: rgba(246, 241, 229, 0.08);
+  --accent: var(--gold);
   color: var(--fg);
   background-color: var(--bg);
+}
+
+@media (max-width: 720px) {
+  :root {
+    --nav-h: 64px;
+  }
 }
