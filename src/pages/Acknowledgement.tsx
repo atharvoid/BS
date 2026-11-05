@@ -25,7 +25,7 @@ export default function Acknowledgement() {
         <div className="ack__text">
           <p className="eyebrow">Enquiry acknowledgement</p>
           <h1 className="ack__title">
-            Thank you — the <em className="display-italic">enquiry</em> was handed over.
+            Thank you. The <em className="display-italic">enquiry</em> was handed over.
           </h1>
 
           <div className="ack__notice">
@@ -59,7 +59,7 @@ export default function Acknowledgement() {
           ) : (
             <p className="ack__no-receipt">
               No submission record was found in this browser session. If you have just arrived here
-              from a link, there may be nothing to confirm — start an enquiry to see the full
+              from a link, there may be nothing to confirm. Start an enquiry to see the full
               acknowledgement.
             </p>
           )}

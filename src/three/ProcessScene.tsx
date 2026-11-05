@@ -64,7 +64,7 @@ function ObjectBody({ kind }: { kind: StageKind }) {
   switch (kind) {
     case 'bolt':
       return (
-        <group position={[0, -0.72, 0]} scale={1.04}>
+        <group position={[0, -0.62, 0]} scale={0.86}>
           <BoltObject palette="cotton" />
         </group>
       )
@@ -90,7 +90,7 @@ function ObjectBody({ kind }: { kind: StageKind }) {
   }
 }
 
-const GROUND_Y: Record<StageKind, number> = { bolt: -0.84, shuttle: -0.78, spool: -1.0, reed: -0.9 }
+const GROUND_Y: Record<StageKind, number> = { bolt: -0.78, shuttle: -0.78, spool: -1.0, reed: -0.9 }
 
 /**
  * One stage slot. Its own progress `p` is 0 the moment its slice begins and 1
@@ -101,34 +101,51 @@ function Slot({
   kind,
   index,
   progress,
+  isLast,
 }: {
   kind: StageKind
   index: number
   progress: React.RefObject<number>
+  isLast: boolean
 }) {
   const arc = React.useRef<THREE.Group>(null)
   const shown = React.useRef(false)
   const still = React.useMemo(() => reducedMotion(), [])
+  /* Damped copy of the section's scroll progress. Raw scroll arrives in
+     jumps, so driving the arc straight from it makes the object stutter and
+     then snap while the paragraph cross-fades over 600ms. This carries the
+     motion through with weight, and both sides of the pair now ease on the
+     same curve. */
+  const smooth = React.useRef(-1)
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     const node = arc.current
     if (!node) return
 
-    const p = progress.current * KINDS.length - index
+    const raw = progress.current * KINDS.length - index
+    const d = Math.min(delta, 1 / 30)
 
-    // Mount only while this slot is near its turn: one object on screen.
-    // Only the object whose stage is on screen exists at all — neighbours wait
-    // well outside the frame, so nothing else is ever visible behind it.
-    const live = p >= 0 && p <= 1
+    if (smooth.current < -0.5) smooth.current = raw
+    else {
+      const k = 1 - Math.exp(-14 * d)
+      smooth.current += (raw - smooth.current) * k
+    }
+    const p = smooth.current
+
+    // Only the stage in front of the visitor exists, so neighbours wait far
+    // outside the frame and nothing else is ever visible behind it.
+    const live = isLast ? p > -0.06 : p > -0.06 && p < 1.06
     if (live !== shown.current) {
       shown.current = live
       node.visible = live
     }
     if (!live) return
 
-    const enter = THREE.MathUtils.smoothstep(p, 0, ENTER)
-    // The outgoing object keeps drifting up and away rather than snapping out.
-    const leave = THREE.MathUtils.smoothstep(p, EXIT, 1.02)
+    const enter = THREE.MathUtils.smoothstep(p, -0.04, ENTER * 1.6)
+    /* The outgoing object drifts up and away rather than snapping out, except
+       for the last one: the sequence must not end on an empty plate while the
+       section is still pinned. */
+    const leave = isLast ? 0 : THREE.MathUtils.smoothstep(p, EXIT, 1.02)
 
     const angle = ARC.startAngle * (1 - enter)
     node.position.set(
@@ -161,7 +178,7 @@ function Frame({ children }: { children: React.ReactNode }) {
   const viewport = useThree((s) => s.viewport)
   const narrow = viewport.aspect < 1.15
   return (
-    <group scale={narrow ? 0.94 : 1.14} position={[0, 0.08, 0]}>
+    <group scale={narrow ? 0.98 : 1.18} position={[0, 0.14, 0]}>
       {children}
     </group>
   )
@@ -174,7 +191,7 @@ export function ProcessScene({ progress }: { progress: React.RefObject<number> }
       <Lights intensity={1.02} />
       <Frame>
         {KINDS.map((kind, i) => (
-          <Slot key={kind} kind={kind} index={i} progress={progress} />
+          <Slot key={kind} kind={kind} index={i} progress={progress} isLast={i === KINDS.length - 1} />
         ))}
       </Frame>
     </>

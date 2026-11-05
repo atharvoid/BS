@@ -173,7 +173,7 @@ export default function Textiles() {
 
           <SwatchWall />
           <p className="wall__note reveal">
-            These swatches are representative of material families — generated weaves, not
+            These swatches are representative of material families. Generated weaves, not
             photographs of stock. They are not an offer, and they do not indicate availability.
           </p>
         </div>

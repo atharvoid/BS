@@ -10,7 +10,7 @@ export function Footer() {
           <div className="footer__invite">
             <p className="eyebrow">Open an enquiry</p>
             <h2 className="footer__head">
-              Tell us what you <em className="display-italic">need</em> — a short
+              Tell us what you <em className="display-italic">need</em>. A short
               description is enough.
             </h2>
             <div className="footer__cta">

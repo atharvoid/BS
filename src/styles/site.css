@@ -27,17 +27,33 @@
     transition: opacity 260ms var(--ease-out);
   }
   .cursor__ring {
-    width: 30px;
-    height: 30px;
-    border: 1px solid var(--madder);
-    box-shadow: 0 0 0 1px rgba(242, 235, 221, 0.55), 0 0 12px rgba(156, 58, 45, 0.18);
+    width: 21px;
+    height: 21px;
+    border: 1px solid rgba(224, 162, 98, 0.9);
+    background: rgba(224, 162, 98, 0.04);
+    box-shadow: 0 0 0 1px rgba(18, 16, 13, 0.28), 0 0 10px rgba(224, 162, 98, 0.14);
+    transition: opacity 240ms var(--ease-out), background 300ms var(--ease-out);
   }
   .cursor__dot {
     width: 3px;
     height: 3px;
-    background: var(--madder);
-    box-shadow: 0 0 0 1px rgba(242, 235, 221, 0.7);
+    background: #f0e3cb;
+    box-shadow: 0 0 0 1px rgba(18, 16, 13, 0.4);
   }
+
+  /* Over anything clickable the ring gains weight rather than ballooning. */
+  .cursor--hot .cursor__ring {
+    border-color: var(--madder);
+    background: rgba(156, 58, 45, 0.12);
+    box-shadow: 0 0 0 1px rgba(242, 235, 221, 0.35);
+  }
+
+  /* The native pointer is hidden only once the custom one is definitely
+     running, so a script failure can never leave a visitor with no cursor. */
+  html.has-custom-cursor,
+  html.has-custom-cursor * { cursor: none !important; }
+  html.has-custom-cursor input,
+  html.has-custom-cursor textarea { cursor: text !important; }
 }
 
 /* --------------------------------------------------------------------------
@@ -273,6 +289,51 @@
 
 .drawer--open .drawer__link { opacity: 1; transform: none; }
 .drawer__link.is-active { color: #d98d4f; }
+
+/* Hover has to be as alive as the click. The whole row leans in, the number
+   lifts to saffron and a hairline draws across from the label. */
+.drawer__link {
+  position: relative;
+  transition: opacity 500ms var(--ease-out), transform 560ms var(--ease-out),
+    color 320ms var(--ease-out), padding-left 420ms var(--ease-out);
+}
+
+.drawer__link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 1px;
+  width: 0;
+  background: linear-gradient(90deg, rgba(217, 141, 79, 0.9), rgba(156, 58, 45, 0.1));
+  transition: width 560ms var(--ease-out);
+}
+
+.drawer__link:hover,
+.drawer__link:focus-visible {
+  color: #f6ecd8;
+  padding-left: 1rem;
+  letter-spacing: 0.004em;
+}
+
+/* A warm wash behind the row, so the hover lands even in peripheral vision. */
+.drawer__link:hover::after,
+.drawer__link:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: 0 -0.9rem;
+  z-index: -1;
+  background: linear-gradient(90deg, rgba(224, 162, 98, 0.13), rgba(224, 162, 98, 0));
+  pointer-events: none;
+}
+
+.drawer__link:hover::before,
+.drawer__link:focus-visible::before { width: 100%; }
+
+.drawer__link:hover .drawer__num,
+.drawer__link:focus-visible .drawer__num { color: #e0a262; }
+
+.drawer__num { transition: color 320ms var(--ease-out); }
 
 .drawer__num {
   font-family: var(--f-mono);
@@ -1093,7 +1154,6 @@
   border-top: 0;
 }
 
-.seq-step__mini { display: none; }
 
 .sequence__fallback {
   width: 100%;
@@ -1101,6 +1161,7 @@
   background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 9px);
 }
 
+/* The stacked variant only exists below the breakpoint that unpins the frame. */
 /* the four-stop rail down the left edge of the frame */
 .sequence__rail {
   position: absolute;
@@ -1199,6 +1260,8 @@
   text-transform: uppercase;
   color: #8f8471;
 }
+
+.seq-step__plate { display: none; }
 
 .seq-step__object::before {
   content: '';
@@ -2825,23 +2888,36 @@ fieldset .field__label { float: none; }
   .purpose__head { position: static; }
   .audience { grid-template-columns: minmax(0, 1fr); }
 
-  /* No pinning on small screens: the rail becomes a plain stack again, with
-     one canvas per stage. */
+  /* No pinning on small screens. The pinned frame is hidden outright and each
+     stage gets its own plate, stacked under its own words, so scrolling a
+     paragraph never leaves a different stage's object on screen. */
   .sequence { height: auto; }
-  .sequence__pin { position: static; height: auto; padding-block: 0; }
-  .sequence__inner { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; }
-  .sequence__stage { max-height: 46vh; margin-inline: auto; max-width: 420px; }
-  .sequence__progress { display: none; }
-  .sequence__text { min-height: 0; }
-  .seq-step { position: static; opacity: 1; visibility: visible; transform: none; }
-  .seq-step + .seq-step { margin-top: 2.2rem; padding-top: 2.2rem; border-top: 1px solid rgba(242, 235, 221, 0.1); }
-  .seq-step__object { display: none; }
   .sequence__visual { display: none; }
-  .seq-step__mini {
-    display: block;
-    margin-top: 1.2rem;
+  .sequence__inner { display: block; }
+  .sequence__text { min-height: 0; }
+  .seq-step__plate { display: block; }
+
+  /* The steps stop being a pinned, absolutely-positioned stack and become a
+     plain list again. Without this they all collapse onto each other and only
+     one is ever visible. */
+  .seq-step {
+    position: static;
+    inset: auto;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+  .seq-step + .seq-step {
+    margin-top: 2.4rem;
+    padding-top: 2.4rem;
+    border-top: 1px solid rgba(242, 235, 221, 0.1);
+  }
+
+  .seq-step__plate {
+    position: relative;
     aspect-ratio: 4 / 3;
-    max-height: 300px;
+    max-height: 340px;
+    margin-top: 1.1rem;
     border-radius: 2px;
     background:
       radial-gradient(70% 60% at 50% 22%, rgba(255, 235, 205, 0.08) 0%, transparent 70%),
@@ -2849,7 +2925,7 @@ fieldset .field__label { float: none; }
     border: 1px solid rgba(242, 235, 221, 0.09);
     overflow: hidden;
   }
-  .seq-step__mini > div { width: 100%; height: 100%; }
+  .seq-step__plate > div { position: absolute; inset: 0; }
 
   .process__intro { border-left: 0; padding-left: 0; }
 

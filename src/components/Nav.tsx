@@ -53,7 +53,7 @@ export function Nav() {
       <div className="progress" aria-hidden="true" />
       <header className={`nav ${lifted ? 'nav--lifted' : ''} ${open ? 'nav--open' : ''}`}>
         <div className="nav__inner shell">
-          <Link to="/" className="brand" aria-label={`${BUSINESS.name} — overview`}>
+          <Link to="/" className="brand" aria-label={`${BUSINESS.name}, overview`}>
             <span className="brand__mark" aria-hidden="true">
               <span />
             </span>

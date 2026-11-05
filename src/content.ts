@@ -22,14 +22,14 @@ export const FOCUS_AREAS = [
     name: 'Tamil Nadu',
     kicker: 'South India',
     note: 'An initial sourcing area. Handloom and mill-made cotton, silk and blended fabrics are among the material families commonly associated with the region.',
-    hint: 'Discussed per enquiry — not a stock list.',
+    hint: 'Discussed per enquiry. Not a stock list.',
   },
   {
     id: 'gujarat',
     name: 'Gujarat',
     kicker: 'West India',
     note: 'An initial sourcing area. Cotton, printed and dyed fabric traditions and a dense processing base are among the reasons enquiries often reference it.',
-    hint: 'Discussed per enquiry — not a stock list.',
+    hint: 'Discussed per enquiry. Not a stock list.',
   },
 ] as const
 
@@ -37,7 +37,7 @@ export const STAGES = [
   {
     n: '01',
     title: 'Share the requirement',
-    body: 'The buyer or supplier explains what they need or offer, and how it will be used. A finished specification is not required to begin — a short description is enough.',
+    body: 'The buyer or supplier explains what they need or offer, and how it will be used. A finished specification is not required to begin. A short description is enough.',
     field: ['What', 'Intended use', 'Location'],
     object: 'bolt',
     objectLabel: 'Unfolded bolt',
@@ -134,7 +134,7 @@ export const ENQUIRY_FIELDS = {
   location: {
     label: 'Destination or business location',
     hint: 'Where the material is going, or where your business is based.',
-    placeholder: 'For example: Rotterdam, Netherlands — or Coimbatore, Tamil Nadu.',
+    placeholder: 'For example: Rotterdam, Netherlands. Or Coimbatore, Tamil Nadu.',
   },
   name: { label: 'Your name', placeholder: 'Full name' },
   email: { label: 'Email address', hint: 'Replies come from bsexim.nexus@gmail.com.' },

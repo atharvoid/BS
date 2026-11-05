@@ -69,7 +69,12 @@ export function Stage({ children, className, z = 6, fov = 38, fallback, style, l
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) setNear(true)
-        setVisible(entry.isIntersecting)
+        // Render only while the stage is genuinely in front of the visitor.
+        // A generous rootMargin keeps a canvas warm just before it arrives,
+        // but it must not keep drawing a full-screen plate off screen.
+        const r = el.getBoundingClientRect()
+        const onScreen = r.bottom > -80 && r.top < window.innerHeight + 80
+        setVisible(entry.isIntersecting || onScreen)
       },
       { rootMargin: '320px 0px', threshold: 0 },
     )

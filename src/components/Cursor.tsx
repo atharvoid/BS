@@ -18,6 +18,10 @@ export function Cursor() {
     const d = dot.current
     if (!r || !d) return
 
+    // Only once the ring is genuinely running do we take over the pointer.
+    const root = document.documentElement
+    root.classList.add('has-custom-cursor')
+
     let x = window.innerWidth / 2
     let y = window.innerHeight / 2
     let rx = x
@@ -26,14 +30,15 @@ export function Cursor() {
     let visible = false
     let scale = 1
     let targetScale = 1
+    const hotRef = { current: false }
 
     // The loop stops itself once the ring has caught up. A permanently running
     // rAF that writes transforms even when the pointer is still keeps the
     // compositor busy for no reason, and it is wasteful on battery.
     const tick = () => {
-      rx += (x - rx) * 0.17
-      ry += (y - ry) * 0.17
-      scale += (targetScale - scale) * 0.15
+      rx += (x - rx) * 0.2
+      ry += (y - ry) * 0.2
+      scale += (targetScale - scale) * 0.12
 
       const dx = Math.abs(x - rx)
       const dy = Math.abs(y - ry)
@@ -66,7 +71,14 @@ export function Cursor() {
       }
       const el = e.target as HTMLElement | null
       const hot = el?.closest('a, button, input, textarea, label, [data-cursor="hot"]')
-      targetScale = hot ? 1.9 : 1
+      // A modest lift, not a balloon: the ring grows a few pixels and picks up
+      // weight, which reads as feedback without swallowing the thing you are
+      // about to click.
+      targetScale = hot ? 1.34 : 1
+      if (!!hot !== hotRef.current) {
+        hotRef.current = !!hot
+        r.parentElement?.classList.toggle('cursor--hot', !!hot)
+      }
       wake()
     }
 
@@ -88,6 +100,7 @@ export function Cursor() {
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerdown', move)
       document.removeEventListener('pointerleave', leave)
+      root.classList.remove('has-custom-cursor')
       if (raf) cancelAnimationFrame(raf)
     }
   }, [])

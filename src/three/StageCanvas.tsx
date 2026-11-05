@@ -20,6 +20,9 @@ export default function StageCanvas({
 }) {
   return (
     <Canvas
+      /* No tone mapping pass: the globe palette is authored in display space,
+         and ACES would wash the ocean out to grey. */
+      flat
       frameloop={visible ? 'always' : 'never'}
       dpr={[1, 1.75]}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}

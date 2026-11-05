@@ -86,12 +86,12 @@ export function EnquiryForm({ subject = 'textiles' }: { subject?: EnquirySubject
     const e: Errors = {}
     if (!d.role) e.role = 'Choose the description that fits you best.'
     if (d.requirement.trim().length < 12)
-      e.requirement = 'A sentence or two is enough — twelve characters minimum.'
+      e.requirement = 'A sentence or two is enough. Twelve characters minimum.'
     if (d.requirement.length > 2000) e.requirement = 'Please keep this under 2,000 characters.'
     if (d.location.trim().length < 2) e.location = 'A city, region or country is fine.'
     if (d.name.trim().length < 2) e.name = 'Please add your name.'
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email.trim()))
-      e.email = 'Please check the email address — that is where the reply goes.'
+      e.email = 'Please check the email address. That is where the reply goes.'
     return e
   }
 
@@ -118,7 +118,7 @@ export function EnquiryForm({ subject = 'textiles' }: { subject?: EnquirySubject
 
     const payload: Record<string, string> = {
       access_key: ACCESS_KEY,
-      subject: `[${BUSINESS.name}] ${draft.subject === 'textiles' ? 'Textile' : 'General'} enquiry — ${ROLE_LABEL[draft.role] ?? draft.role}`,
+      subject: `[${BUSINESS.name}] ${draft.subject === 'textiles' ? 'Textile' : 'General'} enquiry: ${ROLE_LABEL[draft.role] ?? draft.role}`,
       from_name: draft.name,
       replyto: draft.email.trim(),
       'Visitor type': ROLE_LABEL[draft.role] ?? draft.role,
@@ -159,7 +159,7 @@ export function EnquiryForm({ subject = 'textiles' }: { subject?: EnquirySubject
           Five answers. <em className="display-italic">No specification needed.</em>
         </h2>
         <p className="form__intro">
-          This enquiry is filed as a textiles and fabrics enquiry. Attachments are not accepted — if
+          This enquiry is filed as a textiles and fabrics enquiry. Attachments are not accepted. If
           a sample or document matters, say so here and arrangements can be discussed in the reply.
         </p>
       </div>
@@ -307,17 +307,17 @@ export function EnquiryForm({ subject = 'textiles' }: { subject?: EnquirySubject
       <div aria-live="polite" className="form__status">
         {status === 'error' && (
           <p className="notice notice--error">
-            <strong>The enquiry did not go through.</strong> {serverError} Nothing was lost — please
+            <strong>The enquiry did not go through.</strong> {serverError} Nothing was lost. Please
             try again, or write directly to{' '}
             <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a>.
           </p>
         )}
         {status === 'unconfigured' && (
           <p className="notice notice--warn">
-            <strong>This form is not connected yet.</strong> The delivery provider has no access key
-            configured, so nothing was sent and no confirmation has been recorded. In the meantime,
-            email <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a> directly with the same
-            five answers.
+            <strong>The form could not send just now.</strong> Nothing has been submitted and no
+            confirmation has been recorded, so please email{' '}
+            <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a> directly with the same five
+            answers. The reply comes from the same inbox, so nothing is lost.
           </p>
         )}
       </div>

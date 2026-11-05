@@ -24,7 +24,7 @@ const SECTIONS = [
     t: 'What is kept in your browser',
     d: [
       'The site does not save form entries in browser storage. Nothing you type into the enquiry is written to localStorage or cookies.',
-      'After a submission is accepted, a small receipt — the enquiry subject, the visitor type and the time — is held in sessionStorage so the acknowledgement page can show what was handed over. It is cleared when the browser session ends, and it can be removed by closing the tab.',
+      'After a submission is accepted, a small receipt (the enquiry subject, the visitor type and the time) is held in sessionStorage so the acknowledgement page can show what was handed over. It is cleared when the browser session ends, and it can be removed by closing the tab.',
     ],
   },
   {
@@ -38,7 +38,7 @@ const SECTIONS = [
     id: 'rights',
     t: 'Corrections and questions',
     d: [
-      'To request a correction to enquiry information, or to ask a question about how it is handled, write to the address below. Include enough detail to identify the enquiry — the email address it was sent from and roughly when.',
+      'To request a correction to enquiry information, or to ask a question about how it is handled, write to the address below. Include enough detail to identify the enquiry: the email address it was sent from and roughly when.',
     ],
   },
 ]
@@ -55,7 +55,7 @@ export default function Privacy() {
             What happens to an <em className="display-italic">enquiry</em>.
           </h1>
           <p className="page-hero__lede">
-            A short, specific notice. It covers only the enquiry form on this site — there are no
+            A short, specific notice. It covers only the enquiry form on this site. There are no
             accounts, no payments and no tracking on this website.
           </p>
         </div>

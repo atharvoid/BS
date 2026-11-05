@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { Stage } from '../three/Stage'
 import { ProcessScene, SingleStageScene, STAGE_OBJECT_LABELS, type StageKind } from '../three/ProcessScene'
 import { useScrollProgress } from '../components/useScrollProgress'
-import { HeroScene } from '../three/HeroScene'
+import { GlobeScene } from '../three/GlobeScene'
 import {
   BobbinObject,
   BoltObject,
@@ -32,7 +32,6 @@ import {
 
 function Hero() {
   const [engaged, setEngaged] = React.useState(false)
-  const [replay, setReplay] = React.useState(0)
   const ref = React.useRef<HTMLDivElement>(null)
   useParallax(ref, 0.06)
 
@@ -41,31 +40,13 @@ function Hero() {
       <div className="hero__canvas" aria-hidden="false">
         <Stage
           className="hero__stage"
-          label="Animated 3D composition: yarn unwinds from a cone into a warp, a shuttle lays the weft, and the woven indigo cloth hangs from a brass rail. Drag the composition to turn it, or replay the weaving."
+          label="An interactive globe of the Earth. Routes arc out from textile centres in Tamil Nadu and Gujarat to destinations across Asia, the Gulf, Europe, Australia and North America. Drag to turn it."
           z={7.4}
           fov={36}
           fallback={<HeroFallback />}
         >
-          <HeroScene onEngage={() => setEngaged(true)} replaySignal={replay} />
+          <GlobeScene />
         </Stage>
-        <div className="hero__controls">
-          <p className="hero__legend" aria-hidden="true">
-            <span className="hero__legend-n">01</span>
-            Yarn
-            <span className="hero__legend-dash" />
-            <span className="hero__legend-n">02</span>
-            Warp and weft
-            <span className="hero__legend-dash" />
-            <span className="hero__legend-n">03</span>
-            Cloth
-          </p>
-          <button type="button" className="hero__replay" onClick={() => setReplay((n) => n + 1)}>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M13.2 8a5.2 5.2 0 1 1-1.6-3.75M13.4 2.2v3.2h-3.2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Replay the weaving
-          </button>
-        </div>
         <p className={`drag-hint ${engaged ? 'is-done' : ''}`} aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M9 11V6.5a1.5 1.5 0 0 1 3 0V11m0-2.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v5.2A4.8 4.8 0 0 1 13.2 20h-1.1a4 4 0 0 1-3.2-1.6L5.4 13.7a1.6 1.6 0 0 1 2.4-2l1.2 1.3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
@@ -93,7 +74,7 @@ function Hero() {
 
           <p className="hero__lede">
             A developing sourcing and trade coordination business. Start with a short description of
-            the fabric you need or supply — a finished specification is not required for first
+            the fabric you need or supply. A finished specification is not required for a first
             contact.
           </p>
 
@@ -178,7 +159,7 @@ function Ribbon() {
         ))}
       </div>
       <p className="ribbon__note">
-        Material families, representative only — not a catalogue of available stock.
+        Material families, representative only. Not a catalogue of available stock.
       </p>
     </div>
   )
@@ -206,7 +187,7 @@ function Purpose() {
             <p className="reveal" style={{ ['--reveal-delay' as string]: '80ms' }}>
               There is no fixed catalogue here, and no promise that particular products are
               available. Product scope and the services that can be provided are established through
-              each enquiry — one requirement at a time, with the buyer or supplier involved at every
+              each enquiry, one requirement at a time, with the buyer or supplier involved at every
               step.
             </p>
             <p className="reveal" style={{ ['--reveal-delay' as string]: '140ms' }}>
@@ -263,7 +244,7 @@ function Areas() {
           </h2>
           <p className="areas__intro reveal">
             Tamil Nadu and Gujarat are the initial sourcing areas. They are a starting point for
-            enquiries, not a limit on what can be discussed — and not a claim about what is held in
+            enquiries, not a limit on what can be discussed, and not a claim about what is held in
             stock.
           </p>
         </div>
@@ -291,7 +272,7 @@ function Areas() {
         </div>
 
         <p className="areas__foot reveal">
-          Supplying from elsewhere in India? Say where you are — the conversation is not restricted
+          Supplying from elsewhere in India? Say where you are. The conversation is not restricted
           to these two states.
         </p>
       </div>
@@ -317,8 +298,10 @@ function Process() {
         </div>
       </div>
 
-      {/* The pinned frame: one canvas on the left for the whole sequence,
-          the four stages scrolling past it on the right. */}
+      {/* On wide screens the frame pins and the four stages scroll past it.
+          On narrow screens there is no pinning and no shared canvas: each
+          stage carries its own object, so a phone never scrolls a paragraph
+          past a picture of a different stage. */}
       <div className="sequence" ref={track} style={{ ['--count' as string]: STAGES.length }}>
         <div className="sequence__pin">
           <div className="shell sequence__inner">
@@ -360,11 +343,10 @@ function Process() {
                   <p className="stage__text">{s.body}</p>
                   <p className="seq-step__object">{STAGE_OBJECT_LABELS[s.object as StageKind]}</p>
 
-                  {/* Narrow screens stack the stages, so only the first carries a
-                      live canvas — a phone should not pay for four WebGL
-                      contexts to read four paragraphs. */}
-                  {i === 0 && (
-                  <div className="seq-step__mini">
+                  {/* Narrow screens get a plate per step, directly under its own
+                      words. Hidden on wide screens, where the pinned frame
+                      above already shows the same object. */}
+                  <div className="seq-step__plate">
                     <Stage
                       label={`Interactive 3D object for stage ${s.n}: ${STAGE_OBJECT_LABELS[s.object as StageKind]}. Drag to turn it.`}
                       z={5}
@@ -374,12 +356,12 @@ function Process() {
                       <SingleStageScene kind={s.object as StageKind} />
                     </Stage>
                   </div>
-                  )}
                 </li>
               ))}
             </ol>
           </div>
         </div>
+
       </div>
     </section>
   )
@@ -567,7 +549,7 @@ function CloseEnquiry() {
           </h2>
           <p className="closing__lede reveal">
             The enquiry is short on purpose. Attachments are not accepted and a finished
-            specification is not expected — the reply will tell you what would be useful next.
+            specification is not expected. The reply will tell you what would be useful next.
           </p>
           <div className="closing__actions reveal">
             <Link to="/enquiry" className="btn">
