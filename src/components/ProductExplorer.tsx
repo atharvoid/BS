@@ -5,17 +5,9 @@ import * as THREE from 'three'
 import { CATEGORIES, type CategoryId } from '../content'
 import { Stage } from '../three/Stage'
 import { useSceneSession } from '../three/SceneSession'
-import {
-  BobbinObject,
-  BoltObject,
-  Ground,
-  Lights,
-  ReedObject,
-  ShuttleObject,
-  Studio,
-  getTextile,
-  type PaletteKey,
-} from '../three/objects'
+import { Lights, Studio, getShadowTexture } from '../three/objects'
+import { CATEGORY_OBJECTS, type CategoryMotif } from '../three/categoryObjects'
+import { frameModel, type Framing } from '../three/framing'
 import { Arrow } from './Nav'
 
 /* ==========================================================================
@@ -27,13 +19,14 @@ import { Arrow } from './Nav'
    navigation, the marquee is the inventory of what the business covers.
 
    Each tile runs its own tiny canvas, and each of those is a real WebGL
-   context, so they are mounted only while the row is on screen and each one
-   draws a low-poly, unlit object. Seven contexts is the practical ceiling in
-   most browsers; this row is well under it, and the row is dormant the moment
-   it scrolls away.
+   context, so they are mounted only while the row is on screen. The objects are
+   the same family as the globe and the textile scenes — real models, generated
+   textures, the shared studio environment and a soft ground shadow — and they
+   turn on their own. Nothing in the row is draggable and there are no controls
+   on the objects: the tile is a link and the object inside it is decoration,
+   so a click anywhere in the tile always does the same thing.
    ========================================================================== */
 
-type Motif = 'bolt' | 'shuttle' | 'bobbin' | 'reed' | 'cloth' | 'ring' | 'basket'
 
 /**
  * Whether this screen gets the live objects.
@@ -65,140 +58,90 @@ type Tile = {
   id: CategoryId
   label: string
   note: string
-  motif: Motif
-  palette: PaletteKey
+  motif: CategoryMotif
+  /** Where this tile goes. Textiles has its own page; the rest open an enquiry. */
+  to?: string
 }
 
 /** The marquee is the full product list, in the same order as the tiles. */
 const TILES: Tile[] = [
-  { id: 'textiles', label: 'Textiles & fabrics', note: 'Woven, printed, dyed', motif: 'bolt', palette: 'indigo' },
-  { id: 'handicrafts', label: 'Handicrafts & home decor', note: 'Made by hand', motif: 'basket', palette: 'saffron' },
-  { id: 'agriculture-food', label: 'Agriculture & food', note: 'Crop and ingredient', motif: 'ring', palette: 'cotton' },
-  { id: 'industrial-materials', label: 'Industrial materials', note: 'Inputs and components', motif: 'shuttle', palette: 'verdigris' },
-  { id: 'organic-sustainable', label: 'Organic & sustainable', note: 'Evidence per product', motif: 'bobbin', palette: 'madder' },
-  { id: 'general', label: 'Something else', note: 'Describe the need', motif: 'cloth', palette: 'cotton' },
+  { id: 'textiles', label: 'Textiles & fabrics', note: 'Woven, printed, dyed', motif: 'textiles', to: '/textiles' },
+  { id: 'handicrafts', label: 'Handicrafts & home decor', note: 'Made by hand', motif: 'handicrafts' },
+  { id: 'agriculture-food', label: 'Agriculture & food', note: 'Crop and ingredient', motif: 'agriculture' },
+  { id: 'industrial-materials', label: 'Industrial materials', note: 'Inputs and components', motif: 'industrial' },
+  { id: 'organic-sustainable', label: 'Organic & sustainable', note: 'Evidence per product', motif: 'organic' },
+  { id: 'general', label: 'Something else', note: 'Describe the need', motif: 'general' },
 ]
 
+const hrefFor = (tile: Tile) => tile.to ?? `/enquiry?category=${tile.id}`
+
 const RIBBON = CATEGORIES.map((category) => category.label)
-
-/* -------------------------------------------------------------------------- */
-/* The objects                                                                 */
-/* -------------------------------------------------------------------------- */
-
-/** A coil of cord: the plainest way to draw "made by hand" without a photo. */
-function BasketObject({ palette }: { palette: PaletteKey }) {
-  const tex = React.useMemo(() => getTextile(palette, 22), [palette])
-  return (
-    <group>
-      {[0, 1, 2, 3, 4].map((i) => (
-        <mesh key={i} rotation={[Math.PI / 2 + i * 0.14, i * 0.5, 0]} position={[0, (i - 2) * 0.17, 0]}>
-          <torusGeometry args={[0.62 - i * 0.06, 0.075, 8, 40]} />
-          <meshStandardMaterial map={tex.map} bumpMap={tex.bump} bumpScale={1.2} roughness={0.9} metalness={0.02} />
-        </mesh>
-      ))}
-    </group>
-  )
-}
-
-/** A seed ring: a torus of matte grain, for the agriculture tile. */
-function RingObject({ palette }: { palette: PaletteKey }) {
-  const tex = React.useMemo(() => getTextile(palette, 18), [palette])
-  return (
-    <group rotation={[0.5, 0, 0.2]}>
-      <mesh>
-        <torusGeometry args={[0.68, 0.26, 18, 46]} />
-        <meshStandardMaterial map={tex.map} bumpMap={tex.bump} bumpScale={1.8} roughness={0.94} metalness={0.03} />
-      </mesh>
-      <mesh position={[0, 0, 0]}>
-        <icosahedronGeometry args={[0.24, 1]} />
-        <meshStandardMaterial color="#8a7440" roughness={0.95} />
-      </mesh>
-    </group>
-  )
-}
-
-function MotifObject({ motif, palette }: { motif: Motif; palette: PaletteKey }) {
-  switch (motif) {
-    case 'bolt':
-      return <BoltObject palette={palette} />
-    case 'bobbin':
-      return <BobbinObject />
-    case 'reed':
-      return <ReedObject wires={22} />
-    case 'basket':
-      return <BasketObject palette={palette} />
-    case 'ring':
-      return <RingObject palette={palette} />
-    case 'shuttle':
-      return <ShuttleObject />
-    case 'cloth':
-    default:
-      return <TextilePlate palette={palette} />
-  }
-}
-
-/** A flat, softly folded swatch, for the catch-all tile. */
-function TextilePlate({ palette }: { palette: PaletteKey }) {
-  const tex = React.useMemo(() => getTextile(palette, 20), [palette])
-  return (
-    <mesh rotation={[0.42, -0.5, 0.1]}>
-      <planeGeometry args={[1.5, 1.9, 24, 30]} />
-      <meshStandardMaterial
-        map={tex.map}
-        bumpMap={tex.bump}
-        bumpScale={2}
-        roughness={0.88}
-        side={THREE.DoubleSide}
-      />
-    </mesh>
-  )
-}
 
 /* -------------------------------------------------------------------------- */
 /* One turning tile                                                            */
 /* -------------------------------------------------------------------------- */
 
 /**
- * Continuous rotation that never stops for anything.
+ * Continuous rotation, and nothing else.
  *
- * The visitor can drag a tile, and the drag adds to the angle rather than
- * replacing it, so the object keeps turning from wherever the hand left it.
- * There is no pause state and no control: motion is the default, and the only
- * things that interrupt it are the tab being hidden and the site deciding this
- * device needs a still frame.
+ * The object turns by itself for as long as the tile is on screen. There is no
+ * drag, no button, no pause: the tile is a link, so every pointer press has to
+ * mean "open the category" and nothing may swallow it. The rig lives inside the
+ * canvas because that is where a frame loop is available.
  *
- * The rig itself lives inside the canvas, because that is where a frame loop
- * is available; the pointer handlers live on the plain wrapper outside it.
+ * Framing is measured rather than guessed (see frameModel): six models of
+ * different shape are scaled to one shelf height, centred on the spin axis,
+ * and given a contact shadow under their own footprint.
  */
-function TurningRig({
-  children,
-  angle,
-  speed,
-}: {
-  children: React.ReactNode
-  angle: React.RefObject<{ yaw: number; pitch: number }>
-  speed: number
-}) {
-  const group = React.useRef<THREE.Group>(null)
+function TurningRig({ children, speed }: { children: React.ReactNode; speed: number }) {
+  const spin = React.useRef<THREE.Group>(null)
+  const body = React.useRef<THREE.Group>(null)
+  const [frame, setFrame] = React.useState<Framing | null>(null)
   const scene = useSceneSession()
+  const invalidate = scene?.invalidate
+
+  React.useLayoutEffect(() => {
+    const g = body.current
+    if (!g) return
+    g.scale.setScalar(1)
+    g.position.set(0, 0, 0)
+    g.updateMatrixWorld(true)
+    const next = frameModel(new THREE.Box3().setFromObject(g))
+    if (!next) return
+    setFrame(next)
+    /* A still device draws on demand, so the measured frame has to be asked
+       for explicitly or the tile would show an unmeasured model forever. */
+    invalidate?.current?.()
+  }, [invalidate])
 
   useFrame((_, delta) => {
-    const g = group.current
+    const g = spin.current
     if (!g) return
     const d = Math.min(delta, 1 / 30)
-    const a = angle.current
-    if (!a) return
-    if (!scene?.still) a.yaw += d * speed
-    /* Pitch always eases back to level, so a drag can tilt a tile but can
-       never leave it side-on. */
-    a.pitch = THREE.MathUtils.lerp(a.pitch, 0.14, 1 - Math.exp(-2.6 * d))
-    g.rotation.y = a.yaw
-    g.rotation.x = a.pitch
+    if (!scene?.still) g.rotation.y += d * speed
   })
 
   return (
-    <group ref={group} scale={0.9}>
-      {children}
+    <group ref={spin} rotation={[0.05, 0.7, 0]}>
+      <group ref={body} scale={frame?.scale ?? 1} position={frame?.position ?? [0, 0, 0]}>
+        {children}
+      </group>
+      {frame ? (
+        <mesh
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, frame.base + 0.015, 0]}
+          scale={frame.footprint * 1.7}
+        >
+          <planeGeometry args={[1, 1]} />
+          <meshBasicMaterial
+            map={getShadowTexture()}
+            transparent
+            opacity={0.4}
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </mesh>
+      ) : null}
     </group>
   )
 }
@@ -206,65 +149,19 @@ function TurningRig({
 function Turning({
   children,
   speed,
-  tilt = 0.5,
   live,
 }: {
   children: React.ReactNode
   speed: number
-  tilt?: number
   live: boolean
 }) {
-  const angle = React.useRef({ yaw: Math.random() * Math.PI * 2, pitch: 0.14 })
-  const drag = React.useRef({ active: false, moved: 0, x: 0, y: 0, lastX: 0, lastY: 0 })
-
-  const release = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (!drag.current.active) return
-    drag.current.active = false
-    event.currentTarget.releasePointerCapture?.(event.pointerId)
-  }
-
   return (
-    <div
-      className="tile__stage"
-      role="presentation"
-      onPointerDown={(event) => {
-        if (event.button !== 0) return
-        drag.current = {
-          active: true,
-          moved: 0,
-          x: angle.current.yaw,
-          y: angle.current.pitch,
-          lastX: event.clientX,
-          lastY: event.clientY,
-        }
-        event.currentTarget.setPointerCapture?.(event.pointerId)
-      }}
-      onPointerMove={(event) => {
-        const state = drag.current
-        if (!state.active) return
-        const dx = event.clientX - state.lastX
-        const dy = event.clientY - state.lastY
-        state.moved += Math.abs(dx) + Math.abs(dy)
-        angle.current.yaw = state.x + dx * 0.012
-        angle.current.pitch = THREE.MathUtils.clamp(state.y + dy * 0.004, -tilt, tilt)
-      }}
-      /* Turning an object inside a link must not also open the link. */
-      onClickCapture={(event) => {
-        if (drag.current.moved > 6) {
-          event.preventDefault()
-          event.stopPropagation()
-        }
-        drag.current.moved = 0
-      }}
-      onPointerUp={release}
-      onPointerCancel={release}
-    >
+    <div className="tile__stage" aria-hidden="true">
       {live ? (
         <Stage label="" z={4.6} fov={34} fallback={<WovenSwatch />}>
           <Studio />
           <Lights intensity={1.05} />
-          <Ground y={-1.15} scale={3.4} opacity={0.34} />
-          <TurningRig angle={angle} speed={speed}>{children}</TurningRig>
+          <TurningRig speed={speed}>{children}</TurningRig>
         </Stage>
       ) : (
         <WovenSwatch />
@@ -311,23 +208,22 @@ export function ProductExplorer() {
         </div>
 
         <ul className="tiles" ref={strip}>
-          {TILES.map((tile, index) => (
-            <li key={tile.id} className="tile" style={{ ['--i' as string]: index }}>
-              <Link
-                to={`/enquiry?category=${tile.id}`}
-                className="tile__link"
-                aria-label={`Enquire about ${tile.label}`}
-              >
-                <Turning speed={tile.id === 'textiles' ? 0.5 : 0.34 + index * 0.04} live={live}>
-                  <MotifObject motif={tile.motif} palette={tile.palette} />
-                </Turning>
-                <span className="tile__index">{String(index + 1).padStart(2, '0')}</span>
-                <span className="tile__label">{tile.label}</span>
-                <span className="tile__note">{tile.note}</span>
-                <span className="tile__go" aria-hidden="true"><Arrow /></span>
-              </Link>
-            </li>
-          ))}
+          {TILES.map((tile, index) => {
+            const object = CATEGORY_OBJECTS[tile.motif]
+            return (
+              <li key={tile.id} className="tile" style={{ ['--i' as string]: index }}>
+                <Link to={hrefFor(tile)} className="tile__link" aria-label={`${tile.label} — ${tile.note}`}>
+                  <Turning speed={object.speed} live={live}>
+                    {object.model}
+                  </Turning>
+                  <span className="tile__index">{String(index + 1).padStart(2, '0')}</span>
+                  <span className="tile__label">{tile.label}</span>
+                  <span className="tile__note">{tile.note}</span>
+                  <span className="tile__go" aria-hidden="true"><Arrow /></span>
+                </Link>
+              </li>
+            )
+          })}
         </ul>
       </div>
 

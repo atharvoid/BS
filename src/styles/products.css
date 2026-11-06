@@ -109,16 +109,16 @@
 .tile__link:focus-visible { outline: 2px solid var(--madder); outline-offset: -3px; }
 
 /* The object sits in its own letterbox, so every tile is the same height no
-   matter what shape the object is. */
+   matter what shape the object is. It is decoration inside a link: it never
+   takes the pointer, so the whole tile behaves as one target. */
 .tile__stage {
   position: relative;
   height: clamp(112px, 11vw, 152px);
   margin-bottom: 0.9rem;
+  pointer-events: none;
   touch-action: pan-y;
-  cursor: grab;
 }
 
-.tile__stage:active { cursor: grabbing; }
 .tile__stage canvas { display: block; }
 
 /* No canvas here: a woven swatch instead of an empty box. Each tile keeps its
