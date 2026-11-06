@@ -1,0 +1,209 @@
+/* ==========================================================================
+   The themed listbox (CustomSelect).
+
+   It has to look like the text fields beside it and nothing like the control
+   the operating system would have drawn. Two platform details matter more than
+   the rest:
+
+   - `-webkit-appearance: none` and an explicit `border-radius`, because iOS
+     paints a rounded, tinted button of its own on a bare <button>, and
+     `-webkit-tap-highlight-color` because it also flashes a grey box on tap.
+   - the arrow is an inline SVG in the markup, sized in ems. A background-image
+     arrow is what goes wrong on iOS: the platform can replace it, and it is
+     invisible to `forced-colors`.
+   ========================================================================== */
+
+.select {
+  position: relative;
+  width: 100%;
+}
+
+.select__button {
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 2.9rem;
+  padding: 0.78rem 0.9rem;
+  background: var(--cotton);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  font-family: var(--f-sans);
+  font-size: 0.97rem;
+  line-height: 1.3;
+  color: var(--fg);
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: border-color 280ms var(--ease-out), background 280ms var(--ease-out),
+    box-shadow 280ms var(--ease-out);
+}
+
+.select__value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.select__chevron {
+  flex: none;
+  width: 1.15em;
+  height: 1.15em;
+  color: var(--fg-mute);
+  transition: transform 260ms var(--ease-out), color 260ms var(--ease-out);
+}
+
+.select__button:hover {
+  border-color: rgba(26, 22, 17, 0.28);
+}
+
+.select__button:hover .select__chevron { color: var(--fg); }
+
+.select__button:focus-visible {
+  outline: none;
+  border-color: var(--madder);
+  background: var(--cotton-lit);
+  box-shadow: 0 0 0 3px rgba(156, 58, 45, 0.1);
+}
+
+.select__button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.select[data-open='true'] .select__button {
+  border-color: var(--madder);
+  background: var(--cotton-lit);
+}
+
+.select[data-open='true'] .select__chevron {
+  transform: rotate(180deg);
+  color: var(--madder);
+}
+
+/* ---- The list ------------------------------------------------------------- */
+
+.select__list {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  margin: 0;
+  padding: 0.28rem;
+  list-style: none;
+  max-height: min(18rem, 46vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  background: var(--cotton-lit);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  box-shadow: 0 18px 40px -22px rgba(26, 22, 17, 0.45), 0 2px 0 rgba(26, 22, 17, 0.04);
+  animation: select-open 180ms var(--ease-out);
+}
+
+.select[data-placement='below'] .select__list { top: calc(100% + 0.35rem); }
+.select[data-placement='above'] .select__list { bottom: calc(100% + 0.35rem); }
+
+@media (prefers-reduced-motion: reduce) {
+  .select__list { animation: none; }
+  .select__chevron { transition: none; }
+}
+
+@keyframes select-open {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.select[data-placement='above'] .select__list { animation-name: select-open-up; }
+
+@keyframes select-open-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.select__option {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.9rem;
+  padding: 0.6rem 0.65rem;
+  border-radius: 2px;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  color: var(--fg);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 140ms var(--ease-out), color 140ms var(--ease-out);
+}
+
+/* The active option is the keyboard position, not the chosen one: it is shown
+   on hover and on arrow keys alike, so the two never disagree. */
+.select__option[data-active='true'] {
+  background: var(--ink);
+  color: var(--cotton-lit);
+}
+
+.select__option[aria-selected='true'] .select__option-label { font-weight: 600; }
+
+.select__option[aria-selected='true'] .select__option-label::after {
+  content: '';
+  display: inline-block;
+  width: 0.42em;
+  height: 0.42em;
+  margin-left: 0.5em;
+  border-radius: 50%;
+  background: var(--madder);
+  vertical-align: 0.1em;
+}
+
+.select__option[data-active='true'][aria-selected='true'] .select__option-label::after {
+  background: var(--cotton-lit);
+}
+
+.select__option-hint {
+  flex: none;
+  font-family: var(--f-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-mute);
+  opacity: 0.8;
+}
+
+.select__option[data-active='true'] .select__option-hint {
+  color: inherit;
+  opacity: 0.7;
+}
+
+.select__hint {
+  margin-top: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--fg-mute);
+  line-height: 1.5;
+}
+
+/* Windows high contrast: the theme colours are taken away, so the states have
+   to be carried by borders and system colours instead. */
+@media (forced-colors: active) {
+  .select__button,
+  .select__list { border: 1px solid ButtonBorder; }
+
+  .select__option[data-active='true'] {
+    background: Highlight;
+    color: HighlightText;
+    outline: 1px solid Highlight;
+  }
+
+  .select__option[aria-selected='true'] .select__option-label { text-decoration: underline; }
+  .select__option[aria-selected='true'] .select__option-label::after { display: none; }
+}

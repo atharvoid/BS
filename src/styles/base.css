@@ -69,6 +69,9 @@ button {
   cursor: pointer;
 }
 
+/* `select` is kept in the reset for the rare placed-in-HTML control, but the
+   enquiry form does not use one: it draws its own listbox (see select.css), so
+   the operating system cannot paint a chevron of its own. */
 input, textarea, select {
   font: inherit;
   color: inherit;

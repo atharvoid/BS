@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { EnquiryForm, useEnquiryDraft } from '../components/EnquiryForm'
+import { CustomSelect } from '../components/CustomSelect'
 import { BUSINESS, CATEGORIES, getCategory } from '../content'
 
 export default function Enquiry() {
@@ -32,15 +33,22 @@ export default function Enquiry() {
         <div className="shell">
           <div className="enquiry-body__grid">
             <div className="enquiry-body__form">
+              {/* A themed listbox rather than a <select>: the native control is
+                  drawn by the operating system, and the operating system does
+                  not have this site's arrow. */}
               <div className="field">
-                <label className="field__label" htmlFor="enquiry-category">Product category</label>
-                <select id="enquiry-category" value={draft.subject} disabled={sending} onChange={(event) => {
-                  const next = getCategory(event.target.value).id
-                  setDraft((current) => ({ ...current, subject: next }))
-                  setParams({ category: next })
-                }}>
-                  {CATEGORIES.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
-                </select>
+                <p className="field__label" id="enquiry-category-label">Product category</p>
+                <CustomSelect
+                  id="enquiry-category"
+                  label="Product category"
+                  value={draft.subject}
+                  disabled={sending}
+                  choices={CATEGORIES.map((item) => ({ value: item.id, label: item.label }))}
+                  onChange={(next) => {
+                    setDraft((current) => ({ ...current, subject: getCategory(next).id }))
+                    setParams({ category: getCategory(next).id })
+                  }}
+                />
               </div>
               <EnquiryForm />
             </div>

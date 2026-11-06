@@ -136,7 +136,7 @@ export function EnquiryForm() {
     if (Object.keys(found).length) {
       firstInvalid.current = Object.keys(found)[0]
       const field = form.current?.querySelector<HTMLElement>(`[data-field="${firstInvalid.current}"]`)
-      const el = field?.querySelector<HTMLElement>('input, textarea, select') ?? field
+      const el = field?.querySelector<HTMLElement>('input, textarea, [role="combobox"]') ?? field
       el?.focus()
       el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
       return
