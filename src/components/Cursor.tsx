@@ -3,15 +3,22 @@ import { selectNearbyTarget, type CursorTarget } from './cursor-state'
 import type { ScenePointerEvent } from '../three/interaction'
 import '../styles/cursor.css'
 
-type Mode = 'idle' | 'approach' | 'menu-row' | 'menu-compact' | 'action' | 'scene' | 'dragging'
-type MeasuredTarget = CursorTarget & { element: HTMLElement; label: DOMRect; row: boolean }
+type Mode = 'idle' | 'approach' | 'explore' | 'explore-row' | 'action' | 'scene' | 'dragging'
+type MeasuredTarget = CursorTarget & { element: HTMLElement; row: boolean }
 type SceneHit = { id: string; pointerId: number; inside: boolean; dragging: boolean }
 
-const TARGETS = '[data-cursor="menu"], [data-cursor="select"], .nav__link, .drawer__link'
+/** Anything that should offer the filled Explore disc. */
+const TARGETS = '[data-cursor="menu"], .nav__link, .drawer__link'
 const NATIVE = 'input, textarea, select, [contenteditable="true"], [data-cursor="native"], iframe'
 const ACTION = 'a, button, [role="tab"], [data-cursor="action"]'
 
-/** A decorative pointer that follows actual DOM and scene hit targets. */
+/**
+ * The pointer.
+ *
+ * Over a navigation item it becomes one opaque circular disc with the word
+ * Explore set inside it, sitting exactly on the pointer. It is a disc, not a
+ * pill and not a caption under the cursor: one shape, one word, no offset.
+ */
 export function Cursor() {
   const host = React.useRef<HTMLDivElement>(null)
   const ring = React.useRef<HTMLDivElement>(null)
@@ -70,13 +77,13 @@ export function Cursor() {
           id = String(++idCounter)
           targetIds.set(element, id)
         }
-        const range = document.createRange()
-        range.selectNodeContents(element)
-        const labelRect = range.getBoundingClientRect()
-        range.detach()
-        return [{ id, rect, element, label: labelRect, row: element.dataset.cursorSize === 'row' || element.classList.contains('drawer__link') }]
+        return [{ id, rect, element, row: element.classList.contains('drawer__link') || element.dataset.cursorSize === 'row' }]
       })
     }
+
+    /** The disc is larger than a normal cursor, so it is kept fully on screen. */
+    const clampToDisc = (value: number, size: number) =>
+      Math.min(size > 0 ? innerWidth - size / 2 - 6 : innerWidth, Math.max(size / 2 + 6, value))
 
     const tick = (time: number) => {
       raf = 0
@@ -109,32 +116,21 @@ export function Cursor() {
         const onCanvas = hit instanceof HTMLCanvasElement
         let mode: Mode = 'idle'
         if (scene?.dragging) mode = 'dragging'
-        else if (isMenu && target) mode = target.row ? 'menu-row' : 'menu-compact'
+        else if (isMenu && target) mode = target.row ? 'explore-row' : 'explore'
         else if (action) mode = 'action'
         else if (scene?.inside && onCanvas) mode = 'scene'
         else if (target) mode = 'approach'
 
         let tx = x
         let ty = y
-        if (mode === 'menu-compact' && target) {
-          const width = Math.max(64, Math.min(112, target.label.width + 24))
-          if (container.style.getPropertyValue('--cursor-width') !== width + 'px') {
-            container.style.setProperty('--cursor-width', width + 'px')
-          }
-          tx = Math.max(width / 2, Math.min(innerWidth - width / 2, x))
-          ty = Math.min(innerHeight - 20, target.rect.bottom + 23)
-        } else if (mode === 'menu-row' && target) {
-          tx = Math.min(innerWidth - 40, x + 44)
-          ty = Math.min(innerHeight - 40, y + 24)
-          const labelRect = target.label
-          if (tx + 38 > labelRect.left && tx - 38 < labelRect.right &&
-              ty + 38 > labelRect.top && ty - 38 < labelRect.bottom) {
-            const right = labelRect.right + 42
-            if (right <= innerWidth - 38) tx = right
-            else mode = 'action'
-          }
-          tx = Math.max(40, tx)
-          ty = Math.max(40, ty)
+        if (mode === 'explore') {
+          /* The disc holds the pointer exactly, so it never reads as a tooltip
+             hanging underneath. It is nudged only enough to stay on screen. */
+          tx = clampToDisc(x, 88)
+          ty = clampToDisc(y, 88)
+        } else if (mode === 'explore-row') {
+          tx = clampToDisc(x, 104)
+          ty = clampToDisc(y, 104)
         } else if (mode === 'approach' && target) {
           const cx = (target.rect.left + target.rect.right) / 2
           const cy = (target.rect.top + target.rect.bottom) / 2
@@ -152,8 +148,10 @@ export function Cursor() {
         }
 
         container.dataset.mode = mode
-        const caption = mode === 'scene' || mode === 'dragging' ? 'Drag' :
-          mode === 'menu-row' || mode === 'menu-compact' ? 'Explore' : ''
+        /* A short fade instead of a pop: the disc is 88px across, and appearing
+           at full size instantly reads as a glitch. */
+        container.dataset.explore = mode === 'explore' || mode === 'explore-row' ? 'true' : 'false'
+        const caption = mode === 'scene' || mode === 'dragging' ? 'Drag' : 'Explore'
         if (text.textContent !== caption) text.textContent = caption
         root.classList.add('has-custom-cursor')
         container.dataset.visible = 'true'
@@ -162,9 +160,12 @@ export function Cursor() {
           ry = y
           initialized = true
         }
+        /* The disc tracks the pointer tightly so it feels attached to it; the
+           small rings keep the softer follow. */
+        const follow = mode === 'explore' || mode === 'explore-row' ? 55 : 90
         const elapsed = previousTime ? Math.min(50, time - previousTime) : 16
         previousTime = time
-        const amount = 1 - Math.exp(-elapsed / 90)
+        const amount = 1 - Math.exp(-elapsed / follow)
         rx += (tx - rx) * amount
         ry += (ty - ry) * amount
         body.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%)`
@@ -274,7 +275,7 @@ export function Cursor() {
   }, [])
 
   return (
-    <div className="cursor" ref={host} data-mode="idle" data-visible="false" aria-hidden="true">
+    <div className="cursor" ref={host} data-mode="idle" data-visible="false" data-explore="false" aria-hidden="true">
       <div className="cursor__ring" ref={ring}><span className="cursor__label" ref={label} /></div>
       <div className="cursor__dot" ref={dot} />
     </div>

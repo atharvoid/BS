@@ -1,16 +1,436 @@
-.product-explorer { padding: var(--section-y) 0; background: var(--cotton); color: var(--fg); }
-.product-explorer__heading { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; }
-.product-explorer__heading h2 { font: 400 var(--fs-display)/1.05 var(--f-display); max-width: 16ch; margin-top: 1rem; }
-.product-explorer__arrows { display: flex; gap: .5rem; }
-.product-explorer__arrows button { width: 44px; height: 44px; border: 1px solid var(--rule); border-radius: 50%; font-size: 1.2rem; }
-.product-explorer__tabs { display: flex; gap: .5rem; overflow-x: auto; padding: 2px 0 1rem; scrollbar-width: thin; scroll-snap-type: x proximity; }
-.product-explorer__tabs button { flex: 0 0 clamp(180px, 18vw, 240px); min-height: 106px; padding: 1rem; text-align: left; border: 1px solid var(--rule); font: 500 1rem/1.2 var(--f-sans); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; scroll-snap-align: start; }
-.product-explorer__tabs button span { align-self: flex-end; font-size: 1.3rem; }
-.product-explorer__tabs button[aria-selected='true'] { background: var(--indigo); color: var(--cotton-lit); border-color: var(--indigo); }
-.product-explorer__tabs button:focus-visible, .product-explorer__arrows button:focus-visible { outline: 2px solid var(--madder); outline-offset: -3px; }
-.product-explorer__panel { margin-top: 1rem; padding: clamp(1.5rem, 4vw, 4rem); background: var(--cotton-lit); min-height: 240px; }
-.product-explorer__textile { display: flex; align-items: end; justify-content: space-between; gap: 2rem; }
-.product-explorer__textile h3 { font: 400 clamp(2rem,4vw,3.5rem)/1.05 var(--f-display); margin: 1rem 0; }
-.product-explorer__textile p:not(.eyebrow) { font: 1.2rem/1.5 var(--f-serif); max-width: 38ch; }
-.product-explorer__actions { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
-@media (max-width: 720px) { .product-explorer__textile { flex-direction: column; align-items: flex-start; } .product-explorer__tabs button { flex-basis: 175px; } }
+/* ==========================================================================
+   What are you looking to source?
+
+   One row of live category tiles, then a running marquee of every product
+   area. Compact on purpose: it is a doorway between the hero and the rest of
+   the page, not a section in its own right.
+   ========================================================================== */
+
+.sourcing {
+  position: relative;
+  padding-block: clamp(2.6rem, 4.6vw, 4.2rem) 0;
+  background: var(--cotton);
+  color: var(--fg);
+}
+
+.sourcing__head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: clamp(1rem, 3vw, 3rem);
+  flex-wrap: wrap;
+  margin-bottom: clamp(1.5rem, 2.6vw, 2.4rem);
+}
+
+.sourcing__title {
+  margin-top: 0.7rem;
+  font-size: clamp(1.9rem, 3.6vw, 3.1rem);
+  line-height: 1.02;
+  letter-spacing: -0.026em;
+  max-width: 20ch;
+}
+
+.sourcing__tools {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.sourcing__hint {
+  font-family: var(--f-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--fg-mute);
+  max-width: 22ch;
+}
+
+.sourcing__arrows { display: flex; gap: 0.4rem; }
+
+.sourcing__arrows button {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  color: var(--fg);
+  font-size: 1rem;
+  line-height: 1;
+  transition: background 240ms var(--ease-out), color 240ms var(--ease-out),
+    border-color 240ms var(--ease-out);
+}
+
+.sourcing__arrows button:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--cotton-lit);
+}
+
+.sourcing__arrows button:focus-visible {
+  outline: 2px solid var(--madder);
+  outline-offset: 3px;
+}
+
+/* ---- Tiles ---------------------------------------------------------------- */
+
+.tiles {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 1px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+
+.tile { min-width: 0; background: var(--cotton); }
+
+.tile__link {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0 0 1.1rem;
+  color: inherit;
+  background: var(--cotton);
+  transition: background 420ms var(--ease-out), color 420ms var(--ease-out);
+}
+
+.tile__link:hover,
+.tile__link:focus-visible {
+  background: var(--ink);
+  color: var(--cotton-lit);
+  outline: none;
+}
+
+.tile__link:focus-visible { outline: 2px solid var(--madder); outline-offset: -3px; }
+
+/* The object sits in its own letterbox, so every tile is the same height no
+   matter what shape the object is. */
+.tile__stage {
+  position: relative;
+  height: clamp(112px, 11vw, 152px);
+  margin-bottom: 0.9rem;
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+.tile__stage:active { cursor: grabbing; }
+.tile__stage canvas { display: block; }
+.tile__stage > span { position: absolute; inset: 0; }
+
+/* Shown when WebGL is unavailable: a woven swatch instead of an empty box. */
+.tile__static {
+  display: block;
+  inset: 18% 22% !important;
+  border-radius: 2px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px 5px),
+    linear-gradient(140deg, #4a5a7d, #24304a);
+}
+
+.tile__index {
+  position: absolute;
+  top: 0.75rem;
+  left: clamp(0.85rem, 1.4vw, 1.15rem);
+  font-family: var(--f-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.18em;
+  color: var(--fg-mute);
+  transition: color 420ms var(--ease-out);
+}
+
+.tile__link:hover .tile__index { color: rgba(242, 235, 221, 0.6); }
+
+.tile__label {
+  padding-inline: clamp(0.85rem, 1.4vw, 1.15rem);
+  font-family: var(--f-sans);
+  font-size: clamp(0.92rem, 1.05vw, 1.02rem);
+  font-weight: 500;
+  line-height: 1.24;
+  letter-spacing: -0.006em;
+  text-wrap: balance;
+}
+
+.tile__note {
+  padding-inline: clamp(0.85rem, 1.4vw, 1.15rem);
+  margin-top: 0.35rem;
+  font-family: var(--f-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-mute);
+  transition: color 420ms var(--ease-out);
+}
+
+.tile__link:hover .tile__note { color: rgba(242, 235, 221, 0.62); }
+
+.tile__go {
+  position: absolute;
+  right: clamp(0.7rem, 1.2vw, 1rem);
+  bottom: 0.9rem;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  color: var(--fg-mute);
+  opacity: 0;
+  transform: translate(-4px, 4px);
+  transition: opacity 320ms var(--ease-out), transform 320ms var(--ease-out), color 320ms var(--ease-out);
+}
+
+.tile__go svg { width: 11px; height: 11px; }
+
+.tile__link:hover .tile__go,
+.tile__link:focus-visible .tile__go {
+  opacity: 1;
+  transform: none;
+  color: var(--cotton-lit);
+}
+
+/* ---- The running list of product areas ---------------------------------- */
+
+.sourcing__ribbon {
+  margin-top: clamp(1.6rem, 2.6vw, 2.4rem);
+  padding-block: 0.95rem;
+  background: var(--cotton-deep);
+  border-top: 1px solid var(--rule-soft);
+  overflow: hidden;
+}
+
+.sourcing__track {
+  display: flex;
+  width: max-content;
+  animation: sourcing-marquee 44s linear infinite;
+}
+
+.sourcing__group { display: flex; align-items: center; }
+
+.sourcing__word {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(1.3rem, 2.6vw, 2.2rem);
+  padding-inline: clamp(0.6rem, 1.3vw, 1.1rem);
+  font-family: var(--f-display);
+  font-size: clamp(0.9rem, 1.35vw, 1.2rem);
+  font-style: italic;
+  font-variation-settings: 'SOFT' 40, 'WONK' 1;
+  letter-spacing: 0.01em;
+  color: #5c4f3f;
+  white-space: nowrap;
+}
+
+.sourcing__dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--madder);
+  opacity: 0.55;
+  flex: none;
+}
+
+@keyframes sourcing-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* ---- Narrow screens ------------------------------------------------------ */
+
+@media (max-width: 1080px) {
+  .tiles {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(200px, 1fr);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .tiles::-webkit-scrollbar { display: none; }
+  .tile { scroll-snap-align: start; }
+}
+
+@media (max-width: 720px) {
+  .sourcing__head { align-items: start; }
+  .sourcing__tools { width: 100%; justify-content: space-between; }
+  .sourcing__hint { max-width: 20ch; }
+  .tile__stage { height: 118px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sourcing__track { animation: none; }
+}
+
+/* ==========================================================================
+   What to tell us about your fabric
+
+   An example brief, laid out like a printed enquiry sheet. No canvas, no
+   animation, nothing to keep smooth: the section's job is to be read and
+   copied from.
+   ========================================================================== */
+
+.brief {
+  padding-block: var(--section-y);
+  background: var(--cotton);
+  color: var(--fg);
+  border-top: 1px solid var(--rule-soft);
+}
+
+.brief__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+  gap: clamp(2rem, 5vw, 5.5rem);
+  align-items: start;
+}
+
+.brief__title {
+  margin-top: 0.9rem;
+  font-size: var(--fs-display);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  max-width: 18ch;
+}
+
+.brief__lede {
+  margin-top: 1.2rem;
+  max-width: 34ch;
+  font-family: var(--f-serif);
+  font-size: var(--fs-lead);
+  line-height: 1.5;
+  color: var(--fg-soft);
+}
+
+.brief__actions {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  flex-wrap: wrap;
+  margin-top: 1.9rem;
+}
+
+.brief__mail { font-family: var(--f-mono); font-size: 0.72rem; letter-spacing: 0.06em; }
+
+/* ---- The sheet ----------------------------------------------------------- */
+
+.brief__sheet {
+  background: var(--cotton-lit);
+  border: 1px solid var(--rule);
+  box-shadow: 0 1px 0 rgba(26, 22, 17, 0.04), 0 18px 40px -32px rgba(26, 22, 17, 0.5);
+}
+
+.brief__sheet-head {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.9rem clamp(1.1rem, 2.4vw, 2rem);
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--f-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--fg-mute);
+}
+
+.brief__sheet-label { color: var(--fg); }
+.brief__sheet-rule { flex: 1; height: 1px; background: var(--rule); }
+
+.brief__rows { list-style: none; margin: 0; padding: 0; }
+
+.brief__row {
+  padding: clamp(1.05rem, 2vw, 1.5rem) clamp(1.1rem, 2.4vw, 2rem);
+  border-bottom: 1px solid var(--rule-soft);
+  transition: background 420ms var(--ease-out);
+}
+
+.brief__row.is-active { background: rgba(156, 58, 45, 0.045); }
+
+.brief__row-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.brief__num {
+  font-family: var(--f-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  padding-top: 0.2rem;
+}
+
+.brief__field {
+  font-family: var(--f-sans);
+  font-size: clamp(1rem, 1.15vw, 1.12rem);
+  font-weight: 600;
+  letter-spacing: -0.008em;
+  color: var(--fg);
+}
+
+.brief__tag {
+  margin-left: auto;
+  font-family: var(--f-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-mute);
+  white-space: nowrap;
+}
+
+.brief__ask {
+  margin-top: 0.5rem;
+  padding-left: calc(0.6rem + 1.55rem);
+  font-family: var(--f-serif);
+  font-size: 1.02rem;
+  line-height: 1.5;
+  color: var(--fg-soft);
+  max-width: 52ch;
+}
+
+.brief__example {
+  margin-top: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  margin-left: calc(0.6rem + 1.55rem);
+  border-left: 2px solid var(--rule);
+  background: rgba(26, 22, 17, 0.026);
+  font-family: var(--f-sans);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--fg-soft);
+  max-width: 56ch;
+}
+
+.brief__example-label {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-family: var(--f-mono);
+  font-size: 0.53rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-mute);
+}
+
+.brief__sheet-foot {
+  padding: 1rem clamp(1.1rem, 2.4vw, 2rem) 1.2rem;
+  font-family: var(--f-mono);
+  font-size: 0.6rem;
+  line-height: 1.7;
+  letter-spacing: 0.05em;
+  color: var(--fg-mute);
+  max-width: 62ch;
+}
+
+@media (max-width: 940px) {
+  .brief__grid { grid-template-columns: minmax(0, 1fr); }
+  .brief__title { max-width: 22ch; }
+}
+
+@media (max-width: 560px) {
+  .brief__tag { margin-left: 0; width: 100%; }
+  .brief__ask,
+  .brief__example { padding-left: 0; margin-left: 0; }
+  .brief__example { border-left: 0; border-top: 1px solid var(--rule); }
+}

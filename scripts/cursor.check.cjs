@@ -23,9 +23,32 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright')
     await page.mouse.move(80, 135)
     await page.waitForFunction(() => document.querySelector('.cursor')?.dataset.mode === 'approach')
     assert.equal(await cursor.locator('.cursor__label').textContent(), '')
+    assert.equal(await cursor.locator('.cursor__label').evaluate(el => getComputedStyle(el).opacity), '0')
     await page.mouse.move(150, 135)
-    await page.waitForFunction(() => document.querySelector('.cursor')?.dataset.mode === 'menu-compact')
+    await page.waitForFunction(() => document.querySelector('.cursor')?.dataset.mode === 'explore')
     assert.equal(await cursor.locator('.cursor__label').textContent(), 'Explore')
+    // One opaque disc, square, with the word centred inside it and no offset
+    // below the pointer.
+    const disc = await cursor.locator('.cursor__ring').evaluate(el => {
+      const s = getComputedStyle(el)
+      const box = el.getBoundingClientRect()
+      const label = el.querySelector('.cursor__label')
+      const word = label.getBoundingClientRect()
+      return {
+        width: box.width, height: box.height, radius: s.borderRadius,
+        background: s.backgroundColor, opacity: getComputedStyle(label).opacity,
+        labelCentreX: (word.left + word.right) / 2, labelCentreY: (word.top + word.bottom) / 2,
+        discCentreX: (box.left + box.right) / 2, discCentreY: (box.top + box.bottom) / 2,
+      }
+    })
+    assert.ok(disc.width >= 70, `Explore disc is large (${disc.width}px)`)
+    assert.equal(Math.round(disc.width), Math.round(disc.height), 'Explore disc is circular')
+    assert.equal(disc.radius, '50%')
+    assert.notEqual(disc.background, 'rgba(0, 0, 0, 0)', 'Explore disc is opaque')
+    assert.equal(disc.opacity, '1')
+    assert.ok(Math.abs(disc.labelCentreX - disc.discCentreX) < 2, 'word is centred in the disc')
+    assert.ok(Math.abs(disc.labelCentreY - disc.discCentreY) < 2, 'word is centred in the disc')
+    assert.ok(Math.abs(disc.discCentreY - 135) < 90, 'disc is on the pointer, not below it')
     await page.mouse.move(150, 215)
     await page.waitForFunction(() => !document.documentElement.classList.contains('has-custom-cursor'))
     await page.mouse.move(150, 330)

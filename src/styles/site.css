@@ -350,9 +350,21 @@
   transform: translateY(var(--parallax, 0));
 }
 
+/* The globe owns the right side of the hero and stops at the copy. Full-bleed it
+   would sit behind the headline, which is unreadable over a lit hemisphere no
+   matter how it is toned. The canvas is the full height of the hero, so the
+   globe is drawn large rather than in a small box. */
 .hero__stage {
   position: absolute;
-  inset: 0;
+  inset: 0 0 0 auto;
+  width: 64%;
+}
+
+@media (max-width: 900px) {
+  .hero__stage {
+    inset: 0;
+    width: 100%;
+  }
 }
 
 .hero__inner {
@@ -584,31 +596,6 @@
 .drag-hint svg { width: 13px; height: 13px; }
 .drag-hint.is-done { opacity: 0; transform: translateY(6px); }
 
-.hero__scroll {
-  position: absolute;
-  left: 50%;
-  bottom: 1.6rem;
-  transform: translateX(-50%);
-  z-index: 3;
-  width: 1px;
-  height: 44px;
-  background: rgba(242, 235, 221, 0.18);
-  overflow: hidden;
-}
-
-.hero__scroll span {
-  position: absolute;
-  inset: 0;
-  background: var(--cotton);
-  animation: scrollLine 2.6s var(--ease-in-out) infinite;
-}
-
-@keyframes scrollLine {
-  0% { transform: translateY(-100%); }
-  55% { transform: translateY(0); }
-  100% { transform: translateY(100%); }
-}
-
 /* Non-WebGL hero fallback */
 .hero-fallback {
   position: absolute;
@@ -668,65 +655,6 @@
 /* --------------------------------------------------------------------------
    Ribbon
    -------------------------------------------------------------------------- */
-.ribbon {
-  background: var(--cotton-deep);
-  border-bottom: 1px solid var(--rule-soft);
-  padding-block: 1.15rem 1.4rem;
-  overflow: hidden;
-  position: relative;
-}
-
-.ribbon__track {
-  display: flex;
-  width: max-content;
-  animation: marquee 46s linear infinite;
-  will-change: transform;
-}
-
-.ribbon:hover .ribbon__track { animation-play-state: paused; }
-
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-
-.ribbon__group { display: flex; align-items: center; }
-
-.ribbon__word {
-  display: inline-flex;
-  align-items: center;
-  gap: clamp(1.4rem, 3vw, 2.6rem);
-  padding-inline: clamp(0.7rem, 1.5vw, 1.3rem);
-  font-family: var(--f-display);
-  font-size: clamp(0.95rem, 1.5vw, 1.35rem);
-  font-style: italic;
-  font-variation-settings: 'SOFT' 40, 'WONK' 1;
-  letter-spacing: 0.01em;
-  color: #5c4f3f;
-  white-space: nowrap;
-}
-
-.ribbon__dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--madder);
-  opacity: 0.55;
-  flex: none;
-}
-
-.ribbon__note {
-  margin-top: 0.9rem;
-  padding-inline: var(--gutter);
-  font-family: var(--f-mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #6b5f4e;
-  max-width: var(--maxw);
-  margin-inline: auto;
-}
-
 /* --------------------------------------------------------------------------
    Purpose
    -------------------------------------------------------------------------- */
@@ -2902,7 +2830,6 @@ fieldset .field__label { float: none; }
   .hero__facts { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
   .hero__facts > div:last-child { grid-column: auto; }
   .hero__actions { gap: 1.1rem; }
-  .hero__scroll { display: none; }
   .drag-hint { right: 1rem; bottom: 1rem; font-size: 0.55rem; }
 
   .wall { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -2931,7 +2858,7 @@ fieldset .field__label { float: none; }
 }
 
 @media print {
-  .nav, .drawer, .cursor, .hero__canvas, .hero__scroll, .drag-hint, .footer__wordmark { display: none !important; }
+  .nav, .drawer, .cursor, .hero__canvas, .drag-hint, .footer__wordmark { display: none !important; }
   body { background: #fff; color: #000; }
   .reveal { opacity: 1 !important; transform: none !important; }
 }

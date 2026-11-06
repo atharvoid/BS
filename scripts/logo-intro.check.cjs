@@ -14,18 +14,17 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright')
 
     // Assert short-lived states in the same browser task. Polling after a
     // Playwright click can miss the entire one-second intro on a busy GPU.
-    for (const action of ['Escape', 'Tab', 'skip', 'wheel', 'touchstart', 'resize']) {
+    // There is no skip control any more: the sequence is three seconds long and
+    // is interrupted by any deliberate input instead.
+    assert.equal(await page.locator('.intro-skip').count(), 0, 'no skip control is rendered')
+    for (const action of ['Escape', 'Tab', 'wheel', 'touchstart', 'resize']) {
       const result = await page.evaluate(action => {
         const brand = document.querySelector('.nav .brand')
         const intro = document.querySelector('#brand-intro')
         brand.click()
         const started = !intro.hidden
         const timings = intro.getAnimations({ subtree: true }).map(a => a.effect.getTiming())
-        if (action === 'skip') {
-          const skip = intro.querySelector('.intro-skip')
-          skip.focus()
-          skip.click()
-        } else if (action === 'Escape' || action === 'Tab') {
+        if (action === 'Escape' || action === 'Tab') {
           window.dispatchEvent(new KeyboardEvent('keydown', { key: action }))
         } else window.dispatchEvent(new Event(action))
         return {
@@ -37,16 +36,26 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright')
       assert.equal(result.started, true, `${action}: replay starts`)
       assert.equal(result.hidden, true, `${action}: interruption dismisses`)
       assert.equal(result.active, undefined)
-      assert.equal(result.headerVisible, 'visible')
-      assert.ok(result.timings.some(t => t.duration === 460), 'supplied draw duration is retained')
-      if (action === 'skip') assert.equal(result.focused, true)
+      assert.equal(result.headerVisible, 'visible', `${action}: header mark returns`)
+      assert.ok(result.timings.every(t => t.duration <= 3000), `${action}: no animation outlasts 3s`)
     }
 
     assert.equal(await page.evaluate(() => {
       document.querySelector('.nav .brand').click()
       return !document.querySelector('#brand-intro').hidden
     }), true)
-    await intro.waitFor({ state: 'hidden', timeout: 5000 })
+    const opening = await page.evaluate(() => {
+      const brand = document.querySelector('.nav .brand')
+      brand.click()
+      const intro = document.querySelector('#brand-intro')
+      const started = performance.now()
+      return { started, longest: Math.max(...intro.getAnimations({ subtree: true }).map(a => {
+        const timing = a.effect.getTiming()
+        return Number(timing.delay || 0) + Number(timing.duration || 0)
+      })) }
+    })
+    assert.ok(opening.longest >= 2500 && opening.longest <= 3050, `the opening lasts about 3s (${Math.round(opening.longest)}ms)`)
+    await intro.waitFor({ state: 'hidden', timeout: 6000 })
 
     assert.equal(await page.evaluate(() => {
       const brand = document.querySelector('.nav .brand')
@@ -91,7 +100,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright')
     }), true)
     await intro.waitFor({ state: 'hidden' })
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
-    console.log('PASS: logo draw/timing, replay, Escape/Tab, skip/focus, wheel/touch, modified clicks, hash, SPA cleanup/Back, reduced motion, resize and mobile width')
+    console.log('PASS: 3s opening, no skip control, replay, Escape/Tab, wheel/touch, modified clicks, hash, SPA cleanup/Back, reduced motion, resize and mobile width')
   } finally {
     await browser.close()
   }

@@ -604,10 +604,12 @@ function Globe() {
     }),
     [],
   )
+  /* A static state is decided by the site, not by this scene: a device that
+     cannot hold the frame rate is told to hold a still image (performance.ts),
+     and reduced motion is honoured the same way. */
   const session = useSceneSession()
-  const still = session?.reduced ?? reducedMotion()
+  const still = session?.still ?? reducedMotion()
   const drag = React.useMemo(() => createDrag(0.5), [])
-  const spin = React.useRef(0)
 
   /* Frame the globe on India from the first frame. This has to seed the drag
      state rather than the JSX rotation, because the per-frame loop owns the
@@ -626,10 +628,15 @@ function Globe() {
     return null
   }, [drag, startY])
 
+  const spin = React.useRef(0)
+
   useFrame((_, delta) => {
     const d = Math.min(delta, 1 / 30)
-    if (!session?.paused && !still) uniforms.uTime.value += d
-    if (!still && !session?.paused && !drag.touched && !drag.dragging) spin.current += d * 0.045
+    /* The clock advances whenever the globe is animating. A drag changes the
+       angle, never the motion: the comets keep running while the visitor pulls
+       the surface around, which is the whole point of a globe you can turn. */
+    if (!still) uniforms.uTime.value += d
+    if (!still && !drag.dragging) spin.current += d * 0.045
   })
 
   const root = React.useRef<THREE.Group>(null)
@@ -640,13 +647,17 @@ function Globe() {
     if (!drag.dragging) drag.target.y += drag.velocity.y * d
     const decay = Math.exp(-3.4 * d)
     drag.velocity.y *= decay
-    drag.current.y = THREE.MathUtils.lerp(drag.current.y, drag.target.y + spin.current, 1 - Math.exp(-5.6 * d))
+    /* The spin is absolute rather than proportional to the visitor's angle, so
+       a drag offsets the globe and the drift carries on from where they left
+       it instead of stopping dead. */
+    const yaw = drag.target.y + spin.current
+    drag.current.y = THREE.MathUtils.lerp(drag.current.y, yaw, 1 - Math.exp(-5.6 * d))
     g.rotation.y = drag.current.y
     g.rotation.x = THREE.MathUtils.lerp(drag.current.x, drag.target.x, 1 - Math.exp(-5.6 * d)) * 0.55
     g.rotation.z = 0.06
   })
 
-  const bind = useSceneDrag(drag, root, { initialYaw: startY, tilt: 0.5, pitchScale: 0.55, resetPhase: () => { spin.current = 0 } })
+  const bind = useSceneDrag(drag, root, { initialYaw: startY, tilt: 0.5, pitchScale: 0.55, resetPhase: () => {} })
 
   return (
     <group
@@ -665,21 +676,32 @@ function Globe() {
   )
 }
 
-/** Places the globe in the hero's right-hand half, or centred when stacked. */
+/**
+ * Places the globe in the hero.
+ *
+ * The size is a fraction of the canvas rather than a fixed number, so the globe
+ * holds the same presence at every window shape instead of shrinking on a
+ * short screen. The width term is what keeps the sphere inside its half of the
+ * hero, so it is never cropped by the copy.
+ */
 function Frame({ children }: { children: React.ReactNode }) {
   const viewport = useThree((s) => s.viewport)
   const narrow = viewport.aspect < 1.2
-  // Sized against the canvas it is actually drawn into, so the globe never
-  // overflows its half of the hero on any window shape.
-  // Radius is 1, so the scale is half the diameter we want on screen.
+  /* Diameter as a fraction of the frame, so the globe keeps its size at any
+     window shape: just over half the hero's height on a wide screen, and most
+     of the width on a phone. Both are checked against the width as well, so the
+     sphere is never cropped by the edge of the canvas. */
   const diameter = Math.min(
-    viewport.height * (narrow ? 0.68 : 0.6),
-    viewport.width * (narrow ? 0.82 : 0.5),
+    /* 62% of the hero's height: the globe reads as the subject of the first
+       screen again, and the headline has room beside it. */
+    viewport.height * 0.62,
+    viewport.width * (narrow ? 0.8 : 0.46),
   )
   const scale = Math.max(0.4, diameter / 2)
-  const x = narrow ? 0 : viewport.width * 0.5 - scale * 0.86
+  /* It sits to the right of the headline, not behind it. */
+  const x = narrow ? 0 : viewport.width * 0.22
   return (
-    <group scale={scale} position={[x, narrow ? 0 : 0.02, 0]}>
+    <group scale={scale} position={[x, narrow ? -0.1 : 0.02, 0]}>
       {children}
     </group>
   )

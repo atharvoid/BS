@@ -14,7 +14,7 @@ import { useReveal } from '../components/useReveal'
 import { Arrow } from '../components/Nav'
 import { FOCUS_AREAS } from '../content'
 import { RegionWeave } from '../components/RegionWeave'
-import { TextileSequence } from '../components/TextileSequence'
+import { FabricBrief } from '../components/FabricBrief'
 import { EnquiryForm, useEnquiryDraft } from '../components/EnquiryForm'
 
 function SwatchWall() {
@@ -97,7 +97,9 @@ function TextileObject({ aside = false }: { aside?: boolean }) {
       <Studio />
       <Lights intensity={1.02} />
       <Ground y={-1.35} scale={4} opacity={0.4} />
-      <Draggable drift={0.18} tilt={0.4} float={0.03}>
+      {/* Spinning slowly on its own so the cloth reads as material in motion;
+          a drag adds to that angle instead of stopping it. */}
+      <Draggable drift={0.18} tilt={0.4} float={0.03} spin={Math.PI * 2 / 52}>
         <group scale={scale} position={[x, 0, 0]}>
           <ClothPanel palette="verdigris" width={2.15} height={2.7} folds={3.4} seed={3.8} threads={16} />
         </group>
@@ -166,7 +168,7 @@ export default function Textiles() {
         </div>
       </section>
 
-      <TextileSequence />
+      <FabricBrief />
 
       <section className="enquiry-body" id="textile-enquiry">
         <div className="shell">

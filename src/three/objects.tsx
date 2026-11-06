@@ -135,8 +135,26 @@ export function Draggable({
   const drag = React.useMemo(() => createDrag(tilt), [tilt])
   const engaged = React.useRef(false)
   const phase = React.useRef(0)
+  /* Continuous rotation lives apart from the drag target, so a visitor's angle
+     becomes the new centre of rotation and nothing snaps back on release. */
+  const turn = React.useRef(0)
   const scene = useSceneSession()
-  const bind = useSceneDrag(drag, group, { tilt, pitchScale: squash, resetPhase: () => { phase.current = 0 } })
+
+  const idleSway = (t: number) => Math.sin((t * Math.PI * 2) / 14) * drift
+
+  const bind = useSceneDrag(drag, group, {
+    tilt,
+    pitchScale: squash,
+    resetPhase: () => {
+      phase.current = 0
+    },
+    sync: () => {
+      const g = group.current
+      if (!g) return
+      drag.target.y = drag.current.y = g.rotation.y - idleSway(phase.current) - turn.current
+      drag.target.x = drag.current.x = g.rotation.x / squash
+    },
+  })
 
   React.useLayoutEffect(() => {
     const object = group.current
@@ -176,14 +194,16 @@ export function Draggable({
       drag.idle += d
     }
 
-    if (!scene?.paused && !scene?.reduced && !drag.dragging) phase.current += d
+    const animating = !scene?.still && !drag.dragging
+    if (animating) phase.current += d
+    if (animating && spin) turn.current += spin * d
     const t = phase.current
-    // Idle motion only until the visitor takes over, so their angle is respected.
-    const idleY = Math.sin(t * Math.PI * 2 / 14) * drift + spin * t
-    const ty = drag.target.y + idleY
+
+    const ty = drag.target.y + turn.current + idleSway(t)
+    const tx = drag.target.x
 
     drag.current.y = THREE.MathUtils.lerp(drag.current.y, ty, 1 - Math.exp(-6.2 * d))
-    drag.current.x = THREE.MathUtils.lerp(drag.current.x, drag.target.x, 1 - Math.exp(-7.4 * d))
+    drag.current.x = THREE.MathUtils.lerp(drag.current.x, tx, 1 - Math.exp(-7.4 * d))
 
     g.rotation.y = drag.current.y
     g.rotation.x = drag.current.x * squash
@@ -196,7 +216,7 @@ export function Draggable({
     }
 
     if (drag.dragging) drag.idle = 0
-    if ((scene?.paused || scene?.reduced) && (Math.abs(drag.current.y - ty) > 0.001 || Math.abs(drag.current.x - drag.target.x) > 0.001)) state.invalidate()
+    if (scene?.still && (Math.abs(drag.current.y - ty) > 0.001 || Math.abs(drag.current.x - tx) > 0.001)) state.invalidate()
   })
 
   // R3F group gets the pointer handlers directly: dragging anywhere on the

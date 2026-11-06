@@ -1,3 +1,14 @@
+/* ==========================================================================
+   The pointer.
+
+   Normal state: a hairline ring with a dot in it.
+   Over a navigation item: one opaque disc, 88px, with the word Explore centred
+   inside it, sitting on the pointer rather than under it.
+
+   The label is only ever visible while the disc is, so the "Explore" word can
+   never appear detached from its shape.
+   ========================================================================== */
+
 .cursor[data-mode] {
   position: fixed;
   inset: 0;
@@ -33,8 +44,12 @@
   border-radius: 50%;
   background: transparent;
   box-shadow: 0 0 0 1px rgba(18, 16, 13, 0.45);
-  transition: width 180ms ease-out, height 180ms ease-out, border-radius 180ms ease-out,
-    background-color 150ms ease-out, border-color 150ms ease-out;
+  transition: width 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 260ms ease-out,
+    background-color 180ms ease-out,
+    border-color 180ms ease-out,
+    box-shadow 180ms ease-out;
 }
 
 .cursor[data-mode] .cursor__dot {
@@ -43,6 +58,7 @@
   border-radius: 50%;
   background: #f0e3cb;
   box-shadow: 0 0 0 1px rgba(18, 16, 13, 0.6);
+  transition: opacity 140ms ease-out, transform 200ms ease-out;
 }
 
 .cursor__label {
@@ -50,10 +66,14 @@
   font-family: var(--f-mono);
   font-size: 11px;
   font-weight: 600;
+  letter-spacing: 0.14em;
   line-height: 1;
   text-transform: uppercase;
   white-space: nowrap;
   pointer-events: none;
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 160ms ease-out, transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .cursor[data-mode='approach'] .cursor__ring {
@@ -61,19 +81,40 @@
   height: var(--approach-height, 21px);
   border-color: rgba(224, 162, 98, 0.65);
 }
+
 .cursor[data-mode='action'] .cursor__ring { width: 28px; height: 28px; }
-.cursor[data-mode='menu-row'] .cursor__ring,
-.cursor[data-mode='menu-compact'] .cursor__ring {
-  background: var(--cotton-lit);
-  border-color: var(--cotton-lit);
-  box-shadow: 0 0 0 1px rgba(18, 16, 13, 0.5);
+
+/* ---- The Explore disc ---------------------------------------------------- */
+
+.cursor[data-mode='explore'] .cursor__ring,
+.cursor[data-mode='explore-row'] .cursor__ring {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: var(--ink);
+  border-color: rgba(242, 235, 221, 0.22);
+  box-shadow: 0 10px 30px rgba(6, 5, 4, 0.42);
+  transition: width 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 160ms ease-out,
+    border-color 200ms ease-out,
+    box-shadow 200ms ease-out;
 }
-.cursor[data-mode='menu-row'] .cursor__ring { width: 76px; height: 76px; }
-.cursor[data-mode='menu-compact'] .cursor__ring {
-  width: var(--cursor-width, 80px);
-  height: 36px;
-  border-radius: 999px;
+
+/* A pure disc reads as a dot on dark grounds, so it keeps a whisper of a rim.
+   The word inside is the only text on the pointer. */
+.cursor[data-mode='explore'] .cursor__label,
+.cursor[data-mode='explore-row'] .cursor__label {
+  color: #f7f0e2;
+  opacity: 1;
+  transform: scale(1);
 }
+
+.cursor[data-mode='explore'] .cursor__dot,
+.cursor[data-mode='explore-row'] .cursor__dot { opacity: 0; transform: scale(0.4); }
+
+/* ---- Scene drag ---------------------------------------------------------- */
+
 .cursor[data-mode='scene'] .cursor__ring,
 .cursor[data-mode='dragging'] .cursor__ring {
   width: 72px;
@@ -81,14 +122,14 @@
   border-color: var(--cotton-lit);
   background: transparent;
   box-shadow: 0 0 0 1px rgba(18, 16, 13, 0.8);
-  transition: width 180ms ease-out, height 180ms ease-out, border-radius 180ms ease-out,
-    border-color 150ms ease-out;
 }
 .cursor[data-mode='dragging'] .cursor__ring { width: 62px; height: 62px; border-width: 2px; }
+
 .cursor[data-mode='scene'] .cursor__label,
 .cursor[data-mode='dragging'] .cursor__label {
   color: var(--cotton-lit);
-  transform: translateY(12px);
+  opacity: 1;
+  transform: translateY(12px) scale(1);
   text-shadow: 0 1px 2px #12100d, 0 0 2px #12100d;
 }
 
