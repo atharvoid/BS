@@ -350,17 +350,28 @@
   transform: translateY(var(--parallax, 0));
 }
 
-/* The globe owns the right side of the hero and stops at the copy. Full-bleed it
-   would sit behind the headline, which is unreadable over a lit hemisphere no
-   matter how it is toned. The canvas is the full height of the hero, so the
-   globe is drawn large rather than in a small box. */
+/* The canvas is the whole hero again, as it was in the earlier composition.
+   The globe is placed *within* the canvas by the scene's own framing, so it can
+   be large and run off the right edge instead of being squeezed into a narrow
+   right-hand column: a narrow canvas was the reason the globe had shrunk. */
 .hero__stage {
   position: absolute;
-  inset: 0 0 0 auto;
-  width: 64%;
+  inset: 0;
+  width: 100%;
 }
 
-@media (max-width: 900px) {
+/* Clipping belongs to the hero, never to the page: the globe's right edge runs
+   past the viewport by design, and nothing may turn that into a scrollbar. */
+.hero {
+  overflow: hidden;
+  overflow: clip;
+  max-width: 100%;
+}
+
+/* One breakpoint for "stacked". It was 900px in the hero and 980px in the
+   navigation and the wide layout, so between those widths the globe was still
+   laid out for a wide screen while the header had already gone compact. */
+@media (max-width: 980px) {
   .hero__stage {
     inset: 0;
     width: 100%;
@@ -2719,10 +2730,13 @@ fieldset .field__label { float: none; }
   .hero__stage {
     position: relative;
     inset: auto;
+    width: 100%;
     height: min(72vw, 360px);
     margin-top: 1.6rem;
   }
-  .hero__canvas { position: static; opacity: 1; }
+  /* The hero is a centred flex column, so a child would otherwise shrink to
+     its content width — which left the globe in a 300px box on a 390px phone. */
+  .hero__canvas { position: static; opacity: 1; align-self: stretch; width: 100%; }
   .hero__copy { max-width: none; }
   .hero__inner { gap: 1.4rem; display: flex; flex-direction: column; }
   .hero__facts { margin-top: 1.6rem; }

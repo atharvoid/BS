@@ -63,7 +63,9 @@ export function Nav() {
   return (
     <>
       <div className="progress" aria-hidden="true" />
-      <header className={`nav ${lifted ? 'nav--lifted' : ''} ${open ? 'nav--open' : ''}`}>
+      {/* The header sits over the dark hero, so the pointer's disc is the
+          warm-white one here whatever section is scrolled underneath. */}
+      <header className={`nav ${lifted ? 'nav--lifted' : ''} ${open ? 'nav--open' : ''}`} data-tone="dark">
         <div className="nav__inner shell">
           <Link to="/" className="brand" aria-label={`${BUSINESS.name}, overview`}>
             <Logo />
@@ -108,7 +110,7 @@ export function Nav() {
         </div>
       </header>
 
-      <div ref={drawer} id="nav-drawer" className={`drawer ${open ? 'drawer--open' : ''}`} hidden={!open}>
+      <div ref={drawer} id="nav-drawer" className={`drawer ${open ? 'drawer--open' : ''}`} data-tone="dark" hidden={!open}>
         <nav className="drawer__links" aria-label="Mobile">
           {LINKS.map((l, i) => (
             <NavLink

@@ -1,4 +1,6 @@
 import { useSceneDrag } from './useSceneDrag'
+import { introActive, onIntroChange } from '../components/intro-state'
+import { createGlobeGate } from './globe-gate'
 import { useSceneSession } from './SceneSession'
 import React from 'react'
 import * as THREE from 'three'
@@ -628,15 +630,46 @@ function Globe() {
     return null
   }, [drag, startY])
 
-  const spin = React.useRef(0)
+  /* The globe is held on India until the opening clears.
+   *
+   * A drift that starts the moment the canvas mounts keeps running behind the
+   * three-second curtain, so the visitor's first honest look is of whatever
+   * longitude three seconds of spin has produced. The gate holds the angle
+   * while the intro is up, rewinds to India when it clears, and rewinds again
+   * if the logo replays the intro. The rules live in globe-gate.ts, where they
+   * are tested without a browser.
+   */
+  const gate = React.useMemo(() => createGlobeGate(startY), [startY])
+
+  React.useEffect(() => {
+    const rewind = () => {
+      gate.rewind()
+      drag.target.x = 0
+      drag.target.y = startY
+      drag.current.x = 0
+      drag.current.y = startY
+      drag.velocity.x = 0
+      drag.velocity.y = 0
+      uniforms.uTime.value = 0
+    }
+    /* A fresh page load always starts facing India, whatever the intro is doing
+       at this instant, and whatever angle any earlier mount left behind. */
+    gate.intro(introActive())
+    rewind()
+    return onIntroChange((active) => {
+      gate.intro(active)
+      if (!active) rewind()
+    })
+  }, [drag, gate, startY, uniforms])
 
   useFrame((_, delta) => {
     const d = Math.min(delta, 1 / 30)
     /* The clock advances whenever the globe is animating. A drag changes the
        angle, never the motion: the comets keep running while the visitor pulls
        the surface around, which is the whole point of a globe you can turn. */
-    if (!still) uniforms.uTime.value += d
-    if (!still && !drag.dragging) spin.current += d * 0.045
+    if (still) return
+    gate.advance(d, still, drag.dragging)
+    if (!gate.held()) uniforms.uTime.value += d
   })
 
   const root = React.useRef<THREE.Group>(null)
@@ -650,7 +683,7 @@ function Globe() {
     /* The spin is absolute rather than proportional to the visitor's angle, so
        a drag offsets the globe and the drift carries on from where they left
        it instead of stopping dead. */
-    const yaw = drag.target.y + spin.current
+    const yaw = gate.angle()
     drag.current.y = THREE.MathUtils.lerp(drag.current.y, yaw, 1 - Math.exp(-5.6 * d))
     g.rotation.y = drag.current.y
     g.rotation.x = THREE.MathUtils.lerp(drag.current.x, drag.target.x, 1 - Math.exp(-5.6 * d)) * 0.55
@@ -679,29 +712,61 @@ function Globe() {
 /**
  * Places the globe in the hero.
  *
- * The size is a fraction of the canvas rather than a fixed number, so the globe
- * holds the same presence at every window shape instead of shrinking on a
- * short screen. The width term is what keeps the sphere inside its half of the
- * hero, so it is never cropped by the copy.
+ * The composition is the earlier one: the canvas is the full width of the hero,
+ * the globe is drawn large, and its right edge runs past the viewport so it is
+ * cropped by the hero rather than sitting politely inside it. A narrow
+ * right-hand canvas was what had made the globe small — enlarging the sphere
+ * inside a 64%-wide canvas could not have fixed that.
+ *
+ * Three rules, in this order:
+ *
+ * 1. size. Diameter is a share of the canvas: 72% of its height, capped at 68%
+ *    of its width so a short, wide window cannot make it huge.
+ * 2. clearance. The copy column is where the headline and the enquiry action
+ *    live. The globe's left edge is kept to the right of it — computed, not
+ *    guessed, from the copy's own maximum width — even if that means a smaller
+ *    globe on a narrow window.
+ * 3. crop. The centre is placed 0.8 of a radius from the right edge, so
+ *    roughly a fifth of the sphere is off screen at every desktop size.
+ *
+ * Below 980px the hero stacks and the globe is centred under the words, at most
+ * of the stage's width. That breakpoint is the same one the layout and the
+ * navigation use, so the globe no longer shrinks on its own between 900 and
+ * 980px while everything around it has already gone compact.
  */
+const COPY_MAX_PX = 720
+
 function Frame({ children }: { children: React.ReactNode }) {
   const viewport = useThree((s) => s.viewport)
-  const narrow = viewport.aspect < 1.2
-  /* Diameter as a fraction of the frame, so the globe keeps its size at any
-     window shape: just over half the hero's height on a wide screen, and most
-     of the width on a phone. Both are checked against the width as well, so the
-     sphere is never cropped by the edge of the canvas. */
-  const diameter = Math.min(
-    /* 62% of the hero's height: the globe reads as the subject of the first
-       screen again, and the headline has room beside it. */
-    viewport.height * 0.62,
-    viewport.width * (narrow ? 0.8 : 0.46),
-  )
-  const scale = Math.max(0.4, diameter / 2)
-  /* It sits to the right of the headline, not behind it. */
-  const x = narrow ? 0 : viewport.width * 0.22
+  const size = useThree((s) => s.size)
+  /* The same breakpoint as the stylesheet, inclusive: at exactly 980 the CSS
+     has already stacked, so the scene must not still be laying out for desktop. */
+  const stacked = size.width <= 980
+
+  let radius: number
+  let x: number
+
+  if (stacked) {
+    /* Centred under the text: most of the stage width, most of its height. */
+    radius = Math.min(viewport.height * 0.46, viewport.width * 0.42)
+    x = 0
+  } else {
+    /* The copy column, in world units. The heading is capped at 46rem and the
+       gutter sits outside it, so this is the space the globe must not enter. */
+    const copyPx = Math.min(COPY_MAX_PX, size.width * 0.5) + 32
+    const copyWorld = (copyPx / size.width) * viewport.width
+    radius = Math.min(
+      viewport.height * 0.36,
+      viewport.width * 0.34,
+      /* keep the left edge clear of the copy at 1.8 radii from the right edge */
+      Math.max(0, (viewport.width - copyWorld) / 1.8),
+    )
+    radius = Math.max(radius, viewport.height * 0.14)
+    x = viewport.width * 0.5 - radius * 0.8
+  }
+
   return (
-    <group scale={scale} position={[x, narrow ? -0.1 : 0.02, 0]}>
+    <group scale={Math.max(0.4, radius)} position={[x, stacked ? 0 : 0.02, 0]}>
       {children}
     </group>
   )

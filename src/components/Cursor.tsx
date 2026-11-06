@@ -3,14 +3,34 @@ import { selectNearbyTarget, type CursorTarget } from './cursor-state'
 import type { ScenePointerEvent } from '../three/interaction'
 import '../styles/cursor.css'
 
-type Mode = 'idle' | 'approach' | 'explore' | 'explore-row' | 'action' | 'scene' | 'dragging'
-type MeasuredTarget = CursorTarget & { element: HTMLElement; row: boolean }
+type Mode = 'idle' | 'approach' | 'explore' | 'action' | 'scene' | 'dragging'
+type MeasuredTarget = CursorTarget & { element: HTMLElement }
 type SceneHit = { id: string; pointerId: number; inside: boolean; dragging: boolean }
 
-/** Anything that should offer the filled Explore disc. */
+/** Anything that should offer the filled Explore disc. Menu links only: these
+ *  are the links that go somewhere else in the site's own structure. */
 const TARGETS = '[data-cursor="menu"], .nav__link, .drawer__link'
 const NATIVE = 'input, textarea, select, [contenteditable="true"], [data-cursor="native"], iframe'
 const ACTION = 'a, button, [role="tab"], [data-cursor="action"]'
+
+/** The diameter of every labelled disc, in CSS pixels. The stage geometry
+ *  below keeps it fully on screen using the same number. */
+const DISC = 60
+const DRAG_DISC = 56
+const RING = 18
+
+/** Which theme the pointer is over.
+ *
+ *  Sections declare it with `data-tone`; the CSS class `on-dark` is the older,
+ *  equivalent signal and is honoured too, so no section has to be annotated
+ *  twice. A page with neither is treated as light, which most of this site is.
+ */
+function toneAt(hit: Element | null): 'dark' | 'light' {
+  const el = hit?.closest('[data-tone], .on-dark') as HTMLElement | null
+  if (!el) return 'light'
+  if (el.dataset.tone) return el.dataset.tone === 'dark' ? 'dark' : 'light'
+  return el.classList.contains('on-dark') ? 'dark' : 'light'
+}
 
 /**
  * The pointer.
@@ -77,13 +97,17 @@ export function Cursor() {
           id = String(++idCounter)
           targetIds.set(element, id)
         }
-        return [{ id, rect, element, row: element.classList.contains('drawer__link') || element.dataset.cursorSize === 'row' }]
+        return [{ id, rect, element }]
       })
     }
 
-    /** The disc is larger than a normal cursor, so it is kept fully on screen. */
-    const clampToDisc = (value: number, size: number) =>
-      Math.min(size > 0 ? innerWidth - size / 2 - 6 : innerWidth, Math.max(size / 2 + 6, value))
+    /** A disc is larger than a normal cursor, so it is kept fully on screen.
+     *  One rule for every size: the disc's own radius in from each edge. */
+    const clampToDisc = (value: number, size: number, extent: number) => {
+      const half = size / 2
+      const margin = half + 4
+      return Math.min(Math.max(margin, value), Math.max(margin, extent - margin))
+    }
 
     const tick = (time: number) => {
       raf = 0
@@ -110,48 +134,50 @@ export function Cursor() {
         nearId = selectNearbyTarget(targets, x, y, nearId)
         const target = targets.find(item => item.element === direct) ??
           targets.find(item => item.id === nearId) ?? null
-        const isMenu = !!direct && (direct.dataset.cursor === 'menu' ||
-          direct.classList.contains('nav__link') || direct.classList.contains('drawer__link'))
         const action = hit?.closest(ACTION)
         const onCanvas = hit instanceof HTMLCanvasElement
-        let mode: Mode = 'idle'
-        if (scene?.dragging) mode = 'dragging'
-        else if (isMenu && target) mode = target.row ? 'explore-row' : 'explore'
-        else if (action) mode = 'action'
-        else if (scene?.inside && onCanvas) mode = 'scene'
-        else if (target) mode = 'approach'
 
+        /* One mode per frame, in priority order. Drag is shown only while a
+           scene is actually draggable under the pointer, and only while the
+           pointer is the one holding the drag. */
+        let mode: Mode = 'idle'
+        let size = RING
+        if (scene?.dragging) {
+          mode = 'dragging'
+          size = DRAG_DISC
+        } else if (scene?.inside && onCanvas) {
+          mode = 'scene'
+          size = DISC
+        } else if (target) {
+          mode = 'explore'
+          size = DISC
+        } else if (action) {
+          mode = 'action'
+        }
+
+        /* Tone follows the section under the pointer, so a disc on the dark
+           hero and a disc in the light body do not try to use one palette. */
+        const tone = toneAt(hit ?? direct)
+        if (container.dataset.tone !== tone) container.dataset.tone = tone
+
+        /* The disc holds the pointer exactly; it is only nudged enough to stay
+           fully on screen, using the same rule at every size. */
         let tx = x
         let ty = y
-        if (mode === 'explore') {
-          /* The disc holds the pointer exactly, so it never reads as a tooltip
-             hanging underneath. It is nudged only enough to stay on screen. */
-          tx = clampToDisc(x, 88)
-          ty = clampToDisc(y, 88)
-        } else if (mode === 'explore-row') {
-          tx = clampToDisc(x, 104)
-          ty = clampToDisc(y, 104)
-        } else if (mode === 'approach' && target) {
+        if (mode === 'explore' || mode === 'scene' || mode === 'dragging') {
+          tx = clampToDisc(x, size, innerWidth)
+          ty = clampToDisc(y, size, innerHeight)
+        } else if (mode === 'idle' && target) {
+          /* Approaching a menu item: the ring grows towards it, but stays a
+             circle. The word does not appear until the pointer is on it. */
           const cx = (target.rect.left + target.rect.right) / 2
           const cy = (target.rect.top + target.rect.bottom) / 2
-          const distance = Math.hypot(
-            Math.max(target.rect.left - x, 0, x - target.rect.right),
-            Math.max(target.rect.top - y, 0, y - target.rect.bottom),
-          )
-          const strength = Math.max(0, Math.min(1, 1 - distance / 24))
-          const width = (21 + strength * (target.row ? 55 : 43)).toFixed(1) + 'px'
-          const height = (21 + strength * (target.row ? 55 : 15)).toFixed(1) + 'px'
-          if (container.style.getPropertyValue('--approach-width') !== width) container.style.setProperty('--approach-width', width)
-          if (container.style.getPropertyValue('--approach-height') !== height) container.style.setProperty('--approach-height', height)
-          tx += Math.max(-8, Math.min(8, (cx - x) * 0.12))
-          ty += Math.max(-8, Math.min(8, (cy - y) * 0.12))
+          tx += Math.max(-6, Math.min(6, (cx - x) * 0.1))
+          ty += Math.max(-6, Math.min(6, (cy - y) * 0.1))
         }
 
         container.dataset.mode = mode
-        /* A short fade instead of a pop: the disc is 88px across, and appearing
-           at full size instantly reads as a glitch. */
-        container.dataset.explore = mode === 'explore' || mode === 'explore-row' ? 'true' : 'false'
-        const caption = mode === 'scene' || mode === 'dragging' ? 'Drag' : 'Explore'
+        const caption = mode === 'dragging' || mode === 'scene' ? 'Drag' : 'Explore'
         if (text.textContent !== caption) text.textContent = caption
         root.classList.add('has-custom-cursor')
         container.dataset.visible = 'true'
@@ -160,9 +186,10 @@ export function Cursor() {
           ry = y
           initialized = true
         }
-        /* The disc tracks the pointer tightly so it feels attached to it; the
-           small rings keep the softer follow. */
-        const follow = mode === 'explore' || mode === 'explore-row' ? 55 : 90
+
+        /* The disc tracks the pointer closely enough to feel attached to it:
+           a short follow, not a lag. */
+        const follow = mode === 'explore' || mode === 'scene' || mode === 'dragging' ? 42 : 70
         const elapsed = previousTime ? Math.min(50, time - previousTime) : 16
         previousTime = time
         const amount = 1 - Math.exp(-elapsed / follow)
