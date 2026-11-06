@@ -7,11 +7,13 @@ import {
   ROLL,
   bollCalyx,
   bollLobes,
-  copperTurns,
   crateBattens,
+  makeCopperCoil,
+  makeBollLobe,
   makeClothTail,
-  makeGrainHeap,
+  makeSpill,
   makeSackBody,
+  makeSackCrown,
   makeVaseBody,
 } from './categoryGeometry'
 import {
@@ -178,47 +180,88 @@ function GrainSack() {
   const grainBump = useSharedTexture('grain-bump', () => makeGrainBump(512))
 
   const sack = React.useMemo(() => makeSackBody(), [])
-  const heap = React.useMemo(() => makeGrainHeap(), [])
+  const crown = React.useMemo(() => makeSackCrown(), [])
+  const spill = React.useMemo(() => makeSpill(0.19), [])
+
+  /* Sacking is a coarse weave, but a sack is two metres around, so the sheet
+     has to repeat: at one repeat the tapes come out the size of shoelaces. */
+  const juteFine = React.useMemo(() => {
+    const map = jute.clone()
+    map.repeat.set(2.2, 1.9)
+    map.needsUpdate = true
+    return map
+  }, [jute])
+  const juteBumpFine = React.useMemo(() => {
+    const map = juteBump.clone()
+    map.repeat.set(2.2, 1.9)
+    map.needsUpdate = true
+    return map
+  }, [juteBump])
+
+  React.useEffect(
+    () => () => {
+      juteFine.dispose()
+      juteBumpFine.dispose()
+    },
+    [juteFine, juteBumpFine],
+  )
 
   React.useEffect(
     () => () => {
       sack.dispose()
-      heap.dispose()
+      crown.dispose()
+      spill.dispose()
     },
-    [sack, heap],
+    [sack, crown, spill],
   )
 
   return (
-    <group>
+    /* Tipped a little towards the camera: a sack standing square reads as a
+       drum, and the mouth is the whole point of this one. The tilt is inside
+       the measured group, so the framing and the shadow follow it. */
+    <group rotation={[0.14, 0, 0]}>
       <mesh geometry={sack}>
         <meshStandardMaterial
-          map={jute}
-          bumpMap={juteBump}
-          bumpScale={4.2}
-          roughness={0.95}
+          map={juteFine}
+          bumpMap={juteBumpFine}
+          bumpScale={2.8}
+          roughness={0.96}
           metalness={0}
           side={THREE.DoubleSide}
         />
       </mesh>
-      {/* the tie at the neck */}
+      {/* the neck gathered and tied */}
       <mesh position={[0, 0.575, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.243, 0.027, 10, 48]} />
-        <meshStandardMaterial color="#7c6236" roughness={0.92} />
+        <torusGeometry args={[0.157, 0.022, 10, 48]} />
+        <meshStandardMaterial color="#6f5730" roughness={0.94} />
       </mesh>
-      {/* grain standing in the open mouth */}
-      <mesh geometry={heap} position={[0, 0.585, 0]}>
-        <meshStandardMaterial map={grain} bumpMap={grainBump} bumpScale={2.6} roughness={0.86} />
+      {/* the crown of surplus sacking above the tie */}
+      <mesh geometry={crown} position={[0, 0.572, 0]}>
+        <meshStandardMaterial
+          map={juteFine}
+          bumpMap={juteBumpFine}
+          bumpScale={2.8}
+          roughness={0.96}
+          side={THREE.DoubleSide}
+        />
       </mesh>
-      {/* a few grains that have fallen to the floor */}
+      {/* the stencil is part of the sheet, so it sits where the print does */}
+      {/* grain spilled at the foot of the sack, and a few loose grains */}
+      <mesh geometry={spill} position={[0.5, -0.6, 0.2]}>
+        <meshStandardMaterial map={grain} bumpMap={grainBump} bumpScale={2.2} roughness={0.88} />
+      </mesh>
+      <mesh geometry={spill} position={[-0.42, -0.6, -0.16]} scale={0.62}>
+        <meshStandardMaterial map={grain} bumpMap={grainBump} bumpScale={2.2} roughness={0.88} />
+      </mesh>
       {[
-        [0.42, -0.655, 0.2],
-        [0.5, -0.66, -0.06],
-        [0.34, -0.655, -0.34],
-        [-0.44, -0.655, 0.16],
+        [0.5, -0.62, 0.24],
+        [0.58, -0.62, -0.1],
+        [0.38, -0.62, -0.4],
+        [-0.52, -0.62, 0.2],
       ].map((p, i) => (
         <mesh key={i} position={p as [number, number, number]} rotation={[0, i, Math.PI / 2]}>
           <capsuleGeometry args={[0.012, 0.036, 3, 6]} />
-          <meshStandardMaterial color="#f0e5c8" roughness={0.7} />
+          <meshStandardMaterial color="#efe2c2" roughness={0.62} />
         </mesh>
       ))}
     </group>
@@ -231,31 +274,32 @@ function GrainSack() {
 
 function CopperCoil() {
   const brushed = useSharedTexture('copper', () => makeCopperRoughness(512))
-  const turns = React.useMemo(() => copperTurns(), [])
+  const wire = React.useMemo(() => makeCopperCoil(), [])
+
+  React.useEffect(() => () => wire.dispose(), [wire])
 
   return (
-    <group rotation={[0.1, 0, 0.04]}>
-      {turns.map((turn, i) => (
-        <mesh key={i} position={[turn.x, turn.y, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[turn.r, 0.036, 12, 64]} />
-          <meshStandardMaterial
-            color="#b4703f"
-            roughnessMap={brushed}
-            roughness={0.34}
-            metalness={1}
-            envMapIntensity={1.6}
-          />
-        </mesh>
-      ))}
-      {/* the cut end of the wire, lifting off the top turn */}
-      <mesh position={[0.3, 0.55, 0.13]} rotation={[0.9, 0.3, -0.5]}>
-        <cylinderGeometry args={[0.036, 0.036, 0.4, 12]} />
-        <meshStandardMaterial color="#b4703f" roughness={0.3} metalness={1} envMapIntensity={1.6} />
+    /* tipped so the top turn and the free end are both in view */
+    <group rotation={[0.2, 0, 0]}>
+      <mesh geometry={wire}>
+        <meshStandardMaterial
+          color="#b4703f"
+          roughnessMap={brushed}
+          roughness={0.32}
+          metalness={1}
+          envMapIntensity={1.5}
+        />
       </mesh>
-      {/* brass collars strapping the coil */}
-      {[0.3, -0.3].map((y) => (
+      {/* the cut face of the wire at the free end, so the end reads as copper
+          rather than a clipped tube */}
+      <mesh position={[0.42, 0.4, 0.06]} rotation={[0.4, 0.2, 1.1]}>
+        <cylinderGeometry args={[0.034, 0.034, 0.004, 12]} />
+        <meshStandardMaterial color="#d08a52" roughness={0.22} metalness={1} envMapIntensity={1.8} />
+      </mesh>
+      {/* brass collars holding the coil together for shipping */}
+      {[0.24, -0.24].map((y) => (
         <mesh key={y} position={[0, y, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[0.448, 0.02, 10, 64]} />
+          <torusGeometry args={[0.43, 0.016, 8, 56]} />
           <meshStandardMaterial color="#c08a4a" roughness={0.24} metalness={1} envMapIntensity={1.8} />
         </mesh>
       ))}
@@ -271,19 +315,30 @@ function CottonBoll() {
   const lint = useSharedTexture('cotton', () => makeCottonTexture(512))
   const lobes = React.useMemo(() => bollLobes(), [])
   const calyx = React.useMemo(() => bollCalyx(), [])
+  const lobeGeometry = React.useMemo(
+    () => lobes.map((_, i) => makeBollLobe(i * 2.1)),
+    [lobes],
+  )
+
+  React.useEffect(() => () => lobeGeometry.forEach((g) => g.dispose()), [lobeGeometry])
 
   return (
-    <group rotation={[0.12, 0, -0.08]}>
+    <group rotation={[0.2, 0, -0.08]}>
       {lobes.map((lobe, i) => (
-        <mesh key={i} position={lobe.position} rotation={[0, 0, lobe.rotation]} scale={[0.3, 0.3, 0.26]}>
-          <sphereGeometry args={[1, 28, 22]} />
+        <mesh
+          key={i}
+          geometry={lobeGeometry[i]}
+          position={lobe.position}
+          rotation={[0, 0, lobe.rotation]}
+          scale={lobe.scale}
+        >
           <meshStandardMaterial
             map={lint}
             bumpMap={lint}
-            bumpScale={0.9}
+            bumpScale={1.6}
             roughness={1}
             metalness={0}
-            color="#fbf7ee"
+            color="#fffdf8"
           />
         </mesh>
       ))}
@@ -293,16 +348,18 @@ function CottonBoll() {
         <mesh
           key={`sepal-${i}`}
           position={sepal.position}
-          rotation={[Math.PI / 2.1, 0, sepal.rotation]}
-          scale={[0.16, 0.1, 0.02]}
+          rotation={[sepal.tilt, 0, sepal.rotation]}
+          scale={[0.2, 0.075, 0.012]}
         >
           <sphereGeometry args={[1, 14, 10]} />
-          <meshStandardMaterial color="#6b5a3a" roughness={0.94} />
+          {/* dried bract: brown, curled, matte */}
+          <meshStandardMaterial color="#7b663e" roughness={0.98} side={THREE.DoubleSide} />
         </mesh>
       ))}
-      <mesh position={[0, 0, -0.34]} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.035, 0.045, 0.3, 10]} />
-        <meshStandardMaterial color="#7a6440" roughness={0.95} />
+      {/* the stem, cut short, going back behind the boll */}
+      <mesh position={[0, 0, -0.42]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.028, 0.038, 0.34, 10]} />
+        <meshStandardMaterial color="#8a7147" roughness={0.97} />
       </mesh>
     </group>
   )
@@ -345,7 +402,7 @@ function ExportCrate() {
   )
 
   return (
-    <group>
+    <group rotation={[0.08, 0, 0]}>
       <mesh material={timber}>
         <boxGeometry args={[CRATE.width, CRATE.height, CRATE.depth]} />
       </mesh>

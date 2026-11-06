@@ -5,9 +5,10 @@ import { FIT_HEIGHT, FIT_SWEEP, FIT_WIDTH, frameModel } from '../src/three/frami
 import {
   CRATE,
   ROLL,
-  copperTurns,
   makeClothTail,
+  makeCopperCoil,
   makeSackBody,
+  makeSackCrown,
   makeVaseBody,
 } from '../src/three/categoryGeometry.ts'
 
@@ -36,18 +37,16 @@ function vaseBox() {
 }
 
 function sackBox() {
-  return boxOf(new THREE.Mesh(makeSackBody(32)))
+  const g = new THREE.Group()
+  g.add(new THREE.Mesh(makeSackBody(32)))
+  const crown = new THREE.Mesh(makeSackCrown())
+  crown.position.y = 0.572
+  g.add(crown)
+  return boxOf(g)
 }
 
 function coilBox() {
-  const g = new THREE.Group()
-  for (const turn of copperTurns()) {
-    const mesh = new THREE.Mesh(new THREE.TorusGeometry(turn.r, 0.036, 8, 24))
-    mesh.rotation.x = Math.PI / 2
-    mesh.position.set(turn.x, turn.y, 0)
-    g.add(mesh)
-  }
-  return boxOf(g)
+  return boxOf(new THREE.Mesh(makeCopperCoil()))
 }
 
 function crateBox() {

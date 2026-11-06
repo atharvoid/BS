@@ -119,7 +119,10 @@
   touch-action: pan-y;
 }
 
-.tile__stage canvas { display: block; }
+/* The stage host is a plain div: it needs the whole letterbox, or the camera
+   ends up rendering into a strip at the top of the tile. */
+.tile__stage > div { width: 100%; height: 100%; }
+.tile__stage canvas { display: block; width: 100% !important; height: 100% !important; }
 
 /* No canvas here: a woven swatch instead of an empty box. Each tile keeps its
    own colour, so the row still reads as material. */

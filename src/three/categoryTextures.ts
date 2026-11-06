@@ -63,40 +63,36 @@ export function makeBluePotteryTexture(size = 512) {
   /* cobalt */
   const blue = (alpha = 1) => `rgba(32, 58, 132, ${alpha})`
 
-  /* three horizontal bands, each with a different motif, as a potter would */
-  const band = (y: number, h: number) => {
-    ctx.fillStyle = blue(0.92)
-    ctx.fillRect(0, y, size, h)
+  /* Where the ornament goes is decided by where the light goes.
+
+     The lathe profile runs from foot (-0.62) to lip (0.82), so v = 0 is the
+     foot and v = 1 is the lip. The belly catches the key light, and the foot
+     and neck fall into shade — so the cobalt bands sit on the foot and the
+     neck, where a band is meant to be, and the hand-painted motifs sit on the
+     belly that one actually sees. */
+  const band = (v: number, h: number) => {
+    ctx.fillStyle = blue(0.94)
+    ctx.fillRect(0, v * size, size, h * size)
   }
 
-  band(size * 0.06, size * 0.024)
-  band(size * 0.115, size * 0.012)
-  band(size * 0.72, size * 0.05)
-  band(size * 0.80, size * 0.014)
-
-  /* a row of small leaves between the upper bands */
-  ctx.strokeStyle = blue(0.75)
-  ctx.lineWidth = size * 0.005
-  for (let i = 0; i < 28; i++) {
-    const x = (i / 28) * size
-    ctx.beginPath()
-    ctx.arc(x + size * 0.017, size * 0.085, size * 0.014, Math.PI * 0.15, Math.PI * 1.1)
-    ctx.stroke()
-  }
+  band(0.02, 0.05)
+  band(0.09, 0.012)
+  band(0.86, 0.014)
+  band(0.9, 0.04)
 
   /* the central motif: a hand-painted rosette, repeated around the pot */
   const rosette = (cx: number, cy: number, r: number) => {
-    ctx.strokeStyle = blue(0.9)
-    ctx.fillStyle = blue(0.86)
+    ctx.strokeStyle = blue(0.92)
+    ctx.fillStyle = blue(0.9)
     ctx.lineWidth = size * 0.0045
     for (let p = 0; p < 8; p++) {
       const a = (p / 8) * Math.PI * 2
       ctx.beginPath()
       ctx.ellipse(
-        cx + Math.cos(a) * r * 0.62,
-        cy + Math.sin(a) * r * 0.62,
-        r * 0.22,
-        r * 0.4,
+        cx + Math.cos(a) * r * 0.6,
+        cy + Math.sin(a) * r * 0.6,
+        r * 0.23,
+        r * 0.42,
         a - Math.PI / 2,
         0,
         Math.PI * 2,
@@ -104,20 +100,31 @@ export function makeBluePotteryTexture(size = 512) {
       ctx.stroke()
     }
     ctx.beginPath()
-    ctx.arc(cx, cy, r * 0.2, 0, Math.PI * 2)
+    ctx.arc(cx, cy, r * 0.19, 0, Math.PI * 2)
     ctx.fill()
   }
 
-  for (let i = 0; i < 5; i++) rosette((i + 0.5) * (size / 5), size * 0.42, size * 0.12)
+  /* Four across the 360 degrees means each one is seen nearly flat when it
+     faces the camera; six is enough that one always is. */
+  for (let i = 0; i < 4; i++) rosette((i + 0.5) * (size / 4), size * 0.6, size * 0.13)
 
-  /* vine between the rosettes */
-  ctx.strokeStyle = blue(0.55)
-  ctx.lineWidth = size * 0.0035
-  for (let i = 0; i < 10; i++) {
-    const cx = (i + 0.5) * (size / 10)
+  /* a scalloped vine between the rosettes, the way the Jaipur pots are doodled */
+  ctx.strokeStyle = blue(0.6)
+  ctx.lineWidth = size * 0.004
+  for (let i = 0; i < 16; i++) {
+    const cx = (i + 0.5) * (size / 16)
     ctx.beginPath()
-    ctx.moveTo(cx - size * 0.04, size * 0.58)
-    ctx.quadraticCurveTo(cx, size * 0.54, cx + size * 0.04, size * 0.585)
+    ctx.arc(cx, size * 0.6, size * 0.028, Math.PI * 0.1, Math.PI * 0.9)
+    ctx.stroke()
+  }
+  /* leaf sprays running up to the shoulder */
+  ctx.strokeStyle = blue(0.5)
+  ctx.lineWidth = size * 0.0035
+  for (let i = 0; i < 8; i++) {
+    const cx = (i + 0.5) * (size / 8)
+    ctx.beginPath()
+    ctx.moveTo(cx, size * 0.74)
+    ctx.quadraticCurveTo(cx + size * 0.03, size * 0.7, cx + size * 0.015, size * 0.66)
     ctx.stroke()
   }
 
@@ -157,19 +164,22 @@ export function makeJuteTexture(size = 512) {
   const { el, ctx } = canvas2d(size)
   const rand = rng(53)
 
-  ctx.fillStyle = '#8d7647'
+  ctx.fillStyle = '#a08553'
   ctx.fillRect(0, 0, size, size)
 
-  const step = size / 34
-  const tape = step * 1.55
+  /* Sixty tapes across the sheet, over a two-metre circumference, is a tape
+     about 3 cm wide — the scale of real sacking. At thirty-four the weave read
+     as scales rather than cloth. */
+  const step = size / 96
+  const tape = step * 1.45
 
   /* weft tapes (horizontal), drawn first so the warp passes over them */
   for (let y = 0; y < size; y += step) {
     const g = ctx.createLinearGradient(0, y, 0, y + tape)
-    g.addColorStop(0, 'rgba(96,78,44,0.95)')
-    g.addColorStop(0.35, 'rgba(184,158,104,0.95)')
-    g.addColorStop(0.7, 'rgba(154,130,80,0.95)')
-    g.addColorStop(1, 'rgba(92,74,42,0.95)')
+    g.addColorStop(0, 'rgba(140,116,66,0.9)')
+    g.addColorStop(0.35, 'rgba(196,170,114,0.92)')
+    g.addColorStop(0.7, 'rgba(176,150,96,0.9)')
+    g.addColorStop(1, 'rgba(136,112,64,0.9)')
     ctx.fillStyle = g
     ctx.fillRect(0, y, size, tape)
   }
@@ -178,10 +188,10 @@ export function makeJuteTexture(size = 512) {
   for (let x = 0; x < size; x += step) {
     const col = Math.round(x / step)
     const g = ctx.createLinearGradient(x, 0, x + tape, 0)
-    g.addColorStop(0, 'rgba(88,71,40,0.9)')
-    g.addColorStop(0.4, 'rgba(196,170,116,0.95)')
-    g.addColorStop(0.75, 'rgba(158,134,84,0.95)')
-    g.addColorStop(1, 'rgba(84,68,38,0.9)')
+    g.addColorStop(0, 'rgba(132,108,62,0.86)')
+    g.addColorStop(0.4, 'rgba(204,178,120,0.9)')
+    g.addColorStop(0.75, 'rgba(174,148,94,0.88)')
+    g.addColorStop(1, 'rgba(128,106,60,0.86)')
     ctx.fillStyle = g
     /* leave gaps where the weft shows through */
     for (let y = 0; y < size; y += step * 2) {
@@ -194,7 +204,7 @@ export function makeJuteTexture(size = 512) {
   for (let i = 0; i < 2600; i++) {
     const x = rand() * size
     const y = rand() * size
-    ctx.strokeStyle = rand() > 0.5 ? 'rgba(222,199,150,0.24)' : 'rgba(66,52,28,0.22)'
+    ctx.strokeStyle = rand() > 0.5 ? 'rgba(238,216,168,0.26)' : 'rgba(84,66,34,0.2)'
     ctx.lineWidth = 0.6 + rand() * 0.9
     ctx.beginPath()
     ctx.moveTo(x, y)
@@ -213,20 +223,30 @@ export function makeJuteTexture(size = 512) {
     ctx.stroke()
   }
 
+  /* the stitched seam a sack has across its body */
+  ctx.strokeStyle = 'rgba(92,72,38,0.55)'
+  ctx.lineWidth = Math.max(1.5, size * 0.008)
+  ctx.setLineDash([size * 0.018, size * 0.014])
+  ctx.beginPath()
+  ctx.moveTo(0, size * 0.16)
+  ctx.lineTo(size, size * 0.16)
+  ctx.stroke()
+  ctx.setLineDash([])
+
   /* stencilled export marking, in the flat black paint used on real sacks */
   ctx.save()
   ctx.translate(size * 0.5, size * 0.44)
-  ctx.strokeStyle = 'rgba(28,22,14,0.82)'
-  ctx.fillStyle = 'rgba(28,22,14,0.82)'
+  ctx.strokeStyle = 'rgba(30,24,16,0.9)'
+  ctx.fillStyle = 'rgba(30,24,16,0.9)'
   ctx.lineWidth = 2
   ctx.strokeRect(-size * 0.2, -size * 0.1, size * 0.4, size * 0.2)
-  ctx.font = `600 ${Math.round(size * 0.055)}px "Chivo Mono", ui-monospace, monospace`
+  ctx.font = `700 ${Math.round(size * 0.06)}px "Chivo Mono", ui-monospace, monospace`
   ctx.textAlign = 'center'
-  ctx.fillText('INDIA', 0, -size * 0.035)
-  ctx.font = `600 ${Math.round(size * 0.045)}px "Chivo Mono", ui-monospace, monospace`
-  ctx.fillText('50 KG', 0, size * 0.02)
-  ctx.font = `500 ${Math.round(size * 0.028)}px "Chivo Mono", ui-monospace, monospace`
-  ctx.fillText('PRODUCE OF INDIA', 0, size * 0.07)
+  ctx.fillText('INDIA', 0, -size * 0.036)
+  ctx.font = `700 ${Math.round(size * 0.052)}px "Chivo Mono", ui-monospace, monospace`
+  ctx.fillText('50 KG', 0, size * 0.022)
+  ctx.font = `500 ${Math.round(size * 0.03)}px "Chivo Mono", ui-monospace, monospace`
+  ctx.fillText('PRODUCE OF INDIA', 0, size * 0.075)
   ctx.restore()
 
   return finish(el)
@@ -238,8 +258,8 @@ export function makeJuteBump(size = 512) {
   ctx.fillStyle = '#3a3a3a'
   ctx.fillRect(0, 0, size, size)
 
-  const step = size / 34
-  const tape = step * 1.55
+  const step = size / 96
+  const tape = step * 1.45
   for (let y = 0; y < size; y += step) {
     const g = ctx.createLinearGradient(0, y, 0, y + tape)
     g.addColorStop(0, '#4a4a4a')
@@ -251,9 +271,9 @@ export function makeJuteBump(size = 512) {
   for (let x = 0; x < size; x += step) {
     const col = Math.round(x / step)
     const g = ctx.createLinearGradient(x, 0, x + tape, 0)
-    g.addColorStop(0, '#565656')
-    g.addColorStop(0.4, '#ffffff')
-    g.addColorStop(1, '#565656')
+    g.addColorStop(0, '#787878')
+    g.addColorStop(0.4, '#e2e2e2')
+    g.addColorStop(1, '#787878')
     ctx.fillStyle = g
     for (let y = 0; y < size; y += step * 2) {
       const offset = col % 2 === 0 ? 0 : step
@@ -271,7 +291,7 @@ export function makeJuteBump(size = 512) {
 export function makeGrainTexture(size = 512) {
   const { el, ctx } = canvas2d(size)
   const rand = rng(91)
-  ctx.fillStyle = '#a98a52'
+  ctx.fillStyle = '#8d7238'
   ctx.fillRect(0, 0, size, size)
 
   const tones = ['#f3ead2', '#efe3c4', '#e6d7b2', '#d9c79c', '#f7f0dd']
@@ -417,25 +437,28 @@ export function makePlankTexture(size = 512) {
   const { el, ctx } = canvas2d(size)
   const rand = rng(43)
 
-  ctx.fillStyle = '#8a6a44'
+  /* Pale export pine, not walnut: a shipping crate is cheap softwood that has
+     been cut and nailed, and it reads as a crate mainly because the boards are
+     wide and the seams are hard. */
+  ctx.fillStyle = '#c3a375'
   ctx.fillRect(0, 0, size, size)
 
-  const planks = 5
+  const planks = 3
   const w = size / planks
   for (let i = 0; i < planks; i++) {
     const x = i * w
-    const shade = 0.82 + rand() * 0.34
+    const shade = 0.9 + rand() * 0.16
     const g = ctx.createLinearGradient(x, 0, x + w, 0)
-    g.addColorStop(0, `rgba(${118 * shade},${88 * shade},${54 * shade},1)`)
-    g.addColorStop(0.5, `rgba(${152 * shade},${116 * shade},${74 * shade},1)`)
-    g.addColorStop(1, `rgba(${112 * shade},${84 * shade},${52 * shade},1)`)
+    g.addColorStop(0, `rgba(${196 * shade},${164 * shade},${118 * shade},1)`)
+    g.addColorStop(0.5, `rgba(${222 * shade},${192 * shade},${146 * shade},1)`)
+    g.addColorStop(1, `rgba(${188 * shade},${156 * shade},${112 * shade},1)`)
     ctx.fillStyle = g
     ctx.fillRect(x, 0, w, size)
 
     /* grain */
-    for (let k = 0; k < 26; k++) {
+    for (let k = 0; k < 34; k++) {
       const gx = x + rand() * w
-      ctx.strokeStyle = rand() > 0.5 ? 'rgba(64,42,20,0.22)' : 'rgba(210,176,126,0.16)'
+      ctx.strokeStyle = rand() > 0.5 ? 'rgba(126,96,58,0.26)' : 'rgba(246,230,204,0.3)'
       ctx.lineWidth = 0.7 + rand() * 1.6
       ctx.beginPath()
       for (let y = 0; y <= size; y += 16) {
@@ -445,9 +468,11 @@ export function makePlankTexture(size = 512) {
       ctx.stroke()
     }
 
-    /* the seam between boards */
-    ctx.fillStyle = 'rgba(38,24,10,0.75)'
-    ctx.fillRect(x - 1, 0, 2.5, size)
+    /* the seam between boards, plus the shadow it casts */
+    ctx.fillStyle = 'rgba(58,40,20,0.62)'
+    ctx.fillRect(x - 2, 0, 4, size)
+    ctx.fillStyle = 'rgba(46,32,16,0.5)'
+    ctx.fillRect(x - 1, 0, 1.5, size)
 
     /* nail heads near both ends */
     for (const y of [size * 0.08, size * 0.92]) {
@@ -465,8 +490,8 @@ export function makePlankTexture(size = 512) {
   }
 
   /* weathering */
-  for (let i = 0; i < 240; i++) {
-    ctx.strokeStyle = `rgba(60,42,22,${0.05 + rand() * 0.1})`
+  for (let i = 0; i < 200; i++) {
+    ctx.strokeStyle = `rgba(104,78,42,${0.05 + rand() * 0.09})`
     ctx.lineWidth = 1 + rand() * 3
     ctx.beginPath()
     const x = rand() * size
@@ -482,17 +507,19 @@ export function makePlankTexture(size = 512) {
 export function makeStencilTexture(w = 512, h = 256) {
   const { el, ctx } = canvas2d(w, h)
   ctx.clearRect(0, 0, w, h)
-  ctx.fillStyle = 'rgba(24,20,14,0.86)'
-  ctx.strokeStyle = 'rgba(24,20,14,0.86)'
+  /* Stencil paint sinks into the grain and is never solid: at 0.7 alpha it
+     reads as paint on timber rather than as a printed label. */
+  ctx.fillStyle = 'rgba(38,30,20,0.7)'
+  ctx.strokeStyle = 'rgba(38,30,20,0.7)'
 
-  ctx.font = `700 ${Math.round(h * 0.16)}px "Chivo Mono", ui-monospace, monospace`
+  ctx.font = `700 ${Math.round(h * 0.19)}px "Chivo Mono", ui-monospace, monospace`
   ctx.textAlign = 'left'
-  ctx.fillText('BS EXIMNEXUS', w * 0.06, h * 0.26)
+  ctx.fillText('BS EXIMNEXUS', w * 0.05, h * 0.3)
 
-  ctx.font = `600 ${Math.round(h * 0.105)}px "Chivo Mono", ui-monospace, monospace`
-  ctx.fillText('MADE IN INDIA', w * 0.06, h * 0.44)
-  ctx.font = `500 ${Math.round(h * 0.075)}px "Chivo Mono", ui-monospace, monospace`
-  ctx.fillText('NET 25 KG', w * 0.06, h * 0.58)
+  ctx.font = `600 ${Math.round(h * 0.12)}px "Chivo Mono", ui-monospace, monospace`
+  ctx.fillText('MADE IN INDIA', w * 0.05, h * 0.52)
+  ctx.font = `500 ${Math.round(h * 0.085)}px "Chivo Mono", ui-monospace, monospace`
+  ctx.fillText('NET 25 KG', w * 0.05, h * 0.7)
 
   /* handling symbols: this way up, and fragile */
   const arrow = (cx: number, cy: number, s: number) => {

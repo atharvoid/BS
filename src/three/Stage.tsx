@@ -93,22 +93,38 @@ export function Stage({ children, className, z = 6, fov = 38, fallback, style, l
     return () => document.removeEventListener('visibilitychange', update)
   }, [])
 
+  /* Is the stage actually on screen right now?
+
+     This is read directly from layout rather than trusted to the observer
+     alone: an observer only reports *crossings*, so a stage that is scrolled
+     into view, or that is already on screen when it mounts, can sit with a
+     stale "not visible" and never draw. The observer is still what wakes a
+     dormant stage up, and still the cheap path for the common case. */
+  const measureVisibility = React.useCallback(() => {
+    const el = host.current
+    if (!el) return
+    const r = el.getBoundingClientRect()
+    const onScreen = r.bottom > -80 && r.top < window.innerHeight + 80 && r.bottom > 0
+    setVisible(onScreen)
+    if (r.top < window.innerHeight && r.bottom > 0) setNear(true)
+  }, [])
+
   React.useEffect(() => {
     const el = host.current
     if (!el) return
-    // A stage sharing the first screen should load immediately; only stages
-    // further down wait for the observer. Either way the bundle arrives after
-    // the page shell has painted.
-    const rect = el.getBoundingClientRect()
-    if (rect.top < window.innerHeight) {
-      setNear(true)
-      setVisible(true)
-    }
+
+    measureVisibility()
+
+    /* A layout change can move a stage on or off screen without any scrolling
+       (an image settling, a font swapping in, the intro clearing), so the
+       rect is re-read on resize and whenever the page height changes. */
+    const observer = new ResizeObserver(measureVisibility)
+    observer.observe(el)
+    observer.observe(document.body)
+    window.addEventListener('resize', measureVisibility)
 
     const io = new IntersectionObserver(
       ([entry]) => {
-        const r = el.getBoundingClientRect()
-        const onScreen = r.bottom > -80 && r.top < window.innerHeight + 80
         if (entry.isIntersecting) {
           setNear(true)
           window.clearTimeout(dormant.current)
@@ -117,18 +133,36 @@ export function Stage({ children, className, z = 6, fov = 38, fallback, style, l
           window.clearTimeout(dormant.current)
           dormant.current = window.setTimeout(() => setMounted(false), DORMANT_AFTER_MS)
         }
-        setVisible(onScreen)
+        measureVisibility()
       },
       { rootMargin: '320px 0px', threshold: 0 },
     )
     io.observe(el)
     return () => {
       io.disconnect()
+      observer.disconnect()
+      window.removeEventListener('resize', measureVisibility)
       window.clearTimeout(dormant.current)
     }
     // `mounted` is read inside the callback and must not rebuild the observer.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [measureVisibility])
+
+  /* Scrolling off screen must stop the drawing; scrolling back must resume it.
+     Passive, because this only ever reads geometry. */
+  React.useEffect(() => {
+    let queued = false
+    const onScroll = () => {
+      if (queued) return
+      queued = true
+      requestAnimationFrame(() => {
+        queued = false
+        measureVisibility()
+      })
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [measureVisibility])
 
   return (
     <SceneContext.Provider value={session}>
