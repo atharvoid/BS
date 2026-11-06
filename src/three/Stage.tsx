@@ -1,6 +1,6 @@
 import React from 'react'
 import { SceneContext } from './SceneSession'
-import { releasePerformance, useSceneStill } from './performance'
+import { releasePerformance, useSceneStill, watchPerformance } from './performance'
 
 /* ==========================================================================
    Stage: the shell every 3D scene sits in.
@@ -75,13 +75,22 @@ export function Stage({ children, className, z = 6, fov = 38, fallback, style, l
   const session = React.useMemo(() => ({ id, still, invalidate }), [id, still])
   const dormant = React.useRef<number | undefined>(undefined)
 
+  /* While this stage is mounted and near the viewport, its frames are what the
+     quality sampler reads. The sampler is reference counted in performance.ts,
+     so several stages can be open at once without one closing the measurement
+     the others depend on. */
+  React.useEffect(() => {
+    /* Measure only while this stage is actually drawing. A sampler that keeps
+       running over the footer would be reading the frame rate of nothing. */
+    if (!near || !visible || !pageVisible) return
+    watchPerformance()
+    return () => releasePerformance()
+  }, [near, visible, pageVisible])
+
   React.useEffect(() => {
     const update = () => setPageVisible(!document.hidden)
     document.addEventListener('visibilitychange', update)
-    return () => {
-      document.removeEventListener('visibilitychange', update)
-      releasePerformance()
-    }
+    return () => document.removeEventListener('visibilitychange', update)
   }, [])
 
   React.useEffect(() => {

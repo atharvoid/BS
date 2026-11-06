@@ -3,6 +3,7 @@ import { useThree, type ThreeEvent } from '@react-three/fiber'
 import * as THREE from 'three'
 import type { DragState } from './drag'
 import { useSceneSession } from './SceneSession'
+import { reportScenePointer } from './interaction'
 
 /* ==========================================================================
    Drag binding for any scene object.
@@ -35,6 +36,19 @@ export function useSceneDrag(drag: DragState, node: React.RefObject<THREE.Group 
   currentScene.current = scene
   const currentOptions = React.useRef(options)
   currentOptions.current = options
+  /* The pointer's own description of what it is over. The custom cursor listens
+     for this so it can say "Drag" over a scene and go back to normal when the
+     pointer leaves one. */
+  const pointer = React.useRef({ id: -1, type: 'mouse' })
+  const report = (phase: 'enter' | 'leave' | 'press' | 'drag' | 'release' | 'cancel' | 'remove', event?: Pointer) => {
+    if (event) pointer.current = { id: event.pointerId, type: event.pointerType }
+    reportScenePointer({
+      sceneId: currentScene.current?.id ?? 'scene',
+      phase,
+      pointerId: pointer.current.id,
+      pointerType: pointer.current.type,
+    })
+  }
 
   React.useEffect(() => {
     const object = node.current
@@ -56,6 +70,7 @@ export function useSceneDrag(drag: DragState, node: React.RefObject<THREE.Group 
     document.addEventListener('visibilitychange', visibility)
     return () => {
       stop()
+      report('remove')
       window.removeEventListener('blur', stop)
       window.removeEventListener('keydown', key)
       document.removeEventListener('visibilitychange', visibility)
@@ -75,7 +90,8 @@ export function useSceneDrag(drag: DragState, node: React.RefObject<THREE.Group 
   }
 
   return {
-    onPointerOver: () => {
+    onPointerOver: (event: Pointer) => {
+      report('enter', event)
       /* In a still scene a pointer arriving is the first sign of intent, so one
          frame is drawn to make sure the hit object is where it looks. */
       if (currentScene.current?.still) invalidate()
@@ -86,28 +102,36 @@ export function useSceneDrag(drag: DragState, node: React.RefObject<THREE.Group 
       sync()
       currentOptions.current.resetPhase()
       bind.onPointerDown(event)
+      report('press', event)
       invalidate()
     },
     onPointerMove: (event: Pointer) => {
       bind.onPointerMove(event)
-      if (drag.dragging) invalidate()
+      if (drag.dragging) {
+        report('drag', event)
+        invalidate()
+      }
     },
     onPointerUp: (event: Pointer) => {
       if (!drag.dragging) return
       bind.onPointerUp(event)
+      report('release', event)
       invalidate()
     },
     onPointerCancel: (event: Pointer) => {
       bind.onPointerCancel(event)
+      report('cancel', event)
       sync()
       invalidate()
     },
     onPointerLeave: (event: Pointer) => {
       bind.onPointerLeave(event)
+      if (!drag.dragging) report('leave', event)
       invalidate()
     },
-    onLostPointerCapture: () => {
+    onLostPointerCapture: (event: Pointer) => {
       if (drag.dragging) drag.cancel()
+      report('cancel', event)
       invalidate()
     },
   }

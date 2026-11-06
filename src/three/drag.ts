@@ -80,7 +80,16 @@ export function createDrag(tiltLimit = 0.44): DragState {
   }
   function end(event: Pointer) {
     if (!state.dragging || event.pointerId !== pointerId) return
-    state.cancel()
+    /* A flick should coast, not stop dead: the release velocity is kept and
+       decays inside the scene's own frame loop, where it is capped. */
+    state.dragging = false
+    const target = capture
+    const id = pointerId
+    capture = null
+    pointerId = null
+    if (target && id !== null) {
+      try { target.releasePointerCapture(id) } catch { /* capture already lost */ }
+    }
   }
   function leave(event: Pointer) {
     if (state.dragging && !capture) end(event)

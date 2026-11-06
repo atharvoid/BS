@@ -1,6 +1,6 @@
 import React from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
-import { useQuality, dprRange, watchPerformance } from './performance'
+import { useQuality, dprRange } from './performance'
 import { useSceneSession } from './SceneSession'
 
 function InvalidateBridge() {
@@ -42,9 +42,6 @@ export default function StageCanvas({
   fov: number
 }) {
   const quality = useQuality()
-  React.useEffect(() => {
-    watchPerformance()
-  }, [])
 
   return (
     <Canvas
