@@ -1,60 +1,65 @@
-# Globe picking and supplied logo startup
+# Verification — Part 2
 
-## Local implementation update — 6 November 2026
+Recorded 6 November 2026 on branch `arena/e210227c-bs`. Baseline:
+`12f8ee2` ("Implement trade homepage and interactive product experience").
 
-The trade homepage, category explorer and general enquiry flow are implemented. The textile route owns the regional material and four-object sequence. The cursor uses filled Explore states for menu targets and a transparent Drag ring for actual scene hits. Shared scene controls expose turn, tilt, pause/play and reset. Mobile mounts one active textile sequence canvas, and hidden/offscreen scenes suspend drawing. Reduced motion uses demand rendering.
+## What was run
 
-The existing plan modification was present before this implementation pass. GitHub, remote repositories and deployment were untouched. All source changes remain local.
+| Check | Command | Result |
+| --- | --- | --- |
+| TypeScript | `npx tsc --noEmit` | Pass, no diagnostics |
+| Production build | `npm run build` | Pass. `three` chunk 918.58 kB (242.74 kB gzip), app chunk 101.86 kB, CSS 68.41 kB |
+| Regression tests | `npm test` | 2 Node tests pass (`globe-raycast`, `cursor-state`) |
+| Stage scope guard | `node scripts/stage-scope.mjs` | Pass over 36 files; verified it **fails** when `useThree` is reintroduced into a component that renders `<Stage>` |
+| Route smoke (jsdom) | six routes rendered through the real app tree | `/`, `/textiles`, `/enquiry`, `/enquiry/acknowledgement`, `/privacy`, `*` all render with **zero** console errors |
 
-Local verification observed the following.
+### Route smoke detail
 
-- Production build passes TypeScript and Vite bundling. The existing large Three.js chunk warning remains.
-- Both Node regression tests pass, covering analytic globe picking and cursor proximity hysteresis.
-- Product journey checks pass for category switching, retained draft, Back, valid/invalid links, unconfigured sending, legacy/corrupt receipts, malformed responses, pending lock and intercepted successful submission. No real provider submission was sent.
-- Cursor browser check passes for filled Explore, native inputs, transparent Drag, capture state, removal and reduced motion. A separate real mouse sequence over the actual globe produced scene cursor mode and left Play animation available after dragging.
-- Logo checks pass for draw timing, replay, interruptions, modified clicks, hash entry, SPA cleanup, Back and mobile width.
-- The integrated globe hover check produced one hit for all 24 events, zero decorative raycasts, a 0.429 ms mean and a 6.3 ms maximum in local Chromium.
-- The reduced-motion desktop screenshot shows the complete right-cropped globe. The textile route had zero horizontal overflow at 390px.
+`/` renders 3 sections: hero with `Import and export / sourcing in India.`,
+the six category tiles in order (Textiles & fabrics · Handicrafts & home decor ·
+Agriculture & food · Industrial materials · Organic & sustainable · Something
+else), the running category list, **0** scene-control elements, **0** skip
+buttons, intro state `idle`, and the cursor mounted.
 
-Physical touch devices, Safari, screen readers, sustained hardware/GPU profiling and real inbox delivery remain unverified. Cursor sizes and rotation speeds use the agreed initial settings and remain available for visual tuning. Context-loss and focus-recovery coverage remains a manual follow-up.
+`/textiles` renders 5 sections and 2.8k characters of copy (up from 2.2k before
+the fabric brief replaced the four-object sequence).
 
-The earlier baseline record follows.
+## What could not be verified here
 
-Verified locally on 6 November 2026 in BS-2. Baseline: clean `main` at `83d4749`.
+- **No real browser.** This sandbox has no Chromium and no route to a browser
+  download, so the Playwright checks in `scripts/` (`cursor.check.cjs`,
+  `logo-intro.check.cjs`, `globe-hover.check.cjs`, `product-journey.check.cjs`)
+  were **updated to the new behaviour but not executed**. They need one run
+  against `npm run dev` on a machine with Playwright installed:
 
-## Changes implemented
+  ```bash
+  PLAYWRIGHT_MODULE=/path/to/playwright npm run dev &
+  node scripts/cursor.check.cjs
+  node scripts/logo-intro.check.cjs
+  node scripts/globe-hover.check.cjs
+  node scripts/product-journey.check.cjs
+  ```
 
-- Globe picking uses one analytic sphere intersection and stops recursion into decorative geometry. The rendered Earth, coastlines, routes and shaders are unchanged.
-- The supplied logo's inline outlines, draw/fill timing and movement into the header are adapted to React. Homepage lifecycle owns cancellation and cleanup. Only scoped logo styles were added.
-- The broader trade-led homepage, category explorer, general enquiry and textile migration are proposed in `IMPLEMENTATION_PLAN.md`; those page changes are not implemented in this slice.
+  `product-journey.check.cjs` will fail as written: it drives the old tiled
+  `tablist`, which no longer exists. It needs rewriting for the category links
+  before it is useful again.
+- **Frame-rate behaviour of the adaptive system** is unit-reasoned, not
+  observed on hardware. The thresholds (33fps / 50fps, two bad windows, six
+  good) are a first setting and should be tuned against a real mid-range
+  Android.
+- **Six live tile canvases on a real GPU.** They are gated to
+  `(min-width: 900px) and (any-pointer: fine)` precisely because that is the
+  case most likely to run out of WebGL contexts, but the gate is a judgement,
+  not a measurement.
+- **Touch, Safari, screen readers** — unchanged from the earlier record and
+  still unqualified.
+- **Real enquiry delivery** through Web3Forms — still unconfirmed. This remains
+  the site's only conversion path and the largest operational risk.
 
-## Root cause and measured result
+## Screenshot-free review of the visual fixes
 
-The globe's pointer handlers were on a parent group. React Three Fiber called recursive intersection testing for the whole group. The two geography line meshes contain 46,568 segments, and the Earth mesh contains 81,408 triangles. One actual pointer event produced 30,138 intersections. Picking took 114.5 ms; the complete handler took 1,380.1 ms on the main thread.
-
-The first post-fix 24-event run averaged 0.454 ms, with a 3 ms maximum. The final repeat, after integrating the startup, averaged 0.529 ms with a 4.8 ms maximum. Every event produced one intersection; decorative raycast calls were zero. These are local Chromium handler timings, not FPS or physical-device measurements.
-
-Mechanism references: [React Three Fiber events](https://r3f.docs.pmnd.rs/api/events) and [Three.js raycasting](https://threejs.org/docs/pages/Raycaster). The installed Three.js implementation explicitly stops child traversal when an object's raycast returns false.
-
-## Completed checks
-
-| Check | Observed result |
-| --- | --- |
-| Fresh baseline `npm run build` | Passed |
-| Regression before fix | Failed because decorative geometry was visited |
-| Final `npm test` | 1 passed, 0 failed; transformed hit, miss, near/far clipping and no decorative traversal |
-| Final `npm run build` | Passed TypeScript and production build |
-| `scripts/globe-hover.check.cjs`, development site | Passed: 24 events, one hit each, zero decorative calls, maximum below 100 ms |
-| `scripts/logo-intro.check.cjs`, production preview at port 4175 | Passed: draw timing, replay, Escape/Tab, skip and focus recovery, wheel/touch interruption, modified clicks, direct hash, SPA cleanup and Back, reduced motion, resize, mobile width |
-| Rendered inspection | Startup composition, finished desktop header and 390px mobile header inspected; mobile width did not overflow |
-| Early mouse drag smoke check | No application exception observed; recorded development-server WebSocket errors were unrelated HMR connection errors |
-
-The original short-lived-animation checks could miss a replay between Playwright calls. The final check inspects starting and interrupted states in a single browser task and separately waits for automatic dismissal. It also waits for the router's rendered transition before asserting unmount cleanup. A later extended mouse journey exceeded the diagnostic tool's timeout and supplies no additional evidence.
-
-Visual captures and the baseline hover JSON are saved outside the repository at `C:\Users\Atharva Patil\Documents\project\BS-2-evidence\2026-11-06`. The automated commands above are repeatable from the repository; Playwright is supplied by the existing local runtime through `PLAYWRIGHT_MODULE`.
-
-## Remaining boundaries
-
-- Existing build warning: the Three.js chunk is approximately 919 KB before gzip. It appeared in the baseline too.
-- This work does not establish sustained GPU performance, physical touch-device behavior, Safari, screen-reader qualification or real enquiry delivery.
-- The new category/enquiry and textile-page behavior is still proposed work. No real enquiry was sent and nothing was deployed.
+The globe framing, the Explore disc geometry, the tile row height and the
+intro timeline are all checked as *numbers* (see `CHANGES.md` §1, §3, §6), which
+is what can be verified without a rendering browser. The judgement of "feels
+like the earlier version" still needs a human eye on a real screen — that is the
+one thing this record cannot substitute for.

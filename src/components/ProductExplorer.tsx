@@ -35,6 +35,32 @@ import { Arrow } from './Nav'
 
 type Motif = 'bolt' | 'shuttle' | 'bobbin' | 'reed' | 'cloth' | 'ring' | 'basket'
 
+/**
+ * Whether this screen gets the live objects.
+ *
+ * Six tiles means six WebGL contexts, and a browser caps how many it will keep
+ * alive — typically eight, fewer on some Android builds. The hero globe holds
+ * one of them already. So the live row is reserved for a wide screen with a
+ * fine pointer, where there is room and context headroom; phones and tablets
+ * get a drawn swatch instead, which is the same information at no cost.
+ */
+function useLiveTiles() {
+  const query = '(min-width: 900px) and (any-pointer: fine)'
+  const [live, setLive] = React.useState(
+    () => typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia(query).matches
+      : false,
+  )
+  React.useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return
+    const media = window.matchMedia(query)
+    const update = () => setLive(media.matches)
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+  return live
+}
+
 type Tile = {
   id: CategoryId
   label: string
@@ -181,10 +207,12 @@ function Turning({
   children,
   speed,
   tilt = 0.5,
+  live,
 }: {
   children: React.ReactNode
   speed: number
   tilt?: number
+  live: boolean
 }) {
   const angle = React.useRef({ yaw: Math.random() * Math.PI * 2, pitch: 0.14 })
   const drag = React.useRef({ active: false, moved: 0, x: 0, y: 0, lastX: 0, lastY: 0 })
@@ -231,14 +259,24 @@ function Turning({
       onPointerUp={release}
       onPointerCancel={release}
     >
-      <Stage label="" z={4.6} fov={34} fallback={<span className="tile__static" aria-hidden="true" />}>
-        <Studio />
-        <Lights intensity={1.05} />
-        <Ground y={-1.15} scale={3.4} opacity={0.34} />
-        <TurningRig angle={angle} speed={speed}>{children}</TurningRig>
-      </Stage>
+      {live ? (
+        <Stage label="" z={4.6} fov={34} fallback={<WovenSwatch />}>
+          <Studio />
+          <Lights intensity={1.05} />
+          <Ground y={-1.15} scale={3.4} opacity={0.34} />
+          <TurningRig angle={angle} speed={speed}>{children}</TurningRig>
+        </Stage>
+      ) : (
+        <WovenSwatch />
+      )}
     </div>
   )
+}
+
+/** What a tile shows when it has no canvas: a woven swatch in the tile's own
+ *  colour, so the row still reads as material rather than as empty boxes. */
+function WovenSwatch() {
+  return <span className="tile__static" aria-hidden="true" />
 }
 
 /* -------------------------------------------------------------------------- */
@@ -247,6 +285,7 @@ function Turning({
 
 export function ProductExplorer() {
   const strip = React.useRef<HTMLUListElement>(null)
+  const live = useLiveTiles()
 
   const nudge = (direction: 1 | -1) => {
     strip.current?.scrollBy({ left: direction * 280, behavior: 'smooth' })
@@ -277,10 +316,9 @@ export function ProductExplorer() {
               <Link
                 to={`/enquiry?category=${tile.id}`}
                 className="tile__link"
-                data-cursor="menu"
                 aria-label={`Enquire about ${tile.label}`}
               >
-                <Turning speed={tile.id === 'textiles' ? 0.5 : 0.34 + index * 0.04}>
+                <Turning speed={tile.id === 'textiles' ? 0.5 : 0.34 + index * 0.04} live={live}>
                   <MotifObject motif={tile.motif} palette={tile.palette} />
                 </Turning>
                 <span className="tile__index">{String(index + 1).padStart(2, '0')}</span>

@@ -25,9 +25,11 @@ Node 20+ recommended.
 
 ### Targeted checks
 
-`npm test` checks globe picking without traversing decorative geometry, including
-transformed hits, misses and near/far clipping. It uses Node's built-in test
-runner and native TypeScript support (Node 22.18+ or 24).
+`npm test` runs two Node regression tests (globe picking without traversing
+decorative geometry, and cursor proximity hysteresis) and then
+`scripts/stage-scope.mjs`, a static guard that fails if a component calls
+`useFrame`/`useThree` and also renders a `<Stage>` — the mistake that produces
+"Hooks can only be used within the Canvas component" and a blank section.
 
 With Playwright available, `node scripts/logo-intro.check.cjs` checks startup,
 replay, interruptions, focus recovery, route/hash behavior and reduced motion.
@@ -48,8 +50,8 @@ The broader trade-homepage and textile-migration proposal is in
 
 | Route | Page | Purpose |
 | --- | --- | --- |
-| `/` | Overview | Business purpose, initial sourcing areas, the four-stage process, what a first message needs, information boundaries, company introduction, enquiry |
-| `/textiles` | Textiles & fabrics | The textile focus, representative swatches, the dimensions of a fabric, guidance on what to include in an enquiry |
+| `/` | Overview | Hero globe, the six product areas with live tiles, how an enquiry works, and the enquiry |
+| `/textiles` | Textiles & fabrics | The textile focus, representative swatches, the two sourcing areas, and a written enquiry brief |
 | `/enquiry` | Textile enquiry | The five-answer form, already identified as a textiles enquiry |
 | `/enquiry/acknowledgement` | Enquiry acknowledgement | Says plainly that the page alone does not confirm inbox delivery |
 | `/privacy` | Enquiry privacy | What is collected, how it is processed, how to request a correction |
@@ -87,13 +89,25 @@ Earth and is the only thing that needs the raw data:
 node scripts/build-geo.mjs
 ```
 
-**The process pins.** The four stages share one canvas. The text scrolls past on
-the right; on the left, the active object swings in along a circular arc,
-settles level and idles until the next arrives. Only one object exists at a
-time, so this is one WebGL context where there used to be four.
+**Nothing on the site has controls.** Every scene turns by dragging it and
+animates by itself. There is no pause button, no reset, no arrow pad: the
+sections that once had them (`Tell us about your fabric`, and the hero globe)
+now either animate continuously or were replaced by written content.
 
-Four objects, each still independently draggable: a cloth bolt, a weaving
-shuttle, a yarn bobbin, a brass reed.
+**The category row.** Six small canvases, each turning a procedural object:
+a cloth bolt, a hand-coiled basket, a seed ring, a weaving shuttle, a yarn
+bobbin and a folded swatch. Each tile links straight to an enquiry for that
+category. Because that is six WebGL contexts, the live version is reserved for
+`(min-width: 900px) and (any-pointer: fine)`; smaller and touch screens get a
+woven swatch in the tile's own colour.
+
+### Adaptive quality
+
+`src/three/performance.ts` measures the interval between `requestAnimationFrame`
+callbacks, watches for long tasks, and reads device hints. It settles on one of
+three states — `high`, `medium` (pixel ratio 1) or `still` (one static frame,
+redrawn only for a drag) — with hysteresis so it cannot oscillate. It is not a
+control and there is no UI for it. See `CHANGES.md` §7 for the thresholds.
 
 ### Design decisions worth keeping
 
@@ -103,8 +117,11 @@ because the canvas is `touch-action: pan-y`, on a phone too.
 
 **"Anti-slope."** Tilt is clamped either side of level, release velocity is capped and
 decayed, and rotation is damped toward a target. A hard flick settles. The composition
-cannot be left in a tipped, unreadable state. Idle drift stops the moment a visitor
-takes over, so their angle is respected.
+cannot be left in a tipped, unreadable state.
+
+**Continuous by design.** Idle motion is added as an *absolute* offset, not as a nudge
+away from a drag target, so a visitor's angle becomes the new centre of rotation: the
+object keeps turning from wherever the hand left it and nothing snaps back on release.
 
 **Reduced motion lands on the finished cloth** rather than watching it weave,
 and the idle drift stops.

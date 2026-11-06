@@ -48,8 +48,8 @@
 .sourcing__arrows { display: flex; gap: 0.4rem; }
 
 .sourcing__arrows button {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
   border: 1px solid var(--rule);
@@ -120,18 +120,32 @@
 
 .tile__stage:active { cursor: grabbing; }
 .tile__stage canvas { display: block; }
-.tile__stage > span { position: absolute; inset: 0; }
 
-/* Shown when WebGL is unavailable: a woven swatch instead of an empty box. */
+/* No canvas here: a woven swatch instead of an empty box. Each tile keeps its
+   own colour, so the row still reads as material. */
 .tile__static {
+  position: absolute;
+  inset: 12% 20%;
   display: block;
-  inset: 18% 22% !important;
   border-radius: 2px;
   background:
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 5px),
-    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px 5px),
-    linear-gradient(140deg, #4a5a7d, #24304a);
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.18) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.2) 0 1px, transparent 1px 5px),
+    linear-gradient(140deg, var(--swatch-a, #4a5a7d), var(--swatch-b, #24304a));
+  box-shadow: 0 10px 22px -16px rgba(20, 17, 13, 0.6);
+  transform: rotate(-2deg);
+  transition: transform 520ms var(--ease-out);
 }
+
+.tile__link:hover .tile__static { transform: rotate(0deg) scale(1.02); }
+
+/* The six swatch colours, matching the object palettes. */
+.tile:nth-child(1) .tile__static { --swatch-a: #3f5378; --swatch-b: #1f2b45; }
+.tile:nth-child(2) .tile__static { --swatch-a: #c08a3a; --swatch-b: #6d4a1d; }
+.tile:nth-child(3) .tile__static { --swatch-a: #d5c2a0; --swatch-b: #7d6a4c; }
+.tile:nth-child(4) .tile__static { --swatch-a: #4c7b68; --swatch-b: #23413a; }
+.tile:nth-child(5) .tile__static { --swatch-a: #943f2e; --swatch-b: #4c2018; }
+.tile:nth-child(6) .tile__static { --swatch-a: #8a7440; --swatch-b: #403521; }
 
 .tile__index {
   position: absolute;

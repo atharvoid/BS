@@ -34,8 +34,10 @@ function Hero() {
       <div className="hero__inner shell">
         <div className="hero__copy">
           <h1 className="hero__title">
-            <span className="hero__line">Import and export </span>{' '}
-            <span className="hero__line">sourcing in <em className="display-italic">India</em>.</span>
+            <span className="hero__line">Import and export</span>
+            <span className="hero__line">
+              sourcing in <em className="display-italic">India</em>.
+            </span>
           </h1>
 
           <p className="hero__lede">
