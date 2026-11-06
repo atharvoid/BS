@@ -4,18 +4,19 @@ import { BUSINESS } from '../content'
 import { Logo } from './Logo'
 
 const LINKS = [
-  { to: '/', label: 'Overview', end: true },
-  { to: '/textiles', label: 'Textiles & fabrics' },
-  { to: '/enquiry', label: 'Textile enquiry' },
-  { to: '/privacy', label: 'Privacy' },
+  { to: '/#products', label: 'Products', end: false },
+  { to: '/textiles', label: 'Textiles', end: false },
+  { to: '/enquiry', label: 'Enquire', end: false },
 ]
 
 export function Nav() {
   const [open, setOpen] = React.useState(false)
   const [lifted, setLifted] = React.useState(false)
-  const { pathname } = useLocation()
+  const toggle = React.useRef<HTMLButtonElement>(null)
+  const drawer = React.useRef<HTMLDivElement>(null)
+  const { pathname, hash } = useLocation()
 
-  React.useEffect(() => setOpen(false), [pathname])
+  React.useEffect(() => setOpen(false), [pathname, hash])
 
   React.useEffect(() => {
     let raf = 0
@@ -35,19 +36,29 @@ export function Nav() {
   }, [])
 
   React.useEffect(() => {
-    document.documentElement.style.overflow = open ? 'hidden' : ''
+    if (!open) return
+    const previous = document.documentElement.style.overflow
+    document.documentElement.style.overflow = 'hidden'
+    const frame = requestAnimationFrame(() => drawer.current?.querySelector<HTMLElement>('a,button')?.focus())
     return () => {
-      document.documentElement.style.overflow = ''
+      cancelAnimationFrame(frame)
+      document.documentElement.style.overflow = previous
     }
   }, [open])
 
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
+      if (!open) return
+      if (e.key === 'Escape') { setOpen(false); toggle.current?.focus(); return }
+      if (e.key !== 'Tab') return
+      const items = Array.from(drawer.current?.querySelectorAll<HTMLElement>('a[href], button:not([disabled])') ?? [])
+      if (!items.length) return
+      if (e.shiftKey && document.activeElement === items[0]) { e.preventDefault(); items[items.length - 1].focus() }
+      else if (!e.shiftKey && document.activeElement === items[items.length - 1]) { e.preventDefault(); items[0].focus() }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [open])
 
   return (
     <>
@@ -64,6 +75,8 @@ export function Nav() {
                 key={l.to}
                 to={l.to}
                 end={l.end}
+                data-cursor="menu"
+                data-cursor-size="compact"
                 className={({ isActive }) => `nav__link ${isActive ? 'is-active' : ''}`}
               >
                 {l.label}
@@ -82,6 +95,7 @@ export function Nav() {
           </div>
 
           <button
+            ref={toggle}
             className="nav__toggle"
             aria-expanded={open}
             aria-controls="nav-drawer"
@@ -94,13 +108,16 @@ export function Nav() {
         </div>
       </header>
 
-      <div id="nav-drawer" className={`drawer ${open ? 'drawer--open' : ''}`} hidden={!open}>
+      <div ref={drawer} id="nav-drawer" className={`drawer ${open ? 'drawer--open' : ''}`} hidden={!open}>
         <nav className="drawer__links" aria-label="Mobile">
           {LINKS.map((l, i) => (
             <NavLink
               key={l.to}
               to={l.to}
               end={l.end}
+              data-cursor="menu"
+              data-cursor-size="row"
+              onClick={() => setOpen(false)}
               style={{ transitionDelay: open ? `${80 + i * 55}ms` : '0ms' }}
               className={({ isActive }) => `drawer__link ${isActive ? 'is-active' : ''}`}
             >

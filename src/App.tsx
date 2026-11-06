@@ -10,6 +10,7 @@ import Enquiry from './pages/Enquiry'
 import Acknowledgement from './pages/Acknowledgement'
 import Privacy from './pages/Privacy'
 import NotFound from './pages/NotFound'
+import { EnquiryProvider } from './components/EnquiryForm'
 
 function ScrollManager() {
   const { pathname, hash } = useLocation()
@@ -37,9 +38,11 @@ function ScrollManager() {
 
   React.useEffect(() => {
     if (hash) {
-      const el = document.querySelector(hash)
+      let id = hash.slice(1)
+      try { id = decodeURIComponent(id) } catch { /* Keep the literal fragment. */ }
+      const el = document.getElementById(id)
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' })
         return
       }
     }
@@ -49,13 +52,32 @@ function ScrollManager() {
   return null
 }
 
+function PageMetadata() {
+  const { pathname } = useLocation()
+  React.useEffect(() => {
+    const pages: Record<string, [string, string]> = {
+      '/': ['BS EXIMNEXUS | Import and export sourcing in India', 'India-focused sourcing and trade coordination for buyers and suppliers.'],
+      '/textiles': ['Textiles and fabrics | BS EXIMNEXUS', 'Explore fabric types and textile sourcing areas in India.'],
+      '/enquiry': ['Start an enquiry | BS EXIMNEXUS', 'Describe what you need or supply to start a sourcing enquiry.'],
+      '/privacy': ['Enquiry privacy | BS EXIMNEXUS', 'How enquiry information is handled.'],
+    }
+    const [title, description] = pages[pathname] ?? ['BS EXIMNEXUS', 'India-focused sourcing and trade coordination.']
+    document.title = title
+    document.querySelector('meta[name="description"]')?.setAttribute('content', description)
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', title)
+    document.querySelector('meta[property="og:description"]')?.setAttribute('content', description)
+  }, [pathname])
+  return null
+}
+
 export default function App() {
   return (
-    <div className="app grain">
+    <EnquiryProvider><div className="app grain">
       <a className="skip-link" href="#main">
         Skip to content
       </a>
       <ScrollManager />
+      <PageMetadata />
       <Cursor />
       <LogoIntro />
       <Nav />
@@ -70,6 +92,6 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
-    </div>
+    </div></EnquiryProvider>
   )
 }

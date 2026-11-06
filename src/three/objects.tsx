@@ -20,6 +20,8 @@ import {
   makeWindingTexture,
 } from './textures'
 import { createDrag } from './drag'
+import { useSceneDrag } from './useSceneDrag'
+import { useSceneSession } from './SceneSession'
 
 /* ==========================================================================
    Shared resources
@@ -132,7 +134,33 @@ export function Draggable({
   const group = React.useRef<THREE.Group>(null)
   const drag = React.useMemo(() => createDrag(tilt), [tilt])
   const engaged = React.useRef(false)
-  const seed = React.useRef(Math.random() * 10)
+  const phase = React.useRef(0)
+  const scene = useSceneSession()
+  const bind = useSceneDrag(drag, group, { tilt, pitchScale: squash, resetPhase: () => { phase.current = 0 } })
+
+  React.useLayoutEffect(() => {
+    const object = group.current
+    if (!object) return
+    object.updateWorldMatrix(true, true)
+    const bounds = new THREE.Box3().setFromObject(object)
+    const sphere = bounds.getBoundingSphere(new THREE.Sphere())
+    const scale = object.getWorldScale(new THREE.Vector3())
+    object.worldToLocal(sphere.center)
+    sphere.radius /= Math.max(scale.x, scale.y, scale.z)
+    const inverse = new THREE.Matrix4()
+    const ray = new THREE.Ray()
+    const point = new THREE.Vector3()
+    object.raycast = (caster, hits) => {
+      for (let parent: THREE.Object3D | null = object; parent; parent = parent.parent) if (!parent.visible) return false
+      ray.copy(caster.ray).applyMatrix4(inverse.copy(object.matrixWorld).invert())
+      if (ray.intersectSphere(sphere, point)) {
+        point.applyMatrix4(object.matrixWorld)
+        const distance = caster.ray.origin.distanceTo(point)
+        if (distance >= caster.near && distance <= caster.far) hits.push({ distance, point: point.clone(), object })
+      }
+      return false
+    }
+  }, [])
 
   useFrame((state, delta) => {
     const d = Math.min(delta, 1 / 30)
@@ -148,9 +176,10 @@ export function Draggable({
       drag.idle += d
     }
 
-    const t = state.clock.elapsedTime
+    if (!scene?.paused && !scene?.reduced && !drag.dragging) phase.current += d
+    const t = phase.current
     // Idle motion only until the visitor takes over, so their angle is respected.
-    const idleY = drag.touched ? 0 : Math.sin(t * 0.28 + seed.current) * drift + spin * t
+    const idleY = Math.sin(t * Math.PI * 2 / 14) * drift + spin * t
     const ty = drag.target.y + idleY
 
     drag.current.y = THREE.MathUtils.lerp(drag.current.y, ty, 1 - Math.exp(-6.2 * d))
@@ -158,8 +187,8 @@ export function Draggable({
 
     g.rotation.y = drag.current.y
     g.rotation.x = drag.current.x * squash
-    g.rotation.z = Math.sin(t * 0.22 + seed.current) * roll + drag.current.x * -0.18
-    g.position.y = Math.sin(t * 0.55 + seed.current) * float
+    g.rotation.z = Math.sin(t * 0.22) * roll + drag.current.x * -0.18
+    g.position.y = Math.sin(t * 0.55) * float
 
     if (!engaged.current && drag.dragging) {
       engaged.current = true
@@ -167,22 +196,16 @@ export function Draggable({
     }
 
     if (drag.dragging) drag.idle = 0
+    if ((scene?.paused || scene?.reduced) && (Math.abs(drag.current.y - ty) > 0.001 || Math.abs(drag.current.x - drag.target.x) > 0.001)) state.invalidate()
   })
 
-  const bind = drag.bind()
   // R3F group gets the pointer handlers directly: dragging anywhere on the
   // object turns it, while a vertical swipe still scrolls the page thanks to
   // touch-action: pan-y on the canvas.
   return (
     <group
       ref={group}
-      onPointerDown={(e) => {
-        e.stopPropagation()
-        bind.onPointerDown(e as unknown as React.PointerEvent)
-      }}
-      onPointerMove={(e) => bind.onPointerMove(e as unknown as React.PointerEvent)}
-      onPointerUp={(e) => bind.onPointerUp(e as unknown as React.PointerEvent)}
-      onPointerLeave={(e) => bind.onPointerLeave(e as unknown as React.PointerEvent)}
+      {...bind}
     >
       {children}
     </group>

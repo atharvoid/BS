@@ -4,6 +4,8 @@ Updated 6 November 2026 for C:/Users/Atharva Patil/Documents/project/BS-2.
 
 This is the authoritative handoff for the trade homepage, textile page, enquiry flow, scene motion and adaptive cursor. It replaces the earlier assembled proposals in this file. The current task prepares the plan and preserves the supplied references. Work packages below are for later delegation.
 
+Start with [page placement and copy](#3-page-placement-and-exact-copy), [scene behavior](#5-scene-motion-and-manipulation) and the [cursor contract](#6-adaptive-cursor-contract). The lead can then use the [work packages](#8-delegation-order-and-work-packages) and [acceptance matrix](#9-acceptance-matrix-and-evidence) to dispatch and review each slice.
+
 ## 1. Product direction and acceptance
 
 A buyer should understand the sourcing business on arrival, find the relevant category, and either explore textiles or describe a requirement. A supplier should be able to introduce what they offer using the same contact flow. The visual experience should support those decisions through clear type, product illustrations and predictable controls.
@@ -210,7 +212,7 @@ Changing a category updates subject and its visible heading. It leaves role, req
 
 ### 4.3 URL and history
 
-Use /#products for the explorer, /textiles for detail and /enquiry?category=<stable-id> for direct enquiries. The explorer mirrors explicit selection in the homepage category query. Use a normal history entry for an explicit category choice so Back/Forward can restore selection. Arrow-key movement through an unactivated tab changes focus only.
+Use /#products for the explorer, /textiles for detail and direct enquiry URLs such as /enquiry?category=handicrafts. The explorer mirrors explicit selection in the homepage category query. Use a normal history entry for an explicit category choice so Back/Forward can restore selection. Arrow-key movement through an unactivated tab changes focus only.
 
 Use manual-activation tab semantics with Tab, arrow keys, Home/End and Enter/Space. Tabs have aria-selected, aria-controls and a labelled panel. The overflow scroll buttons move the row by a useful visible distance without changing selection.
 
@@ -267,6 +269,8 @@ Add shared compact controls below the interactive area, labelled Turn left, Paus
 For the globe, also expose Tilt up and Tilt down within the existing pitch limits so the alternative controls cover the same orientation changes as dragging. For products, include the same pitch controls when they support pitch. Disable a direction at its tilt bound. Keep all controls in normal keyboard order, with visible focus. The paused state must be understandable from the control label.
 
 Stage currently has role=img around its contents. Move image semantics to the illustration/fallback element, and keep controls as siblings outside any role that hides their semantics. Name each scene. On WebGL failure, show the representative fallback, remove unavailable scene controls and move focus to the scene heading if a disappearing control held it.
+
+Freeze a small control interface in P1. SceneSession exposes paused and setPaused. Each Stage owns a stable controller ref whose mounted renderer exposes turnYaw(deltaRadians), turnPitch(deltaRadians) when supported, and reset(). SceneControls receives that ref and the scene's name/capabilities. Clear it when its renderer unmounts. Keep automatic phase and pose inside the renderer. Controls request the change and invalidate the demand frame. A scene controller belongs to its own Stage, which avoids a global registry of object poses.
 
 ### 5.4 Pointer capture and end paths
 
@@ -366,7 +370,7 @@ Resolve states in this order.
 
 Opening a drawer first cancels scene manipulation. Menu close, route change, scene removal, context loss or preference changes clear stale ownership. Ignore an event from a scene that is already unmounted.
 
-Enable the custom layer only for mouse events when a fine hover-capable pointer is available. Use runtime media-query listeners and the current pointerType so hybrid devices can switch between touch and mouse. After a touch, hide the layer and restore native behavior until a fresh eligible mouse move.
+Enable the custom layer only for mouse events when the query (any-hover: hover) and (any-pointer: fine) matches. Use runtime media-query listeners and the current pointerType so hybrid devices can switch between touch and mouse. Keep this CSS eligibility and the JavaScript activation rule consistent. After a touch, hide the layer and restore native behavior until a fresh eligible mouse move.
 
 Handle Tab by hiding the decorative pointer and exposing normal focus styling. Restore the layer on a new eligible mouse movement. Restore the native pointer on blur, pointer exit, selection, errors in the cursor setup/tick, reduced motion and forced colours. A setup failure must never leave has-custom-cursor enabled.
 

@@ -26,7 +26,7 @@ export function useScrollProgress(track: React.RefObject<HTMLElement | null>, co
       progress.current = p
 
       // A step becomes active once it is centred in the pinned frame.
-      const idx = Math.min(count - 1, Math.max(0, Math.floor(p * count + 0.5 - 0.0001)))
+      const idx = Math.min(count - 1, Math.max(0, Math.floor(p * count)))
       if (idx !== last.current) {
         last.current = idx
         setActive(idx)

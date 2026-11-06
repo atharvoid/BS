@@ -1,3 +1,5 @@
+import { useSceneDrag } from './useSceneDrag'
+import { useSceneSession } from './SceneSession'
 import React from 'react'
 import * as THREE from 'three'
 import { useFrame, useThree } from '@react-three/fiber'
@@ -602,7 +604,8 @@ function Globe() {
     }),
     [],
   )
-  const still = React.useMemo(() => reducedMotion(), [])
+  const session = useSceneSession()
+  const still = session?.reduced ?? reducedMotion()
   const drag = React.useMemo(() => createDrag(0.5), [])
   const spin = React.useRef(0)
 
@@ -625,8 +628,8 @@ function Globe() {
 
   useFrame((_, delta) => {
     const d = Math.min(delta, 1 / 30)
-    uniforms.uTime.value += d
-    if (!still && !drag.touched && !drag.dragging) spin.current += d * 0.045
+    if (!session?.paused && !still) uniforms.uTime.value += d
+    if (!still && !session?.paused && !drag.touched && !drag.dragging) spin.current += d * 0.045
   })
 
   const root = React.useRef<THREE.Group>(null)
@@ -643,20 +646,14 @@ function Globe() {
     g.rotation.z = 0.06
   })
 
-  const bind = drag.bind()
+  const bind = useSceneDrag(drag, root, { initialYaw: startY, tilt: 0.5, pitchScale: 0.55, resetPhase: () => { spin.current = 0 } })
 
   return (
     <group
       ref={root}
       raycast={raycastGlobe}
       rotation={[0, startY, 0.04]}
-      onPointerDown={(e) => {
-        e.stopPropagation()
-        bind.onPointerDown(e as unknown as React.PointerEvent)
-      }}
-      onPointerMove={(e) => bind.onPointerMove(e as unknown as React.PointerEvent)}
-      onPointerUp={(e) => bind.onPointerUp(e as unknown as React.PointerEvent)}
-      onPointerLeave={(e) => bind.onPointerLeave(e as unknown as React.PointerEvent)}
+      {...bind}
     >
       <Earth uniforms={uniforms} />
       <GeoLines />

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BUSINESS, ENQUIRY_FIELDS } from '../content'
+import { BUSINESS, ENQUIRY_FIELDS, getCategory, type CategoryId } from '../content'
 
 /* ==========================================================================
    Enquiry logic.
@@ -16,7 +16,7 @@ const ENDPOINT = 'https://api.web3forms.com/submit'
 const ACCESS_KEY = (import.meta.env.VITE_WEB3FORMS_KEY as string | undefined) ?? ''
 const HCAPTCHA_SITEKEY = (import.meta.env.VITE_HCAPTCHA_SITEKEY as string | undefined) ?? ''
 
-export type EnquirySubject = 'textiles' | 'general'
+export type EnquirySubject = CategoryId
 
 export type EnquiryDraft = {
   subject: EnquirySubject
@@ -28,12 +28,33 @@ export type EnquiryDraft = {
 }
 
 const EMPTY: EnquiryDraft = {
-  subject: 'textiles',
+  subject: 'general',
   role: '',
   requirement: '',
   location: '',
   name: '',
   email: '',
+}
+
+type EnquiryContextValue = {
+  draft: EnquiryDraft
+  setDraft: React.Dispatch<React.SetStateAction<EnquiryDraft>>
+  sending: boolean
+  setSending: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const EnquiryContext = React.createContext<EnquiryContextValue | null>(null)
+
+export function EnquiryProvider({ children }: { children: React.ReactNode }) {
+  const [draft, setDraft] = React.useState<EnquiryDraft>(EMPTY)
+  const [sending, setSending] = React.useState(false)
+  return <EnquiryContext.Provider value={{ draft, setDraft, sending, setSending }}>{children}</EnquiryContext.Provider>
+}
+
+export function useEnquiryDraft() {
+  const context = React.useContext(EnquiryContext)
+  if (!context) throw new Error('EnquiryProvider is required')
+  return context
 }
 
 type Errors = Partial<Record<keyof EnquiryDraft, string>>
@@ -49,7 +70,12 @@ const STORE_KEY = 'bs.enquiry.receipt'
 export function readReceipt() {
   try {
     const raw = sessionStorage.getItem(STORE_KEY)
-    return raw ? (JSON.parse(raw) as { subject: EnquirySubject; role: string; at: string }) : null
+    if (!raw) return null
+    const value = JSON.parse(raw) as { subject?: unknown; role?: unknown; at?: unknown }
+    if (typeof value.subject !== 'string' || typeof value.role !== 'string' ||
+        !ENQUIRY_FIELDS.role.options.some((option) => option.value === value.role) ||
+        typeof value.at !== 'string' || !Number.isFinite(Date.parse(value.at))) return null
+    return { subject: getCategory(value.subject).id, role: value.role, at: value.at }
   } catch {
     return null
   }
@@ -67,13 +93,20 @@ const ROLE_LABEL = Object.fromEntries(
   ENQUIRY_FIELDS.role.options.map((o) => [o.value, o.label]),
 ) as Record<string, string>
 
-export function EnquiryForm({ subject = 'textiles' }: { subject?: EnquirySubject }) {
+export function EnquiryForm() {
   const navigate = useNavigate()
-  const [draft, setDraft] = React.useState<EnquiryDraft>({ ...EMPTY, subject })
+  const { draft, setDraft, sending, setSending } = useEnquiryDraft()
   const [errors, setErrors] = React.useState<Errors>({})
   const [status, setStatus] = React.useState<Status>('idle')
-  const [serverError, setServerError] = React.useState('')
+  const request = React.useRef<AbortController | null>(null)
+  const form = React.useRef<HTMLFormElement>(null)
   const firstInvalid = React.useRef<string | null>(null)
+
+  React.useEffect(() => () => {
+    request.current?.abort()
+    request.current = null
+    setSending(false)
+  }, [setSending])
 
   const set = (k: keyof EnquiryDraft) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -97,18 +130,17 @@ export function EnquiryForm({ subject = 'textiles' }: { subject?: EnquirySubject
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (request.current || sending) return
     const found = validate(draft)
     setErrors(found)
     if (Object.keys(found).length) {
       firstInvalid.current = Object.keys(found)[0]
-      const el = document.querySelector<HTMLElement>(`[data-field="${firstInvalid.current}"]`)
+      const field = form.current?.querySelector<HTMLElement>(`[data-field="${firstInvalid.current}"]`)
+      const el = field?.querySelector<HTMLElement>('input, textarea, select') ?? field
       el?.focus()
       el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
       return
     }
-
-    setStatus('sending')
-    setServerError('')
 
     if (!ACCESS_KEY) {
       // No key configured: never show a false confirmation.
@@ -116,17 +148,24 @@ export function EnquiryForm({ subject = 'textiles' }: { subject?: EnquirySubject
       return
     }
 
+    const snapshot = { ...draft }
+    const category = getCategory(snapshot.subject)
+    const controller = new AbortController()
+    request.current = controller
+    setSending(true)
+    setStatus('sending')
+
     const payload: Record<string, string> = {
       access_key: ACCESS_KEY,
-      subject: `[${BUSINESS.name}] ${draft.subject === 'textiles' ? 'Textile' : 'General'} enquiry: ${ROLE_LABEL[draft.role] ?? draft.role}`,
-      from_name: draft.name,
-      replyto: draft.email.trim(),
-      'Visitor type': ROLE_LABEL[draft.role] ?? draft.role,
-      'Requirement or offer': draft.requirement,
-      'Destination or business location': draft.location,
-      Name: draft.name,
-      Email: draft.email.trim(),
-      'Enquiry subject': draft.subject === 'textiles' ? 'Textiles and fabrics' : 'General',
+      subject: `[${BUSINESS.name}] ${category.label} enquiry: ${ROLE_LABEL[snapshot.role] ?? snapshot.role}`,
+      from_name: snapshot.name,
+      replyto: snapshot.email.trim(),
+      'Visitor type': ROLE_LABEL[snapshot.role] ?? snapshot.role,
+      'Requirement or offer': snapshot.requirement,
+      'Destination or business location': snapshot.location,
+      Name: snapshot.name,
+      Email: snapshot.email.trim(),
+      'Enquiry subject': category.label,
     }
     if (HCAPTCHA_SITEKEY) payload['h-captcha-response'] = ''
 
@@ -135,35 +174,36 @@ export function EnquiryForm({ subject = 'textiles' }: { subject?: EnquirySubject
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(payload),
+        signal: controller.signal,
       })
       const data = (await res.json().catch(() => ({}))) as { success?: boolean; message?: string }
-      if (!res.ok || data.success === false) {
+      if (!res.ok || data.success !== true) {
         throw new Error(data.message || `The provider answered ${res.status}.`)
       }
-      writeReceipt({ subject: draft.subject, role: draft.role, at: new Date().toISOString() })
+      if (request.current !== controller) return
+      writeReceipt({ subject: snapshot.subject, role: snapshot.role, at: new Date().toISOString() })
       setStatus('sent')
       navigate('/enquiry/acknowledgement')
-    } catch (err) {
-      setStatus('error')
-      setServerError(
-        err instanceof Error ? err.message : 'The submission could not be completed.',
-      )
+    } catch {
+      if (request.current === controller) setStatus('error')
+    } finally {
+      if (request.current === controller) {
+        request.current = null
+        setSending(false)
+      }
     }
   }
 
   return (
-    <form className="form" onSubmit={submit} noValidate>
+    <form ref={form} className="form" onSubmit={submit} noValidate>
       <div className="form__head">
-        <p className="eyebrow eyebrow--index">Textile enquiry / form</p>
+        <p className="eyebrow eyebrow--index">{getCategory(draft.subject).label}</p>
         <h2 className="form__title">
-          Five answers. <em className="display-italic">No specification needed.</em>
+          Tell us what <em className="display-italic">you need.</em>
         </h2>
-        <p className="form__intro">
-          This enquiry is filed as a textiles and fabrics enquiry. Attachments are not accepted. If
-          a sample or document matters, say so here and arrangements can be discussed in the reply.
-        </p>
       </div>
 
+      <fieldset disabled={sending} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
       {/* 1 — role */}
       <fieldset className="field field--group" data-field="role">
         <legend className="field__label">
@@ -205,7 +245,7 @@ export function EnquiryForm({ subject = 'textiles' }: { subject?: EnquirySubject
           {ENQUIRY_FIELDS.requirement.label}
           <span className="field__req" aria-hidden="true">required</span>
         </label>
-        <p className="field__hint" id="requirement-hint">{ENQUIRY_FIELDS.requirement.hint}</p>
+        <p className="field__hint" id="requirement-hint">{getCategory(draft.subject).hint}</p>
         <textarea
           id="requirement"
           rows={4}
@@ -304,20 +344,17 @@ export function EnquiryForm({ subject = 'textiles' }: { subject?: EnquirySubject
         </p>
       </div>
 
+      </fieldset>
       <div aria-live="polite" className="form__status">
         {status === 'error' && (
           <p className="notice notice--error">
-            <strong>The enquiry did not go through.</strong> {serverError} Nothing was lost. Please
-            try again, or write directly to{' '}
+            We couldn’t send your enquiry. Try again, or email{' '}
             <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a>.
           </p>
         )}
         {status === 'unconfigured' && (
           <p className="notice notice--warn">
-            <strong>The form could not send just now.</strong> Nothing has been submitted and no
-            confirmation has been recorded, so please email{' '}
-            <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a> directly with the same five
-            answers. The reply comes from the same inbox, so nothing is lost.
+            To send your enquiry, email <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a>.
           </p>
         )}
       </div>

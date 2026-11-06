@@ -6,23 +6,24 @@ import {
   Draggable,
   Ground,
   Lights,
-  ShuttleObject,
   Studio,
   getTextile,
 } from '../three/objects'
-import * as THREE from 'three'
 import React from 'react'
 import { useReveal } from '../components/useReveal'
 import { Arrow } from '../components/Nav'
-import { BOUNDARIES, FIRST_MESSAGE, LATER_DISCUSSIONS } from '../content'
+import { FOCUS_AREAS } from '../content'
+import { RegionWeave } from '../components/RegionWeave'
+import { TextileSequence } from '../components/TextileSequence'
+import { EnquiryForm, useEnquiryDraft } from '../components/EnquiryForm'
 
 function SwatchWall() {
   const swatches = [
-    { key: 'indigo' as const, label: 'Indigo', note: 'A dyed cotton family' },
-    { key: 'madder' as const, label: 'Madder', note: 'A root-dyed red family' },
-    { key: 'cotton' as const, label: 'Raw cotton', note: 'Undyed, unbleached' },
-    { key: 'saffron' as const, label: 'Saffron', note: 'A warm dyed family' },
-    { key: 'verdigris' as const, label: 'Verdigris', note: 'A green dyed family' },
+    { key: 'indigo' as const, label: 'Indigo', note: 'Blue weave' },
+    { key: 'madder' as const, label: 'Madder', note: 'Red weave' },
+    { key: 'cotton' as const, label: 'Raw cotton', note: 'Natural colour' },
+    { key: 'saffron' as const, label: 'Saffron', note: 'Warm weave' },
+    { key: 'verdigris' as const, label: 'Verdigris', note: 'Green weave' },
   ]
 
   return (
@@ -105,174 +106,72 @@ function TextileObject({ aside = false }: { aside?: boolean }) {
   )
 }
 
-function ShuttleVignette() {
-  return (
-    <>
-      <Studio />
-      <Lights intensity={1} />
-      <Ground y={-1.05} scale={4} opacity={0.4} />
-      <Draggable drift={0.24} tilt={0.46} float={0.05}>
-        <group rotation={[-0.12, 0, 0.2]} position={[0, 0.08, 0]}>
-          <ShuttleObject scale={0.95} />
-        </group>
-      </Draggable>
-    </>
-  )
-}
-
 export default function Textiles() {
   useReveal([])
+  const { setDraft } = useEnquiryDraft()
+
+  React.useEffect(() => {
+    setDraft(draft => draft.subject === 'textiles' ? draft : { ...draft, subject: 'textiles' })
+  }, [setDraft])
 
   return (
     <>
       <section className="page-hero page-hero--textile page-hero--right on-dark grain">
-        <div className="page-hero__canvas" aria-hidden="false">
-          <Stage
-            className="page-hero__stage"
-            label="Interactive 3D cloth panel in a green dyed weave. Drag to turn it."
-            z={6.2}
-            fov={36}
-            fallback={<div className="page-hero__fallback" aria-hidden="true" />}
-          >
+        <div className="page-hero__canvas">
+          <Stage className="page-hero__stage" label="Interactive green textile illustration. Drag to turn it." z={6.2} fov={36} fallback={<div className="page-hero__fallback" aria-hidden="true" />}>
             <TextileObject aside />
           </Stage>
         </div>
         <div className="shell page-hero__inner">
           <p className="eyebrow">Textiles &amp; fabrics</p>
-          <h1 className="page-hero__title">
-            The initial focus is <em className="display-italic">cloth</em> from India.
-          </h1>
-          <p className="page-hero__lede">
-            Composition, construction, weight, width and finish are the questions that shape a
-            sourcing conversation. None of them need an answer before the first message.
-          </p>
+          <h1 className="page-hero__title">Textiles and fabrics <em className="display-italic">from India</em>.</h1>
+          <p className="page-hero__lede">Explore fabric types and the regions where we’re beginning our sourcing work.</p>
+          <a href="#textile-enquiry" className="btn btn--light">Start a textile enquiry <Arrow /></a>
         </div>
       </section>
 
       <section className="textile-intro">
         <div className="shell">
           <div className="textile-intro__grid">
-            <div>
-              <p className="eyebrow reveal">Why textiles first</p>
-              <h2 className="textile-intro__title reveal">
-                A category broad enough to be honest about.
-              </h2>
-            </div>
+            <div><p className="eyebrow reveal">Materials</p><h2 className="textile-intro__title reveal">Fabric types</h2></div>
             <div className="textile-intro__body">
-              <p className="reveal">
-                Textiles and fabrics are the first category because Indian supply is varied enough
-                that a general promise would be meaningless. A single enquiry is specific: this
-                fabric, for this use, from this area.
-              </p>
-              <p className="reveal" style={{ ['--reveal-delay' as string]: '80ms' }}>
-                The site therefore does not present a fabric list. What follows are the dimensions
-                a conversation tends to move through, in roughly the order they become useful.
-              </p>
+              <p className="reveal"><strong>Fibre</strong> describes the material, such as cotton, silk or blends.</p>
+              <p className="reveal"><strong>Construction</strong> describes how it is made, such as woven or knitted.</p>
+              <p className="reveal"><strong>Finish</strong> describes treatments such as printing or dyeing.</p>
             </div>
           </div>
-
           <SwatchWall />
-          <p className="wall__note reveal">
-            These swatches are representative of material families. Generated weaves, not
-            photographs of stock. They are not an offer, and they do not indicate availability.
-          </p>
+          <p className="wall__note reveal">These illustrations show colour and weave. Availability is checked for each enquiry.</p>
         </div>
       </section>
 
-      <section className="dimensions on-indigo grain">
+      <section className="areas on-indigo grain" id="areas">
         <div className="shell">
-          <header className="dimensions__head">
-            <p className="eyebrow reveal">What further discussions may cover</p>
-            <h2 className="dimensions__title reveal">
-              Four dimensions of a <em className="display-italic">fabric</em>.
-            </h2>
-          </header>
-          <dl className="dimensions__list">
-            {LATER_DISCUSSIONS.map((d, i) => (
-              <div key={d.t} className="dimensions__row reveal" style={{ ['--reveal-delay' as string]: `${i * 70}ms` }}>
-                <dt>
-                  <span className="dimensions__num">{String(i + 1).padStart(2, '0')}</span>
-                  {d.t}
-                </dt>
-                <dd>{d.d}</dd>
-              </div>
+          <div className="areas__head"><p className="eyebrow reveal">Initial sourcing areas</p><h2 className="areas__title reveal">Tamil Nadu and <em className="display-italic">Gujarat</em>.</h2></div>
+          <div className="areas__grid">
+            {FOCUS_AREAS.map((area, index) => (
+              <article className="area reveal" key={area.id}>
+                <div className={'area__weave area__weave--' + area.id} aria-hidden="true">
+                  <RegionWeave motif={area.id} /><span className="area__grain" />
+                </div>
+                <div className="area__text">
+                  <p className="area__kicker">{area.kicker}</p>
+                  <h3 className="area__name">{area.name}</h3>
+                  <p className="area__note">{index === 0 ? 'Tamil Nadu is an initial sourcing area for cotton, silk and blended fabric enquiries.' : 'Gujarat is an initial sourcing area for cotton, printed and dyed fabric enquiries.'}</p>
+                </div>
+              </article>
             ))}
-          </dl>
-          <p className="dimensions__caveat reveal">
-            These are conversation topics, not a service list. Nothing here confirms that a given
-            specification, quantity or term can be met.
-          </p>
-        </div>
-      </section>
-
-      <section className="useful">
-        <div className="shell">
-          <div className="useful__grid">
-            <div className="useful__left">
-              <p className="eyebrow reveal">What is useful in an enquiry</p>
-              <h2 className="useful__title reveal">
-                Four lines, in <em className="display-italic">any</em> order.
-              </h2>
-              <ul className="checklist checklist--dark">
-                {FIRST_MESSAGE.map((item, i) => (
-                  <li key={item} className="checklist__item reveal" style={{ ['--reveal-delay' as string]: `${i * 70}ms` }}>
-                    <span className="checklist__box" aria-hidden="true">
-                      <svg viewBox="0 0 12 12" fill="none">
-                        <path d="M1.5 6.4 4.4 9.3 10.5 2.9" stroke="currentColor" strokeWidth="1.6" />
-                      </svg>
-                    </span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <p className="useful__note reveal">
-                A reference image you already like is often more useful than any of this. Say so in
-                the message; arrangements for sharing can follow in the reply.
-              </p>
-              <div className="useful__cta reveal">
-                <Link to="/enquiry" className="btn">
-                  Textile enquiry
-                  <Arrow />
-                </Link>
-              </div>
-            </div>
-
-            <aside className="useful__right">
-              <div className="useful__canvas">
-                <Stage
-                  label="Interactive 3D weaving shuttle. Drag to turn it."
-                  z={5.2}
-                  fov={36}
-                  fallback={<div className="useful__canvas-fallback" aria-hidden="true" />}
-                >
-                  <ShuttleVignette />
-                </Stage>
-              </div>
-              <p className="useful__caption">
-                A weaving shuttle. Representative of the craft, not of any supplier or product.
-              </p>
-            </aside>
           </div>
+          <p className="areas__foot reveal">Suppliers elsewhere in India can also share what they offer.</p>
         </div>
       </section>
 
-      <section className="bounds bounds--tight">
+      <TextileSequence />
+
+      <section className="enquiry-body" id="textile-enquiry">
         <div className="shell">
-          <header className="bounds__head">
-            <p className="eyebrow reveal">Read this alongside the focus</p>
-            <h2 className="bounds__title reveal">
-              What the textile focus <em className="display-italic">does not</em> mean.
-            </h2>
-          </header>
-          <ul className="bounds__list">
-            {BOUNDARIES.map((b, i) => (
-              <li key={b.t} className="bounds__row reveal" style={{ ['--reveal-delay' as string]: `${i * 60}ms` }}>
-                <span className="bounds__num">{String(i + 1).padStart(2, '0')}</span>
-                <h3 className="bounds__term">{b.t}</h3>
-                <p className="bounds__def">{b.d}</p>
-              </li>
-            ))}
-          </ul>
+          <h2>Enquire about textiles</h2>
+          <EnquiryForm />
         </div>
       </section>
     </>

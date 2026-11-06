@@ -1,113 +1,281 @@
 import React from 'react'
+import { selectNearbyTarget, type CursorTarget } from './cursor-state'
+import type { ScenePointerEvent } from '../three/interaction'
+import '../styles/cursor.css'
 
-/**
- * A restrained cursor companion: a hairline ring that trails the pointer and
- * swells over anything interactive. Pointer-fine devices only, and it steps
- * aside entirely for reduced motion or keyboard/native-cursor users.
- */
+type Mode = 'idle' | 'approach' | 'menu-row' | 'menu-compact' | 'action' | 'scene' | 'dragging'
+type MeasuredTarget = CursorTarget & { element: HTMLElement; label: DOMRect; row: boolean }
+type SceneHit = { id: string; pointerId: number; inside: boolean; dragging: boolean }
+
+const TARGETS = '[data-cursor="menu"], [data-cursor="select"], .nav__link, .drawer__link'
+const NATIVE = 'input, textarea, select, [contenteditable="true"], [data-cursor="native"], iframe'
+const ACTION = 'a, button, [role="tab"], [data-cursor="action"]'
+
+/** A decorative pointer that follows actual DOM and scene hit targets. */
 export function Cursor() {
+  const host = React.useRef<HTMLDivElement>(null)
   const ring = React.useRef<HTMLDivElement>(null)
   const dot = React.useRef<HTMLDivElement>(null)
+  const label = React.useRef<HTMLSpanElement>(null)
 
   React.useEffect(() => {
-    const fine = window.matchMedia('(pointer: fine)').matches
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (!fine || reduced) return
+    const container = host.current
+    const body = ring.current
+    const pointer = dot.current
+    const text = label.current
+    if (!container || !body || !pointer || !text || !window.matchMedia) return
 
-    const r = ring.current
-    const d = dot.current
-    if (!r || !d) return
-
-    // Only once the ring is genuinely running do we take over the pointer.
     const root = document.documentElement
-    root.classList.add('has-custom-cursor')
-
-    let x = window.innerWidth / 2
-    let y = window.innerHeight / 2
-    let rx = x
-    let ry = y
+    const fine = matchMedia('(any-hover: hover) and (any-pointer: fine)')
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)')
+    const forced = matchMedia('(forced-colors: active)')
+    const targetIds = new WeakMap<HTMLElement, string>()
+    let idCounter = 0
+    let targets: MeasuredTarget[] = []
+    let geometryDirty = true
+    let nearId: string | null = null
+    let scene: SceneHit | null = null
+    let mouseActive = false
+    let x = 0
+    let y = 0
+    let rx = 0
+    let ry = 0
+    let initialized = false
     let raf = 0
-    let visible = false
-    let scale = 1
-    let targetScale = 1
-    const hotRef = { current: false }
+    let previousTime = 0
+    let disposed = false
 
-    // The loop stops itself once the ring has caught up. A permanently running
-    // rAF that writes transforms even when the pointer is still keeps the
-    // compositor busy for no reason, and it is wasteful on battery.
-    const tick = () => {
-      rx += (x - rx) * 0.2
-      ry += (y - ry) * 0.2
-      scale += (targetScale - scale) * 0.12
+    const conceal = () => {
+      root.classList.remove('has-custom-cursor')
+      container.dataset.visible = 'false'
+      if (raf) cancelAnimationFrame(raf)
+      raf = 0
+      previousTime = 0
+      initialized = false
+    }
 
-      const dx = Math.abs(x - rx)
-      const dy = Math.abs(y - ry)
-      const ds = Math.abs(targetScale - scale)
+    const measure = () => {
+      geometryDirty = false
+      targets = [...document.querySelectorAll<HTMLElement>(TARGETS)].flatMap(element => {
+        const rect = element.getBoundingClientRect()
+        const style = getComputedStyle(element)
+        if (!rect.width || !rect.height || style.visibility === 'hidden' || style.display === 'none' ||
+            rect.right <= 0 || rect.left >= innerWidth || rect.bottom <= 0 || rect.top >= innerHeight) return []
+        const cx = Math.min(innerWidth - 1, Math.max(0, (rect.left + rect.right) / 2))
+        const cy = Math.min(innerHeight - 1, Math.max(0, (rect.top + rect.bottom) / 2))
+        const top = document.elementFromPoint(cx, cy)
+        if (top !== element && (!top || !element.contains(top))) return []
+        let id = targetIds.get(element)
+        if (!id) {
+          id = String(++idCounter)
+          targetIds.set(element, id)
+        }
+        const range = document.createRange()
+        range.selectNodeContents(element)
+        const labelRect = range.getBoundingClientRect()
+        range.detach()
+        return [{ id, rect, element, label: labelRect, row: element.dataset.cursorSize === 'row' || element.classList.contains('drawer__link') }]
+      })
+    }
 
-      r.style.transform = `translate3d(${rx.toFixed(2)}px, ${ry.toFixed(2)}px, 0) translate(-50%, -50%) scale(${scale.toFixed(3)})`
-      d.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`
+    const tick = (time: number) => {
+      raf = 0
+      try {
+        if (!mouseActive || !fine.matches || reduced.matches || forced.matches || document.hidden ||
+            root.dataset.introActive === 'true' || !document.hasFocus()) {
+          conceal()
+          return
+        }
+        if (geometryDirty) measure()
+        const hit = document.elementFromPoint(x, y) as HTMLElement | null
+        const selection = window.getSelection()
+        if (selection && !selection.isCollapsed) {
+          conceal()
+          return
+        }
+        const direct = hit?.closest<HTMLElement>(TARGETS) ?? null
+        const native = hit?.closest(NATIVE)
+        if (native && !scene?.dragging) {
+          conceal()
+          return
+        }
 
-      if (dx < 0.12 && dy < 0.12 && ds < 0.002) {
-        r.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%) scale(${targetScale})`
-        raf = 0
-        return
+        nearId = selectNearbyTarget(targets, x, y, nearId)
+        const target = targets.find(item => item.element === direct) ??
+          targets.find(item => item.id === nearId) ?? null
+        const isMenu = !!direct && (direct.dataset.cursor === 'menu' ||
+          direct.classList.contains('nav__link') || direct.classList.contains('drawer__link'))
+        const action = hit?.closest(ACTION)
+        const onCanvas = hit instanceof HTMLCanvasElement
+        let mode: Mode = 'idle'
+        if (scene?.dragging) mode = 'dragging'
+        else if (isMenu && target) mode = target.row ? 'menu-row' : 'menu-compact'
+        else if (action) mode = 'action'
+        else if (scene?.inside && onCanvas) mode = 'scene'
+        else if (target) mode = 'approach'
+
+        let tx = x
+        let ty = y
+        if (mode === 'menu-compact' && target) {
+          const width = Math.max(64, Math.min(112, target.label.width + 24))
+          if (container.style.getPropertyValue('--cursor-width') !== width + 'px') {
+            container.style.setProperty('--cursor-width', width + 'px')
+          }
+          tx = Math.max(width / 2, Math.min(innerWidth - width / 2, x))
+          ty = Math.min(innerHeight - 20, target.rect.bottom + 23)
+        } else if (mode === 'menu-row' && target) {
+          tx = Math.min(innerWidth - 40, x + 44)
+          ty = Math.min(innerHeight - 40, y + 24)
+          const labelRect = target.label
+          if (tx + 38 > labelRect.left && tx - 38 < labelRect.right &&
+              ty + 38 > labelRect.top && ty - 38 < labelRect.bottom) {
+            const right = labelRect.right + 42
+            if (right <= innerWidth - 38) tx = right
+            else mode = 'action'
+          }
+          tx = Math.max(40, tx)
+          ty = Math.max(40, ty)
+        } else if (mode === 'approach' && target) {
+          const cx = (target.rect.left + target.rect.right) / 2
+          const cy = (target.rect.top + target.rect.bottom) / 2
+          const distance = Math.hypot(
+            Math.max(target.rect.left - x, 0, x - target.rect.right),
+            Math.max(target.rect.top - y, 0, y - target.rect.bottom),
+          )
+          const strength = Math.max(0, Math.min(1, 1 - distance / 24))
+          const width = (21 + strength * (target.row ? 55 : 43)).toFixed(1) + 'px'
+          const height = (21 + strength * (target.row ? 55 : 15)).toFixed(1) + 'px'
+          if (container.style.getPropertyValue('--approach-width') !== width) container.style.setProperty('--approach-width', width)
+          if (container.style.getPropertyValue('--approach-height') !== height) container.style.setProperty('--approach-height', height)
+          tx += Math.max(-8, Math.min(8, (cx - x) * 0.12))
+          ty += Math.max(-8, Math.min(8, (cy - y) * 0.12))
+        }
+
+        container.dataset.mode = mode
+        const caption = mode === 'scene' || mode === 'dragging' ? 'Drag' :
+          mode === 'menu-row' || mode === 'menu-compact' ? 'Explore' : ''
+        if (text.textContent !== caption) text.textContent = caption
+        root.classList.add('has-custom-cursor')
+        container.dataset.visible = 'true'
+        if (!initialized) {
+          rx = x
+          ry = y
+          initialized = true
+        }
+        const elapsed = previousTime ? Math.min(50, time - previousTime) : 16
+        previousTime = time
+        const amount = 1 - Math.exp(-elapsed / 90)
+        rx += (tx - rx) * amount
+        ry += (ty - ry) * amount
+        body.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%)`
+        pointer.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`
+        if (Math.abs(tx - rx) > 0.15 || Math.abs(ty - ry) > 0.15) raf = requestAnimationFrame(tick)
+        else {
+          body.style.transform = `translate3d(${tx}px, ${ty}px, 0) translate(-50%, -50%)`
+          rx = tx
+          ry = ty
+          previousTime = 0
+        }
+      } catch {
+        mouseActive = false
+        conceal()
       }
-      raf = requestAnimationFrame(tick)
     }
 
     const wake = () => {
-      if (!raf) raf = requestAnimationFrame(tick)
+      if (!raf && !disposed) raf = requestAnimationFrame(tick)
     }
-
-    const move = (e: PointerEvent) => {
-      x = e.clientX
-      y = e.clientY
-      if (!visible) {
-        visible = true
-        r.style.opacity = '1'
-        d.style.opacity = '1'
-        rx = x
-        ry = y
+    const move = (event: PointerEvent) => {
+      if (event.pointerType !== 'mouse') {
+        mouseActive = false
+        scene = null
+        conceal()
+        return
       }
-      const el = e.target as HTMLElement | null
-      const hot = el?.closest('a, button, input, textarea, label, [data-cursor="hot"]')
-      // A modest lift, not a balloon: the ring grows a few pixels and picks up
-      // weight, which reads as feedback without swallowing the thing you are
-      // about to click.
-      targetScale = hot ? 1.34 : 1
-      if (!!hot !== hotRef.current) {
-        hotRef.current = !!hot
-        r.parentElement?.classList.toggle('cursor--hot', !!hot)
+      x = event.clientX
+      y = event.clientY
+      mouseActive = true
+      wake()
+    }
+    const updateScene = (event: Event) => {
+      const detail = (event as CustomEvent<ScenePointerEvent>).detail
+      if (!detail) return
+      if ((detail.phase === 'remove' || detail.phase === 'cancel') && scene?.id === detail.sceneId) {
+        scene = null
+        wake()
+        return
+      }
+      if (detail.pointerType !== 'mouse') return
+      if (detail.phase === 'enter') scene = { id: detail.sceneId, pointerId: detail.pointerId, inside: true, dragging: false }
+      else if (!scene && (detail.phase === 'press' || detail.phase === 'drag')) {
+        scene = { id: detail.sceneId, pointerId: detail.pointerId, inside: true, dragging: true }
+      }
+      else if (scene?.id === detail.sceneId && scene.pointerId === detail.pointerId) {
+        if (detail.phase === 'leave') {
+          scene.inside = false
+          if (!scene.dragging) scene = null
+        } else if (detail.phase === 'press' || detail.phase === 'drag') scene.dragging = true
+        else if (detail.phase === 'release') {
+          scene.dragging = false
+          if (!scene.inside) scene = null
+        } else if (detail.phase === 'cancel' || detail.phase === 'remove') scene = null
       }
       wake()
     }
-
-    const leave = () => {
-      visible = false
-      r.style.opacity = '0'
-      d.style.opacity = '0'
-      if (raf) {
-        cancelAnimationFrame(raf)
-        raf = 0
-      }
+    const invalidate = () => { geometryDirty = true; wake() }
+    const stop = () => { mouseActive = false; scene = null; nearId = null; conceal() }
+    const keyboard = () => stop()
+    const preferences = () => {
+      if (!fine.matches || reduced.matches || forced.matches) stop()
+      else invalidate()
     }
+    const onVisibility = () => { if (document.hidden) stop(); else invalidate() }
+    const observer = new MutationObserver(invalidate)
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'data-cursor', 'data-cursor-size'] })
+    const introObserver = new MutationObserver(() => { if (root.dataset.introActive === 'true') conceal(); else invalidate() })
+    introObserver.observe(root, { attributes: true, attributeFilter: ['data-intro-active'] })
 
     window.addEventListener('pointermove', move, { passive: true })
     window.addEventListener('pointerdown', move, { passive: true })
-    document.addEventListener('pointerleave', leave)
+    window.addEventListener('bs:scene-pointer', updateScene)
+    window.addEventListener('blur', stop)
+    window.addEventListener('resize', invalidate)
+    window.addEventListener('scroll', invalidate, { passive: true })
+    document.addEventListener('pointerleave', stop)
+    document.addEventListener('keydown', keyboard, true)
+    document.addEventListener('visibilitychange', onVisibility)
+    document.addEventListener('selectionchange', invalidate)
+    document.addEventListener('transitionend', invalidate)
+    fine.addEventListener('change', preferences)
+    reduced.addEventListener('change', preferences)
+    forced.addEventListener('change', preferences)
+    document.fonts?.ready.then(() => { if (!disposed) invalidate() })
 
     return () => {
+      disposed = true
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerdown', move)
-      document.removeEventListener('pointerleave', leave)
-      root.classList.remove('has-custom-cursor')
-      if (raf) cancelAnimationFrame(raf)
+      window.removeEventListener('bs:scene-pointer', updateScene)
+      window.removeEventListener('blur', stop)
+      window.removeEventListener('resize', invalidate)
+      window.removeEventListener('scroll', invalidate)
+      document.removeEventListener('pointerleave', stop)
+      document.removeEventListener('keydown', keyboard, true)
+      document.removeEventListener('visibilitychange', onVisibility)
+      document.removeEventListener('selectionchange', invalidate)
+      document.removeEventListener('transitionend', invalidate)
+      fine.removeEventListener('change', preferences)
+      reduced.removeEventListener('change', preferences)
+      forced.removeEventListener('change', preferences)
+      observer.disconnect()
+      introObserver.disconnect()
+      conceal()
     }
   }, [])
 
   return (
-    <div className="cursor" aria-hidden="true">
-      <div className="cursor__ring" ref={ring} />
+    <div className="cursor" ref={host} data-mode="idle" data-visible="false" aria-hidden="true">
+      <div className="cursor__ring" ref={ring}><span className="cursor__label" ref={label} /></div>
       <div className="cursor__dot" ref={dot} />
     </div>
   )

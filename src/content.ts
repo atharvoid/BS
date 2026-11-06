@@ -16,6 +16,28 @@ export const BUSINESS = {
   status: 'Developing business',
 } as const
 
+export const CATEGORIES = [
+  { id: 'textiles', label: 'Textiles & fabrics', hint: 'Explore fabric types and the sourcing areas of Tamil Nadu and Gujarat.' },
+  { id: 'handicrafts', label: 'Handicrafts & home decor', hint: 'Describe the item, its material and how it will be used.' },
+  { id: 'agriculture-food', label: 'Agriculture & food', hint: 'Which crop, ingredient or food product are you interested in?' },
+  { id: 'industrial-materials', label: 'Industrial materials', hint: 'Name the material or manufacturing input. Include the grade if you know it.' },
+  { id: 'organic-sustainable', label: 'Organic & sustainable products', hint: 'Describe the product and any certification you require.' },
+  { id: 'general', label: 'Other sourcing requests', hint: 'What would you like to source or supply?' },
+] as const
+
+export type CategoryId = (typeof CATEGORIES)[number]['id']
+
+export function getCategory(id: string | null | undefined) {
+  return CATEGORIES.find((category) => category.id === id) ?? CATEGORIES[CATEGORIES.length - 1]
+}
+
+export const FABRIC_TOPICS = [
+  { n: '01', title: 'Fabric and use', body: 'What are you making, and how should the fabric feel?', object: 'bolt', objectLabel: 'Cloth bolt', field: ['Fabric', 'Use'] },
+  { n: '02', title: 'Samples', body: 'Mention a sample or reference you would like to match.', object: 'shuttle', objectLabel: 'Weaving shuttle', field: ['Samples', 'Reference'] },
+  { n: '03', title: 'Quantity and packing', body: 'Include an approximate quantity if you have one.', object: 'spool', objectLabel: 'Yarn bobbin', field: ['Quantity', 'Packing'] },
+  { n: '04', title: 'Acceptance and terms', body: 'Which details need agreement before you can place an order?', object: 'reed', objectLabel: 'Brass reed', field: ['Acceptance', 'Terms'] },
+] as const
+
 export const FOCUS_AREAS = [
   {
     id: 'tamil-nadu',
@@ -127,13 +149,13 @@ export const ENQUIRY_FIELDS = {
     ],
   },
   requirement: {
-    label: 'What are you looking for or offering?',
-    hint: 'A short description is enough. Composition, weight, width and finish can follow later.',
-    placeholder: 'For example: a mid-weight cotton twill for workwear, or a handloom cotton for shirting.',
+    label: 'What do you need or supply?',
+    hint: 'A short description is enough.',
+    placeholder: 'Describe what you need or supply.',
   },
   location: {
     label: 'Destination or business location',
-    hint: 'Where the material is going, or where your business is based.',
+    hint: 'Where the goods are going, or where your business is based.',
     placeholder: 'For example: Rotterdam, Netherlands. Or Coimbatore, Tamil Nadu.',
   },
   name: { label: 'Your name', placeholder: 'Full name' },

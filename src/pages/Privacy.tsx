@@ -8,7 +8,7 @@ const SECTIONS = [
     t: 'What information is collected',
     d: [
       'The enquiry form asks for five things: which description fits you (overseas buyer, buyer in India, or Indian supplier), what you are looking for or offering, the destination or business location, your name, and your email address.',
-      'A textile enquiry also records that it concerns textiles. Attachments are not accepted, so no documents are collected through the form.',
+      'The enquiry also records its product category. Attachments are not accepted, so no documents are collected through the form.',
     ],
   },
   {
@@ -114,7 +114,7 @@ export default function Privacy() {
 
               <div className="privacy__foot reveal">
                 <Link to="/enquiry" className="tlink">
-                  Return to the textile enquiry
+                  Return to the enquiry
                 </Link>
                 <Link to="/" className="tlink">
                   Back to the overview

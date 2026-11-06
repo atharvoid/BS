@@ -1,5 +1,25 @@
 # Globe picking and supplied logo startup
 
+## Local implementation update — 6 November 2026
+
+The trade homepage, category explorer and general enquiry flow are implemented. The textile route owns the regional material and four-object sequence. The cursor uses filled Explore states for menu targets and a transparent Drag ring for actual scene hits. Shared scene controls expose turn, tilt, pause/play and reset. Mobile mounts one active textile sequence canvas, and hidden/offscreen scenes suspend drawing. Reduced motion uses demand rendering.
+
+The existing plan modification was present before this implementation pass. GitHub, remote repositories and deployment were untouched. All source changes remain local.
+
+Local verification observed the following.
+
+- Production build passes TypeScript and Vite bundling. The existing large Three.js chunk warning remains.
+- Both Node regression tests pass, covering analytic globe picking and cursor proximity hysteresis.
+- Product journey checks pass for category switching, retained draft, Back, valid/invalid links, unconfigured sending, legacy/corrupt receipts, malformed responses, pending lock and intercepted successful submission. No real provider submission was sent.
+- Cursor browser check passes for filled Explore, native inputs, transparent Drag, capture state, removal and reduced motion. A separate real mouse sequence over the actual globe produced scene cursor mode and left Play animation available after dragging.
+- Logo checks pass for draw timing, replay, interruptions, modified clicks, hash entry, SPA cleanup, Back and mobile width.
+- The integrated globe hover check produced one hit for all 24 events, zero decorative raycasts, a 0.429 ms mean and a 6.3 ms maximum in local Chromium.
+- The reduced-motion desktop screenshot shows the complete right-cropped globe. The textile route had zero horizontal overflow at 390px.
+
+Physical touch devices, Safari, screen readers, sustained hardware/GPU profiling and real inbox delivery remain unverified. Cursor sizes and rotation speeds use the agreed initial settings and remain available for visual tuning. Context-loss and focus-recovery coverage remains a manual follow-up.
+
+The earlier baseline record follows.
+
 Verified locally on 6 November 2026 in BS-2. Baseline: clean `main` at `83d4749`.
 
 ## Changes implemented

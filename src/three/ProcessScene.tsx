@@ -2,6 +2,7 @@ import React from 'react'
 import * as THREE from 'three'
 import { useFrame, useThree } from '@react-three/fiber'
 import { reducedMotion } from './motion'
+import { useSceneSession } from './SceneSession'
 import {
   BobbinObject,
   BoltObject,
@@ -113,6 +114,7 @@ function Slot({
   const arc = React.useRef<THREE.Group>(null)
   const shown = React.useRef(false)
   const still = React.useMemo(() => reducedMotion(), [])
+  const scene = useSceneSession()
   /* Damped copy of the section's scroll progress. Raw scroll arrives in
      jumps, so driving the arc straight from it makes the object stutter and
      then snap while the paragraph cross-fades over 600ms. This carries the
@@ -127,7 +129,7 @@ function Slot({
     const raw = progress.current * KINDS.length - index
     const d = Math.min(delta, 1 / 30)
 
-    if (smooth.current < -0.5) smooth.current = raw
+    if (smooth.current < -0.5 || scene?.paused || scene?.reduced) smooth.current = raw
     else {
       const k = 1 - Math.exp(-14 * d)
       smooth.current += (raw - smooth.current) * k
@@ -166,7 +168,7 @@ function Slot({
         drift={still ? 0 : LOOK[kind].drift}
         tilt={LOOK[kind].tilt}
         float={0.028}
-        spin={0}
+        spin={kind === 'spool' || kind === 'shuttle' ? Math.PI * 2 / 45 : 0}
         roll={still ? 0 : LOOK[kind].roll}
       >
         <ObjectBody kind={kind} />
@@ -187,6 +189,12 @@ function Frame({ children }: { children: React.ReactNode }) {
 }
 
 export function ProcessScene({ progress }: { progress: React.RefObject<number> }) {
+  const invalidate = useThree((state) => state.invalidate)
+  React.useEffect(() => {
+    const update = () => invalidate()
+    window.addEventListener('scroll', update, { passive: true })
+    return () => window.removeEventListener('scroll', update)
+  }, [invalidate])
   return (
     <>
       <Studio />
@@ -211,7 +219,7 @@ export function SingleStageScene({ kind }: { kind: StageKind }) {
       <Studio />
       <Lights intensity={1.02} />
       <Frame>
-        <Draggable drift={0.22} tilt={0.36} float={0.03} spin={0.07}>
+        <Draggable drift={0.18} tilt={0.36} float={0.03} spin={kind === 'spool' || kind === 'shuttle' ? Math.PI * 2 / 45 : 0}>
           <ObjectBody kind={kind} />
         </Draggable>
         <Ground y={GROUND_Y[kind]} scale={4.2} opacity={0.34} />

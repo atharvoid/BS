@@ -6,57 +6,6 @@
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   Cursor
-   No mix-blend-mode: a blended fixed layer above the blurred nav makes the
-   compositor re-rasterise that region on every pointer frame. The ring is a
-   madder hairline with a soft cotton halo, which reads on both grounds.
-   -------------------------------------------------------------------------- */
-.cursor { display: none; }
-
-@media (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .cursor { display: block; }
-  .cursor__ring,
-  .cursor__dot {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 250;
-    pointer-events: none;
-    opacity: 0;
-    border-radius: 50%;
-    transition: opacity 260ms var(--ease-out);
-  }
-  .cursor__ring {
-    width: 21px;
-    height: 21px;
-    border: 1px solid rgba(224, 162, 98, 0.9);
-    background: rgba(224, 162, 98, 0.04);
-    box-shadow: 0 0 0 1px rgba(18, 16, 13, 0.28), 0 0 10px rgba(224, 162, 98, 0.14);
-    transition: opacity 240ms var(--ease-out), background 300ms var(--ease-out);
-  }
-  .cursor__dot {
-    width: 3px;
-    height: 3px;
-    background: #f0e3cb;
-    box-shadow: 0 0 0 1px rgba(18, 16, 13, 0.4);
-  }
-
-  /* Over anything clickable the ring gains weight rather than ballooning. */
-  .cursor--hot .cursor__ring {
-    border-color: var(--madder);
-    background: rgba(156, 58, 45, 0.12);
-    box-shadow: 0 0 0 1px rgba(242, 235, 221, 0.35);
-  }
-
-  /* The native pointer is hidden only once the custom one is definitely
-     running, so a script failure can never leave a visitor with no cursor. */
-  html.has-custom-cursor,
-  html.has-custom-cursor * { cursor: none !important; }
-  html.has-custom-cursor input,
-  html.has-custom-cursor textarea { cursor: text !important; }
-}
-
-/* --------------------------------------------------------------------------
    Scroll progress
    -------------------------------------------------------------------------- */
 .progress {

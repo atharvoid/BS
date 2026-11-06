@@ -1,0 +1,16 @@
+.product-explorer { padding: var(--section-y) 0; background: var(--cotton); color: var(--fg); }
+.product-explorer__heading { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; }
+.product-explorer__heading h2 { font: 400 var(--fs-display)/1.05 var(--f-display); max-width: 16ch; margin-top: 1rem; }
+.product-explorer__arrows { display: flex; gap: .5rem; }
+.product-explorer__arrows button { width: 44px; height: 44px; border: 1px solid var(--rule); border-radius: 50%; font-size: 1.2rem; }
+.product-explorer__tabs { display: flex; gap: .5rem; overflow-x: auto; padding: 2px 0 1rem; scrollbar-width: thin; scroll-snap-type: x proximity; }
+.product-explorer__tabs button { flex: 0 0 clamp(180px, 18vw, 240px); min-height: 106px; padding: 1rem; text-align: left; border: 1px solid var(--rule); font: 500 1rem/1.2 var(--f-sans); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; scroll-snap-align: start; }
+.product-explorer__tabs button span { align-self: flex-end; font-size: 1.3rem; }
+.product-explorer__tabs button[aria-selected='true'] { background: var(--indigo); color: var(--cotton-lit); border-color: var(--indigo); }
+.product-explorer__tabs button:focus-visible, .product-explorer__arrows button:focus-visible { outline: 2px solid var(--madder); outline-offset: -3px; }
+.product-explorer__panel { margin-top: 1rem; padding: clamp(1.5rem, 4vw, 4rem); background: var(--cotton-lit); min-height: 240px; }
+.product-explorer__textile { display: flex; align-items: end; justify-content: space-between; gap: 2rem; }
+.product-explorer__textile h3 { font: 400 clamp(2rem,4vw,3.5rem)/1.05 var(--f-display); margin: 1rem 0; }
+.product-explorer__textile p:not(.eyebrow) { font: 1.2rem/1.5 var(--f-serif); max-width: 38ch; }
+.product-explorer__actions { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+@media (max-width: 720px) { .product-explorer__textile { flex-direction: column; align-items: flex-start; } .product-explorer__tabs button { flex-basis: 175px; } }

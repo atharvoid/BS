@@ -7,15 +7,14 @@ export default function NotFound() {
       <div className="shell notfound__inner">
         <p className="eyebrow">404</p>
         <h1 className="notfound__title">
-          This thread does not <em className="display-italic">lead</em> anywhere.
+          Page <em className="display-italic">not found</em>.
         </h1>
         <p className="notfound__lede">
-          The page you asked for is not part of this site. The overview is a good place to pick the
-          thread back up.
+          The page you asked for is not part of this site.
         </p>
         <div className="notfound__actions">
           <Link to="/" className="btn btn--light">
-            Back to the overview
+            Back to home
             <Arrow />
           </Link>
           <Link to="/enquiry" className="tlink">
