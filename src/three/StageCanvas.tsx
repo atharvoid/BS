@@ -1,6 +1,7 @@
 import React from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
-import { FrameReporter, useQuality, measuredDpr } from './performance'
+import { useQuality, measuredDpr } from './performance'
+import { FrameReporter } from './FrameReporting'
 import { useSceneSession } from './SceneSession'
 
 function InvalidateBridge() {
@@ -30,18 +31,34 @@ function InvalidateBridge() {
    while a slightly cheaper frame is invisible.
    ========================================================================== */
 
+/** Listens for a lost context from inside the canvas, where the renderer is
+ *  reachable. It lives here rather than in `Stage` because `Stage` is imported
+ *  by every page and must not pull the renderer into the entry bundle. */
+function ContextLoss({ onLost }: { onLost?: () => void }) {
+  const gl = useThree((s) => s.gl)
+  React.useEffect(() => {
+    if (!onLost) return
+    const el = gl.domElement
+    el.addEventListener('webglcontextlost', onLost)
+    return () => el.removeEventListener('webglcontextlost', onLost)
+  }, [gl, onLost])
+  return null
+}
+
 export default function StageCanvas({
   children,
   visible,
   still,
   z,
   fov,
+  onContextLost,
 }: {
   children: React.ReactNode
   visible: boolean
   still: boolean
   z: number
   fov: number
+  onContextLost?: () => void
 }) {
   const quality = useQuality()
 
@@ -77,6 +94,7 @@ export default function StageCanvas({
       resize={{ scroll: false }}
     >
       <InvalidateBridge />
+      <ContextLoss onLost={onContextLost} />
       {/* Only draws while the scene does, which is what makes the quality
           measurement a measure of this device rather than of the page. */}
       <FrameReporter />

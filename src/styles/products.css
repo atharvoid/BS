@@ -161,16 +161,9 @@
   outline: none;
 }
 
-/* The inverted tile needs its dark ground behind the letterbox too, or the
-   object would sit on cotton while the words sit on ink. */
-.tile__link:hover::before,
-.tile__link:focus-visible::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--ink);
-}
+/* Keep the letterbox transparent on hover as well. An opaque ::before
+   here paints above the sibling canvas and hides the product. Only the text
+   panel inverts; the object's cotton background never changes. */
 
 .tile__link:focus-visible { outline: 2px solid var(--madder); outline-offset: -3px; }
 

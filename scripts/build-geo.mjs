@@ -255,3 +255,6 @@ console.log(`coast ${coast.points} pts / ${coast.counts.length} loops`)
 console.log(`border ${border.points} pts / ${border.counts.length} lines`)
 console.log(`land.png   ${kb(png.length)}`)
 console.log(`land.json  ${kb(jsonBuf.length)}  (gzip ${kb(zlib.gzipSync(jsonBuf).length)})`)
+
+// Keep the lossless CPU mask in sync with the shading texture.
+await import('./build-mask.mjs')

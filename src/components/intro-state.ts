@@ -28,6 +28,10 @@ function broadcast(next: boolean) {
 export function watchIntro() {
   if (wired || typeof document === 'undefined') return
   wired = true
+  // The first subscriber may mount after the intro has already started.
+  // Seed from the DOM, otherwise clearing true -> false looks unchanged and
+  // a deferred scene can remain hidden forever.
+  active = document.documentElement.dataset.introActive === 'true'
   new MutationObserver(() => {
     broadcast(document.documentElement.dataset.introActive === 'true')
   }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-intro-active'] })

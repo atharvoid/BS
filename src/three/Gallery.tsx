@@ -4,7 +4,8 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Lights, Studio, getShadowTexture } from './objects'
 import { CATEGORY_OBJECTS, type CategoryMotif } from './categoryObjects'
 import { frameModel, type Framing } from './framing'
-import { FrameReporter, measuredDpr, useQuality } from './performance'
+import { measuredDpr, useQuality, useSceneStill } from './performance'
+import { FrameReporter } from './FrameReporting'
 import { useSceneSession } from './SceneSession'
 
 /* ==========================================================================
@@ -57,8 +58,8 @@ function measure(wrapper: HTMLElement | null): Slot[] {
     /* On a phone the strip is a scroller, so only two tiles are ever on screen
        and the other four would be drawn off the edge of the canvas every frame.
        A tile is kept only if its letterbox overlaps the visible band. */
-    const left = el.offsetLeft + box.left < box.right
-    const right = el.offsetLeft + box.left + r.width > box.left
+    const left = r.left < box.right
+    const right = r.right > box.left
     const onScreen = left && right
     if (!onScreen) return []
     return [
@@ -205,8 +206,25 @@ function Ready({ onReady, onLost }: { onReady: () => void; onLost: () => void })
 export function Gallery({ onReady, onLost }: { onReady: () => void; onLost: () => void }) {
   const quality = useQuality()
   const session = useSceneSession()
+  const adaptiveStill = useSceneStill()
+  const [visible, setVisible] = React.useState(false)
+  const [pageVisible, setPageVisible] = React.useState(!document.hidden)
   const host = React.useRef<HTMLDivElement>(null)
   const [slots, setSlots] = React.useState<Slot[]>([])
+
+  // A mounted row must not keep drawing below the footer or in a hidden tab.
+  React.useEffect(() => {
+    const el = host.current
+    if (!el) return
+    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting))
+    observer.observe(el)
+    const update = () => setPageVisible(!document.hidden)
+    document.addEventListener('visibilitychange', update)
+    return () => {
+      observer.disconnect()
+      document.removeEventListener('visibilitychange', update)
+    }
+  }, [])
 
   /* Every letterbox is the same height (the stylesheet gives them all one), so
      any slot sets the row's scale. Before the first measurement there is
@@ -268,7 +286,7 @@ export function Gallery({ onReady, onLost }: { onReady: () => void; onLost: () =
         orthographic
         camera={{ position: [0, 0, 10], zoom: 1, near: 0.1, far: 60 }}
         flat
-        frameloop={session?.still ? 'demand' : 'always'}
+        frameloop={!visible || !pageVisible ? 'never' : (session?.still || adaptiveStill) ? 'demand' : 'always'}
         dpr={dpr}
         gl={{ antialias: true, alpha: true, stencil: false, powerPreference: 'high-performance' }}
         style={{ pointerEvents: 'none' }}

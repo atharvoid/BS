@@ -1,3 +1,4 @@
+import { decodeMask } from './mask'
 import * as THREE from 'three'
 
 /* ==========================================================================
@@ -159,26 +160,11 @@ export function sampleMask(mask: Uint8Array, width: number, height: number, lon:
   return mask[y * width + x] / 255
 }
 
-/** Decode the grayscale coverage PNG into bytes, so land can also be carved
- *  into the sphere itself rather than only shaded into it. */
-export async function loadMaskPixels(url: string): Promise<{ data: Uint8Array; width: number; height: number }> {
-  const img = new Image()
-  img.crossOrigin = 'anonymous'
-  await new Promise<void>((res, rej) => {
-    img.onload = () => res()
-    img.onerror = () => rej(new Error('mask'))
-    img.src = url
-  })
-  const c = document.createElement('canvas')
-  c.width = img.naturalWidth
-  c.height = img.naturalHeight
-  const ctx = c.getContext('2d')
-  if (!ctx) throw new Error('2d')
-  ctx.drawImage(img, 0, 0)
-  const { data } = ctx.getImageData(0, 0, c.width, c.height)
-  const gray = new Uint8Array(c.width * c.height)
-  for (let i = 0; i < gray.length; i++) gray[i] = data[i * 4]
-  return { data: gray, width: c.width, height: c.height }
+/** Lossless coverage bytes, without image decode or GPU-to-CPU readback. */
+export async function loadMaskPixels(): Promise<{ data: Uint8Array; width: number; height: number }> {
+  const res = await fetch(new URL('./geo/land.mask', import.meta.url))
+  if (!res.ok) throw new Error('Could not load land coverage')
+  return decodeMask(await res.arrayBuffer())
 }
 
 /**

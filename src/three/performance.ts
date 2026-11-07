@@ -1,8 +1,15 @@
 import React from 'react'
-import { useFrame } from '@react-three/fiber'
 
 /* ==========================================================================
    Adaptive render quality.
+
+   **This module must not import `@react-three/fiber` or `three`.**
+   `Stage.tsx` imports it, and both pages import `Stage.tsx` statically, so a
+   single import of the renderer here is enough to put the whole 918 kB three
+   chunk in the entry bundle and fetch it on every route — including pages with
+   no 3D at all. That regression happened once already, when the frame reporter
+   lived here. The reporter now lives in `FrameReporting.tsx`, below the canvas,
+   where the renderer belongs.
 
    The 3D layer is the only thing on this site that can fall behind, so it is
    the only thing that needs to be told to slow down. Nothing here is a control
@@ -497,51 +504,3 @@ function deviceDpr(): number {
 /* -------------------------------------------------------------------------- */
 /* Reporting, from inside a scene                                              */
 /* -------------------------------------------------------------------------- */
-
-/**
- * Feeds the sampler from a canvas that is actually drawing. Rendered as a child
- * of a `<Canvas>`, where the frame loop exists.
- *
- * This is what makes "measure only while rendering" true rather than intended.
- * R3F calls `useFrame` exactly once per drawn frame, so the gap between calls is
- * the real interval between frames — and when the scene stops drawing (a still
- * tier waiting for input, a stage scrolled out of view, a hidden tab) the
- * reports stop too. The sampler then finds no data and leaves the quality alone,
- * instead of reading a quiet page as a slow one.
- *
- * Isolated from React so it costs nothing but two floats per frame: the closure
- * is created once and keeps its own timestamps in locals.
- */
-export function FrameReporter() {
-  const last = React.useRef(0)
-  const hidden = React.useRef(false)
-
-  React.useEffect(() => {
-    const update = () => {
-      hidden.current = document.hidden
-      /* A tab that comes back has a stale interval; start again from zero so the
-         gap while it was away is not reported as one enormous frame. */
-      if (document.hidden) last.current = 0
-    }
-    update()
-    document.addEventListener('visibilitychange', update)
-    return () => document.removeEventListener('visibilitychange', update)
-  }, [])
-
-  useFrame((_, delta) => {
-    if (hidden.current) return
-    /* `delta` is in seconds and already excludes time the loop was stopped. The
-       interval is read from the clock for the first frame and from `delta`
-       after, so a paused loop resumes without a spike. */
-    const ms = delta * 1000
-    if (last.current === 0) {
-      last.current = ms
-      return
-    }
-    last.current = ms
-    reportFrame(ms)
-    reportStall(ms)
-  })
-
-  return null
-}

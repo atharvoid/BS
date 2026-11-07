@@ -284,3 +284,17 @@ proven in this environment.
 - New guard, `scripts/stage-scope.mjs`, run by `npm test`: it fails if a
   component calls `useFrame`/`useThree` and also renders a `<Stage>`, which is
   the mistake that produced a blank homepage during this work.
+
+## Reported interaction regressions
+
+- Restore horizontal globe drag by composing user yaw with automatic drift;
+  rebase from the displayed angle without snapping. Persist pitch easing.
+- Fix late intro subscriptions that could leave a deferred globe hidden.
+- Keep product models visible on tile hover/focus by removing the occluding
+  full-height pseudo-element; invert only the text panel.
+- Use contrast-inverting Explore cursors over navigation, preserving the round
+  60px shape and centred label with no dot.
+- Slow all six previews to the same 0.18 rad/s rate. Pause the shared gallery
+  offscreen/in hidden tabs, honour automatic still mode and correct tile culling.
+- Add regression checks for yaw composition and intro replay/late subscription.
+  Tests: 53 passing, plus stage scope guard; production build passes.

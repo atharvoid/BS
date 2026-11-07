@@ -1,3 +1,4 @@
+import { globeYaw, globeUserYaw } from './globe-pose'
 import { useSceneDrag } from './useSceneDrag'
 import { introActive, onIntroChange } from '../components/intro-state'
 import { createGlobeGate } from './globe-gate'
@@ -16,9 +17,9 @@ import {
   getLandMask,
   greatCircle,
   loadGeo,
-  loadMaskPixels,
   llToVec,
   ringsToGeometry,
+  loadMaskPixels,
   sampleMask,
   subdivideLL,
 } from './geo'
@@ -420,7 +421,8 @@ function Earth({ uniforms }: { uniforms: { uTime: THREE.IUniform<number>; uSun: 
   const geometry = React.useMemo(() => new THREE.SphereGeometry(1, 256, 160), [])
   React.useEffect(() => {
     let live = true
-    loadMaskPixels(new URL('./geo/land.png', import.meta.url).href).then((px) => {
+    // Exact source mask; no canvas readback or rasterisation approximation.
+    loadMaskPixels().then((px) => {
       if (!live) return
       const pos = geometry.attributes.position as THREE.BufferAttribute
       const uv = geometry.attributes.uv as THREE.BufferAttribute
@@ -683,14 +685,25 @@ function Globe() {
     /* The spin is absolute rather than proportional to the visitor's angle, so
        a drag offsets the globe and the drift carries on from where they left
        it instead of stopping dead. */
-    const yaw = gate.angle()
+    const yaw = globeYaw(drag.target.y, gate.drift())
     drag.current.y = THREE.MathUtils.lerp(drag.current.y, yaw, 1 - Math.exp(-5.6 * d))
     g.rotation.y = drag.current.y
-    g.rotation.x = THREE.MathUtils.lerp(drag.current.x, drag.target.x, 1 - Math.exp(-5.6 * d)) * 0.55
+    drag.current.x = THREE.MathUtils.lerp(drag.current.x, drag.target.x, 1 - Math.exp(-5.6 * d))
+    g.rotation.x = drag.current.x * 0.55
     g.rotation.z = 0.06
   })
 
-  const bind = useSceneDrag(drag, root, { initialYaw: startY, tilt: 0.5, pitchScale: 0.55, resetPhase: () => {} })
+  const bind = useSceneDrag(drag, root, { initialYaw: startY, tilt: 0.5, pitchScale: 0.55, resetPhase: () => {},
+    sync: () => {
+      const g = root.current
+      if (!g) return
+      // Store only the user offset. The frame loop adds drift exactly once.
+      drag.target.y = globeUserYaw(g.rotation.y, gate.drift())
+      drag.current.y = g.rotation.y
+      drag.current.x = drag.target.x = g.rotation.x / 0.55
+      drag.velocity.x = drag.velocity.y = 0
+    },
+  })
 
   return (
     <group

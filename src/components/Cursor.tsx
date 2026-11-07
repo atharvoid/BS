@@ -35,7 +35,7 @@ function toneAt(hit: Element | null): 'dark' | 'light' {
 /**
  * The pointer.
  *
- * Over a navigation item it becomes one opaque circular disc with the word
+ * Over a navigation item it becomes one contrast-inverting circular disc with the word
  * Explore set inside it, sitting exactly on the pointer. It is a disc, not a
  * pill and not a caption under the cursor: one shape, one word, no offset.
  */

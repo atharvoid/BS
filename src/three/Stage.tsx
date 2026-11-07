@@ -1,9 +1,16 @@
+import { webglAvailable } from './webgl'
 import React from 'react'
-import { useThree } from '@react-three/fiber'
+import { introActive, onIntroChange } from '../components/intro-state'
 import { SceneContext } from './SceneSession'
 import { releasePerformance, useSceneStill, watchPerformance } from './performance'
 
 /* ==========================================================================
+   **This module must not import `@react-three/fiber` or `three`.**
+   Both pages import `Stage` statically, so one import of the renderer here is
+   enough to put the whole 918 kB three chunk in the entry bundle and fetch it
+   on `/privacy` — a page with no 3D at all. Everything that needs the renderer
+   lives below the boundary, in `StageCanvas`, `FrameReporting` or `StageScene`.
+
    Stage: the shell every 3D scene sits in.
 
    - the three.js bundle is imported lazily, so it never delays first paint
@@ -59,20 +66,6 @@ class Boundary extends React.Component<
   }
 }
 
-/** Whether this browser will give us a WebGL context at all. Exported because
- *  the shared category canvas needs the same answer before it mounts. */
-export function webglAvailable() {
-  if (typeof window === 'undefined') return false
-  try {
-    const c = document.createElement('canvas')
-    const gl = c.getContext('webgl2') || c.getContext('webgl')
-    gl?.getExtension('WEBGL_lose_context')?.loseContext()
-    return !!gl
-  } catch {
-    return false
-  }
-}
-
 /**
  * Renders a scene only while its stage is live.
  *
@@ -82,28 +75,24 @@ export function webglAvailable() {
  * instead of with the first paint: the page's own markup, headings, links and
  * form controls are static imports and never wait for any of it.
  */
-export /** Listens for a lost context from inside the canvas, where the renderer is
- *  reachable. Rendered as a child, not around the Canvas: R3F's hooks only
- *  exist below it. */
-function ContextLoss() {
-  const live = React.useContext(LiveContext)
-  const gl = useThree((s) => s.gl)
-  React.useEffect(() => {
-    if (!live) return
-    const el = gl.domElement
-    el.addEventListener('webglcontextlost', live.onContextLost)
-    return () => el.removeEventListener('webglcontextlost', live.onContextLost)
-  }, [gl, live])
-  return null
-}
-
 export function StageScene({ children }: { children: React.ReactNode }) {
   const live = React.useContext(LiveContext)
-  if (!live) return null
+  const [opening, setOpening] = React.useState(introActive)
+  React.useEffect(() => {
+    const unsubscribe = onIntroChange(setOpening)
+    setOpening(introActive())
+    return unsubscribe
+  }, [])
+  if (!live || opening) return null
   return (
     <React.Suspense fallback={null}>
-      <StageCanvas visible={live.visible} still={live.still} z={live.z} fov={live.fov}>
-        <ContextLoss />
+      <StageCanvas
+        visible={live.visible}
+        still={live.still}
+        z={live.z}
+        fov={live.fov}
+        onContextLost={live.onContextLost}
+      >
         {children}
       </StageCanvas>
     </React.Suspense>

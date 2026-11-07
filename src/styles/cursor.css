@@ -2,7 +2,7 @@
    The pointer.
 
    One shape, one word. Normal movement is a small restrained ring; over
-   navigation it is a 60px opaque disc holding the word Explore; over a
+   navigation it is a 60px contrast-inverting disc holding the word Explore; over a
    draggable scene it is the same 60px disc holding the word Drag, shrinking
    slightly while the drag is underway. The separate dot is hidden whenever a
    label is showing, so a labelled circle only ever contains its word.
@@ -155,4 +155,18 @@
 
 @media (forced-colors: active), (prefers-reduced-motion: reduce) {
   .cursor[data-mode] { display: none; }
+}
+
+/* Explore is a contrast lens, not an opaque badge: invert both the surface
+   and any lettering beneath it. Keep the label itself legible and the separate
+   dot hidden. Drag retains its theme-based solid treatment. */
+.cursor[data-mode='explore'] {
+  mix-blend-mode: difference;
+}
+.cursor[data-mode='explore'] .cursor__ring {
+  background: #fff;
+  border-color: transparent;
+}
+.cursor[data-mode='explore'] .cursor__label {
+  color: #000;
 }

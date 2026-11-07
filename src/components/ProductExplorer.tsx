@@ -1,3 +1,4 @@
+import { webglAvailable } from '../three/webgl'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { CATEGORIES, type CategoryId } from '../content'
@@ -57,23 +58,6 @@ const RIBBON = CATEGORIES.map((category) => category.label)
 /* The section                                                                 */
 /* -------------------------------------------------------------------------- */
 
-/* Whether the browser can give us a WebGL context at all. Resolved once, before
-   the row mounts, so a device without WebGL shows the stills from the first
-   paint and never downloads the three bundle. */
-const canRender3D = () =>
-  typeof window !== 'undefined' &&
-  typeof window.WebGLRenderingContext !== 'undefined' &&
-  (() => {
-    try {
-      const probe = document.createElement('canvas')
-      const gl = probe.getContext('webgl2') || probe.getContext('webgl')
-      gl?.getExtension('WEBGL_lose_context')?.loseContext()
-      return !!gl
-    } catch {
-      return false
-    }
-  })()
-
 export function ProductExplorer() {
   const strip = React.useRef<HTMLUListElement>(null)
   /* `live` mounts the shared canvas; `drawn` says it has put pixels on screen.
@@ -100,7 +84,7 @@ export function ProductExplorer() {
 
   React.useEffect(() => {
     const el = strip.current
-    if (!el || !canRender3D() || !introDone) return
+    if (!el || !webglAvailable() || !introDone) return
     if (!('IntersectionObserver' in window)) {
       setLive(true)
       return

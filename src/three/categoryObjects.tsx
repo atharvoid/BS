@@ -460,10 +460,10 @@ export type CategoryMotif =
  * at this size.
  */
 export const CATEGORY_OBJECTS: Record<CategoryMotif, { model: React.ReactNode; speed: number }> = {
-  textiles: { model: <TextileRoll />, speed: 0.34 },
-  handicrafts: { model: <PotteryVase />, speed: 0.3 },
-  agriculture: { model: <GrainSack />, speed: 0.32 },
-  industrial: { model: <CopperCoil />, speed: 0.4 },
-  organic: { model: <CottonBoll />, speed: 0.36 },
-  general: { model: <ExportCrate />, speed: 0.28 },
+  textiles: { model: <TextileRoll />, speed: 0.18 },
+  handicrafts: { model: <PotteryVase />, speed: 0.18 },
+  agriculture: { model: <GrainSack />, speed: 0.18 },
+  industrial: { model: <CopperCoil />, speed: 0.18 },
+  organic: { model: <CottonBoll />, speed: 0.18 },
+  general: { model: <ExportCrate />, speed: 0.18 },
 }
