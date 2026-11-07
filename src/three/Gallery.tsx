@@ -4,7 +4,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Lights, Studio, getShadowTexture } from './objects'
 import { CATEGORY_OBJECTS, type CategoryMotif } from './categoryObjects'
 import { frameModel, type Framing } from './framing'
-import { measuredDpr, useQuality } from './performance'
+import { FrameReporter, measuredDpr, useQuality } from './performance'
 import { useSceneSession } from './SceneSession'
 
 /* ==========================================================================
@@ -274,6 +274,7 @@ export function Gallery({ onReady, onLost }: { onReady: () => void; onLost: () =
         style={{ pointerEvents: 'none' }}
         resize={{ scroll: false }}
       >
+        <FrameReporter />
         <Ready onReady={onReady} onLost={onLost} />
         <OrthoCamera pxPerUnit={pxPerUnit} />
         <Studio />

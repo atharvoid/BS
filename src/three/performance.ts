@@ -1,4 +1,5 @@
 import React from 'react'
+import { useFrame } from '@react-three/fiber'
 
 /* ==========================================================================
    Adaptive render quality.
@@ -46,6 +47,9 @@ const WINDOW_MS = 1200
 const SLOW_FPS = 33
 /** Above this mean frame rate a window counts in favour of upgrading. */
 const FAST_FPS = 50
+/** More than this many stalls in one window is a bad window. Two, not one: a
+ *  single hitch on an otherwise smooth scene is a hiccup, not a tier. */
+const STALLS_PER_WINDOW = 2
 const DOWNGRADES_NEEDED = 2
 const UPGRADES_NEEDED = 6
 /** No upgrade decision this soon after any change. */
@@ -102,6 +106,79 @@ let fastRun = 0
 let changedAt = 0
 let longTask = false
 
+/* -------------------------------------------------------------------------- */
+/* Render timing                                                               */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * How long the frames actually took, as opposed to how often they happened.
+ *
+ * The sampler above reads the gap between `requestAnimationFrame` callbacks,
+ * which is only a frame rate while something is drawing. A stage that is on
+ * screen but idle — scrolled to and then left alone, a still scene waiting for
+ * input, a tab that was just brought back — still fires the callback, so a
+ * quiet page reads as a slow one, and a scene that never draws never recovers
+ * once it has been marked down.
+ *
+ * Each canvas therefore reports its own drawn frames: the draw call's duration,
+ * and the interval between the frames it actually produced. Both are needed. A
+ * draw that takes 4 ms but happens sixty times a second is healthy; a draw that
+ * takes 4 ms and happens three times a second is not, and only the interval can
+ * tell them apart.
+ *
+ * Reports are dropped when nothing is drawing. A window with no reports is not
+ * a bad window — it is no data, and the sampler leaves the quality alone.
+ */
+/** One report per frame would be thousands of allocations a second; the window
+ *  keeps a running tally instead. */
+const frame = { count: 0, intervalTotal: 0 }
+let lastReport = 0
+
+/** Called by every scene, once per drawn frame. Both figures are milliseconds. */
+export function reportFrame(sinceLastMs: number) {
+  if (!(sinceLastMs >= 0)) return
+  /* A gap longer than the window is a pause, not a frame: the page was hidden,
+     the stage was off screen, or a tab was in the background. Those are excluded
+     from the mean rather than dragging it up. */
+  if (sinceLastMs > WINDOW_MS * 2) return
+  frame.count += 1
+  frame.intervalTotal += sinceLastMs
+  lastReport = typeof performance !== 'undefined' ? performance.now() : Date.now()
+}
+
+/** Mean of the frames drawn since the last read, or null if nothing drew. */
+function readFrames(now: number): { fps: number } | null {
+  /* Nothing has drawn for more than two windows: the scene has stopped, so
+     there is no frame rate to judge and no reason to change anything. */
+  if (!frame.count || now - lastReport > WINDOW_MS * 2) {
+    frame.count = 0
+    frame.intervalTotal = 0
+    return null
+  }
+  const meanInterval = frame.intervalTotal / frame.count
+  frame.count = 0
+  frame.intervalTotal = 0
+  return { fps: meanInterval > 0 ? 1000 / meanInterval : 0 }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Stall detection                                                             */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A single frame that took far too long is a stall, and a visitor notices one
+ * stall more than a slightly low average. These are counted per window in
+ * addition to the mean, so a scene that is mostly smooth but hitches every few
+ * frames is treated as the problem it is.
+ */
+let stalls = 0
+
+export function reportStall(ms: number) {
+  if (ms >= STALL_MS) stalls += 1
+}
+
+const STALL_MS = 120
+
 function step(time: number) {
   if (!running) return
   raf = requestAnimationFrame(step)
@@ -121,19 +198,44 @@ function step(time: number) {
 
   /* A single long task during the window is enough to call it slow, whatever
      the mean says: the visitor experienced a freeze, not a low frame rate. */
-  const slow = fps < SLOW_FPS || longTask
+  const drawn = readFrames(time)
+  const stalledThisWindow = stalls
+  stalls = 0
+
+  /* No frames were drawn, so the window says nothing about this device's
+     capability. Leave the runs exactly as they were rather than counting or
+     clearing them: a page that was scrolled away from must not come back
+     downgraded, and it must not come back upgraded either. Reset only the
+     per-window signals that would otherwise be attributed to the next window
+     with data. */
+  if (!drawn) {
+    longTask = false
+    return
+  }
+
+  const slow =
+    drawn.fps < SLOW_FPS || longTask || stalledThisWindow >= STALLS_PER_WINDOW
   longTask = false
 
   if (slow) {
     slowRun += 1
     fastRun = 0
   } else {
-    fastRun = fps > FAST_FPS ? fastRun + 1 : 0
+    /* Judged on the frames the scene actually drew, not on the rAF cadence: a
+       quiet stage fires rAF on time while drawing nothing, and would otherwise
+       look like the best device in the world. */
+    fastRun = drawn.fps > FAST_FPS ? fastRun + 1 : 0
     slowRun = 0
   }
 
+  /* A change costs the scene a rebuild — new shaders at a new resolution, or a
+     clock that stops — so two in a row is a visible flutter. The cooldown
+     applies to going down as well as coming back up, which is the direction it
+     was missing: a device in trouble is the one most likely to prompt a second
+     immediate decision. */
   if (slowRun >= DOWNGRADES_NEEDED) {
     slowRun = 0
+    if (changedAt && time - changedAt < SETTLE_MS) return
     changedAt = time
     /* Clarity first, animation last. A slow device is asked to draw fewer
        pixels before it is asked to stop moving: a slightly softer frame is
@@ -165,7 +267,7 @@ function step(time: number) {
 }
 
 function start() {
-  if (running || typeof window === 'undefined' || typeof requestAnimationFrame !== 'function') return
+  if (running || suspended || typeof window === 'undefined' || typeof requestAnimationFrame !== 'function') return
   running = true
   windowStart = 0
   frames = 0
@@ -184,7 +286,8 @@ function stop() {
  *  away does not stop the measurement other stages still rely on. */
 export function watchPerformance() {
   owners += 1
-  if (suspended) return
+  /* Nothing to sample while the visitor has asked for no motion. */
+  if (suspended || reduced) return
   start()
 }
 
@@ -224,6 +327,15 @@ if (typeof window !== 'undefined') {
   const motion = motionQuery()
   motion?.addEventListener?.('change', (event) => {
     reduced = event.matches
+    /* `reduced` masks the sustained tier rather than replacing it, so turning
+       the preference back off returns the device to whatever it had measured —
+       no reload, and no relearning of a device we already know. */
+    /* A visitor who has asked for no motion gets a still scene, and a still
+       scene has no frame rate to measure. Stopping the sampler is the honest
+       reading of "measure only while rendering" — and it means no work is being
+       done on behalf of someone who asked for less of it. */
+    if (reduced) stop()
+    else if (owners > 0 && !suspended) start()
     publish()
   })
   const nav = navigator as Navigator & { connection?: { saveData?: boolean; addEventListener?: (t: string, f: () => void) => void } }
@@ -380,4 +492,56 @@ export function measuredDpr(q: Quality, cssWidth: number, cssHeight: number): nu
 function deviceDpr(): number {
   const raw = typeof window !== 'undefined' ? window.devicePixelRatio : 1
   return Number.isFinite(raw) && raw > 0 ? raw : 1
+}
+
+/* -------------------------------------------------------------------------- */
+/* Reporting, from inside a scene                                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Feeds the sampler from a canvas that is actually drawing. Rendered as a child
+ * of a `<Canvas>`, where the frame loop exists.
+ *
+ * This is what makes "measure only while rendering" true rather than intended.
+ * R3F calls `useFrame` exactly once per drawn frame, so the gap between calls is
+ * the real interval between frames — and when the scene stops drawing (a still
+ * tier waiting for input, a stage scrolled out of view, a hidden tab) the
+ * reports stop too. The sampler then finds no data and leaves the quality alone,
+ * instead of reading a quiet page as a slow one.
+ *
+ * Isolated from React so it costs nothing but two floats per frame: the closure
+ * is created once and keeps its own timestamps in locals.
+ */
+export function FrameReporter() {
+  const last = React.useRef(0)
+  const hidden = React.useRef(false)
+
+  React.useEffect(() => {
+    const update = () => {
+      hidden.current = document.hidden
+      /* A tab that comes back has a stale interval; start again from zero so the
+         gap while it was away is not reported as one enormous frame. */
+      if (document.hidden) last.current = 0
+    }
+    update()
+    document.addEventListener('visibilitychange', update)
+    return () => document.removeEventListener('visibilitychange', update)
+  }, [])
+
+  useFrame((_, delta) => {
+    if (hidden.current) return
+    /* `delta` is in seconds and already excludes time the loop was stopped. The
+       interval is read from the clock for the first frame and from `delta`
+       after, so a paused loop resumes without a spike. */
+    const ms = delta * 1000
+    if (last.current === 0) {
+      last.current = ms
+      return
+    }
+    last.current = ms
+    reportFrame(ms)
+    reportStall(ms)
+  })
+
+  return null
 }

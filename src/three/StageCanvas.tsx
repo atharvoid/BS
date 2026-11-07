@@ -1,6 +1,6 @@
 import React from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
-import { useQuality, measuredDpr } from './performance'
+import { FrameReporter, useQuality, measuredDpr } from './performance'
 import { useSceneSession } from './SceneSession'
 
 function InvalidateBridge() {
@@ -77,6 +77,9 @@ export default function StageCanvas({
       resize={{ scroll: false }}
     >
       <InvalidateBridge />
+      {/* Only draws while the scene does, which is what makes the quality
+          measurement a measure of this device rather than of the page. */}
+      <FrameReporter />
       {children}
     </Canvas>
     </div>
