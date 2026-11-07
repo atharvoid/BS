@@ -189,16 +189,23 @@ export function Stage({
      `remount` is a key on the canvas, not a state flag. */
   const [remount, setRemount] = React.useState(0)
   const lostAt = React.useRef(0)
+  const dead = React.useRef(false)
   const onContextLost = React.useCallback(() => {
-    /* Two losses in quick succession means this device cannot hold a canvas;
-       stop rebuilding and leave the drawn fallback up. */
+    /* Rebuilding is not immediate. A lost context stays lost for the rest of the
+       task that lost it — the renderer still holds the dead object, and any
+       draw or shader upload against it throws (`shaderSource: parameter 1 is not
+       of type WebGLShader`). Remounting on the next frame removes the canvas
+       first, so React disposes the old renderer before a new one is built.
+       Two losses close together means this device cannot hold a canvas at all:
+       the stage gives up and keeps its drawn fallback rather than thrashing. */
     const now = Date.now()
-    if (now - lostAt.current < 4000) {
+    if (!lostAt.current) lostAt.current = now
+    else if (now - lostAt.current < 5000) {
+      dead.current = true
       setMounted(false)
       return
     }
-    lostAt.current = now
-    setRemount((n) => n + 1)
+    window.requestAnimationFrame(() => setRemount((n) => n + 1))
   }, [])
 
   /* While this stage is mounted and near the viewport, its frames are what the
