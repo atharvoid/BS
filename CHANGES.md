@@ -49,7 +49,8 @@ The section took two screens for six words.
 **Decision.** A compact row again, but built properly this time:
 
 - six **category tiles**, each with a live object turning continuously inside
-  it, an index, the category name and one line of trade vocabulary;
+  it, drawn by one shared canvas behind the row (see item 8), an index, the
+  category name and one line of trade vocabulary;
 - every tile is a link to `/enquiry?category=…` — no form is mounted on the home
   page;
 - a running list of all six categories underneath, taken from the same
@@ -62,10 +63,17 @@ is no pause state and no control; the only interruptions are the tab being
 hidden and the adaptive quality system (item 7).
 
 **Context budget.** Six tiles means six WebGL contexts, and the hero globe holds
-one already. The live row is therefore reserved for `(min-width: 900px) and
-(any-pointer: fine)`; phones and tablets get a woven swatch in each tile's own
-colour. Same information, no contexts, no risk of a browser silently dropping
-the oldest surface.
+one already — over a browser's practical cap of about eight, and worse on
+Android. Rather than keep the row off phones, the six are drawn by **one**
+context: a single orthographic view spans the strip and each object is placed at
+its own tile's letterbox, measured from the DOM on scroll and resize. Only the
+tiles actually on screen are drawn, so a swipe on a phone costs two objects, not
+six. The page holds two contexts in total, at every width.
+
+With one context the row animates on phones again, at the same cost as on a
+desktop. Every tile also carries a still of its own object — a render of the
+real model, not a drawing — which shows before the scene has drawn, on a device
+that should not animate, and if WebGL is unavailable.
 
 Six motifs were written for this: cloth bolt, hand-coiled basket, seed ring,
 weaving shuttle, yarn bobbin and a folded swatch. They are procedural, like
@@ -179,12 +187,35 @@ Three outcomes, never exposed as a control:
 | quality | what changes |
 | --- | --- |
 | `high` | full resolution, continuous animation |
-| `medium` | device pixel ratio capped at 1, still continuous |
+| `medium` | resolution starts below the screen's own ratio, still continuous |
 | `still` | one static frame; a scene redraws only for input (a drag) |
 
+**Resolution has its own ladder, and it is the first thing given up.** Both
+canvases were being drawn at one device pixel per CSS pixel — a halved image on
+a 2× laptop and a thirded one on a 3× phone, which is why the models looked
+soft. The ladder runs 3, 2.5, 2, 1.75, 1.5, 1.25, 1, taking the rung at or below
+the screen's own ratio, with a 3-million-pixel budget bounding the top so a
+large canvas cannot ask for the absurd. A slow window steps down one rung; only
+when the ladder is exhausted does animation give way. Measured after the change:
+the row draws at 2× on both a 2× laptop and a 3× phone, the desktop hero at 1.5×.
+
 Downgrading needs two bad windows in a row; upgrading needs six good ones and
-five seconds of quiet after any change. Without that hysteresis the site
-oscillates between qualities on a borderline machine.
+five seconds of quiet after any change — in both directions. Without that
+hysteresis the site oscillates between qualities on a borderline machine, and
+every change costs the scene a rebuild of its shaders.
+
+**The measurement is of drawn frames, not of the browser's callback.** The
+original sampler read the gap between `requestAnimationFrame` callbacks, which
+is a frame rate only while something is drawing: an idle stage fires it on time
+while drawing nothing, so a quiet page read as a slow one and a stopped scene
+could never earn back its tier. Scenes now report their own drawn frames, and a
+window with no reports is treated as no data rather than a bad window.
+
+**What it offers, and what it refuses.** Clarity goes before animation, one rung
+at a time, because a slightly softer frame is invisible and a stopped scene is
+not. Nothing is offered as a control. The draw call's own duration is not
+measured — R3F gives no hook that brackets only the draw, and a number obtained
+by timing the wrong thing is worse than no number.
 
 `still` is not "unmounted": the canvas switches to `frameloop="demand"`, the
 scene freezes its clock, and a drag still redraws frame by frame — so a weak
@@ -194,6 +225,44 @@ restores the measured quality without a reload.
 
 The sampler is reference counted and only runs while a stage is near the
 viewport, visible, and the tab is in front.
+
+### 8. Loading, touch and the cloth (Plan 2)
+
+**Loading.** Four things were downloaded by every visitor on every route before
+anything was on screen: three, the globe, the six product models and the textile
+cloth. Opening the privacy page fetched the home page. The routes were static
+imports, so lazy-loading the stage's canvas had nothing to defer — the scenes
+were already in the entry chunk that imported it.
+
+Scenes are now their own modules behind the stage boundary, which fetches them
+by name. Measured on the built output: `/privacy` went from 11 scripts including
+three to 5 with none; the entry chunk from 75.9 kB to 33.3 kB.
+
+Route-splitting the pages was tried first and reverted. It moved three off the
+critical path but made every page's own text late as well — the footer painted
+above an empty document and then dropped two thousand pixels, a 0.51 layout
+shift on every route. The saving never depended on splitting the pages, because
+the scene boundaries are inside them.
+
+**Touch.** A comment claimed `touch-action: pan-y` was what let a vertical swipe
+scroll over a scene. It was on the canvas and not on the elements above it, so
+the browser decided what a touch meant from the wrapper before the scene saw it.
+Both heroes now declare the same contract on every element a finger can land on:
+vertical scroll and pinch stay the page's, horizontal drag is the object's.
+
+**The cloth.** It intersected the roll it was supposed to be unrolling from —
+294 of 945 vertices inside the geometry. Rebuilt in the roll's own axial frame:
+the sheet follows the roll's surface as an involute, is released tangentially,
+eases to the floor and is given clearance at every step. 0 of 2015 vertices and
+0 of 15360 triangle-surface samples are now inside the roll, at every tested free
+length, through a full rotation.
+
+**Stability.** A lost WebGL context is now rebuilt rather than leaving a blank
+canvas — on the next frame, because a context stays dead for the rest of the task
+that lost it and rebuilding immediately threw on the first shader upload.
+
+`docs/plan2-acceptance.md` has every figure and the two things that could not be
+proven in this environment.
 
 ---
 
