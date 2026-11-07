@@ -348,6 +348,12 @@
   inset: 0;
   z-index: var(--z-canvas);
   transform: translateY(var(--parallax, 0));
+  /* A horizontal drag turns the globe; a vertical one scrolls the page; two
+     fingers still zoom. The browser is told this on the element the finger
+     lands on, not only on the canvas inside it — a pointer that starts on the
+     wrapper would otherwise be claimed for panning before the scene ever sees
+     it, and the drag would be cancelled at the first movement. */
+  touch-action: pan-y pinch-zoom;
 }
 
 /* The canvas is the whole hero again, as it was in the earlier composition.
@@ -358,6 +364,7 @@
   position: absolute;
   inset: 0;
   width: 100%;
+  touch-action: pan-y pinch-zoom;
 }
 
 /* Clipping belongs to the hero, never to the page: the globe's right edge runs
@@ -1605,7 +1612,13 @@
   z-index: 1;
 }
 
-.page-hero__stage { position: absolute; inset: 0; }
+.page-hero__stage {
+  position: absolute;
+  inset: 0;
+  /* Same contract as the home hero: vertical scroll and pinch stay the page's,
+     horizontal drag is the cloth's. */
+  touch-action: pan-y pinch-zoom;
+}
 
 .page-hero__fallback {
   position: absolute;
