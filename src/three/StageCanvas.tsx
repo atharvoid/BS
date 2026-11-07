@@ -1,6 +1,6 @@
 import React from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
-import { useQuality, dprRange } from './performance'
+import { useQuality, measuredDpr } from './performance'
 import { useSceneSession } from './SceneSession'
 
 function InvalidateBridge() {
@@ -24,8 +24,10 @@ function InvalidateBridge() {
                          new object, a resize)
    - off screen:         "never"
 
-   Resolution follows the measured quality, so a struggling device drops to
-   pixel ratio 1 before it is ever asked to stop animating.
+   Resolution comes from `measuredDpr`: a ceiling set by the screen and a pixel
+   budget, stepped down one rung at a time when frames are actually slow. It is
+   never dropped to 1 in one jump — a sudden loss of clarity reads as a bug,
+   while a slightly cheaper frame is invisible.
    ========================================================================== */
 
 export default function StageCanvas({
@@ -43,13 +45,32 @@ export default function StageCanvas({
 }) {
   const quality = useQuality()
 
+  /* Measured from the element, not assumed: a canvas can be any size, and the
+     budget has to know how many pixels it is being asked to fill. */
+  const host = React.useRef<HTMLDivElement | null>(null)
+  const [box, setBox] = React.useState({ w: 0, h: 0 })
+  React.useLayoutEffect(() => {
+    const el = host.current
+    if (!el) return
+    const read = () => setBox({ w: el.clientWidth, h: el.clientHeight })
+    read()
+    const ro = new ResizeObserver(read)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  const dpr = React.useMemo(
+    () => measuredDpr(quality, box.w, box.h),
+    [quality, box.w, box.h],
+  )
+
   return (
+    <div ref={host} style={{ width: '100%', height: '100%' }}>
     <Canvas
       /* No tone mapping pass: the globe palette is authored in display space,
          and ACES would wash the ocean out to grey. */
       flat
       frameloop={visible ? (still ? 'demand' : 'always') : 'never'}
-      dpr={dprRange(quality)}
+      dpr={dpr}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance', stencil: false }}
       camera={{ position: [0, 0, z], fov, near: 0.1, far: 60 }}
       style={{ touchAction: 'pan-y pinch-zoom' }}
@@ -58,5 +79,6 @@ export default function StageCanvas({
       <InvalidateBridge />
       {children}
     </Canvas>
+    </div>
   )
 }

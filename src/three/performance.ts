@@ -135,6 +135,10 @@ function step(time: number) {
   if (slowRun >= DOWNGRADES_NEEDED) {
     slowRun = 0
     changedAt = time
+    /* Clarity first, animation last. A slow device is asked to draw fewer
+       pixels before it is asked to stop moving: a slightly softer frame is
+       invisible, a stopped scene is not. */
+    if (lowerClarity()) return
     if (sustained === 'high') {
       sustained = 'medium'
       publish()
@@ -147,6 +151,9 @@ function step(time: number) {
 
   if (fastRun >= UPGRADES_NEEDED && time - changedAt > SETTLE_MS) {
     fastRun = 0
+    /* A recovering device gets its clarity back before it is asked to animate
+       more; the animation tiers are slower to return than they are to go. */
+    if (raiseClarity()) return
     if (sustained === 'still') {
       sustained = 'medium'
       publish()
@@ -258,8 +265,119 @@ export function useSceneStill() {
   return useQuality() === 'still'
 }
 
-/** Device pixel ratio ceiling for the current quality. */
-export function dprRange(q: Quality): [number, number] {
-  if (q === 'high') return [1, 1.75]
-  return [1, 1]
+/* -------------------------------------------------------------------------- */
+/* Resolution                                                                  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * How many device pixels to spend on each CSS pixel.
+ *
+ * The old rule was one number per tier: 1.75 at `high`, and 1 the moment the
+ * quality dropped. On a 3× phone the fall from 1.75 to 1 is a visible step —
+ * the scene goes soft in one frame, which reads as a bug rather than a
+ * compromise. It is also the wrong thing to give up first: brightness and
+ * geometry are nearly free, and clarity is the thing a visitor notices.
+ *
+ * So resolution has its own ladder with smaller steps, and a change is only
+ * made for a *sustained* miss. Between steps the scene keeps its own aspect,
+ * and because the ceiling is the device's own ratio nothing is ever drawn above
+ * what the screen can show.
+ *
+ * The third factor is a pixel budget. A phone at 3× drawing a 1400×900 canvas
+ * wants 11.3 million pixels per frame, which no phone GPU can fill and shade at
+ * 60Hz; capping the buffer keeps the frame time bounded without touching the
+ * CSS layout. 3 million is the budget — a little over 1080p at 1×.
+ *
+ * It is deliberately generous: the ladder already steps down when frames are
+ * actually slow, so the budget's job is only to stop a large canvas asking for
+ * the absurd (a desktop hero at 3× would be 11 million pixels), not to make the
+ * first frame cheap. Starting mild and correcting under measurement is the
+ * whole design, and it is what lets a phone open at its own 3× and settle to
+ * whatever it can hold.
+ */
+const DPR_STEPS = [3, 2.5, 2, 1.75, 1.5, 1.25, 1] as const
+const PIXEL_BUDGET = 3_000_000
+
+export type Resolution = {
+  /** Ceiling handed to the renderer. */
+  dpr: number
+  /** True when the budget, not the ladder, set the number. */
+  capped: boolean
+}
+
+/**
+ * The resolution to draw at, for a canvas of `cssWidth × cssHeight` CSS pixels
+ * on a screen of `deviceDpr`.
+ *
+ * Pure, and exported: the ladder and the budget are the kind of thing that is
+ * easy to get subtly wrong (a step that never applies, a cap that ignores one
+ * axis) and impossible to check by eye, so they are tested directly.
+ */
+export function resolutionFor(
+  q: Quality,
+  cssWidth: number,
+  cssHeight: number,
+  deviceDpr: number,
+): Resolution {
+  if (q === 'still') return { dpr: 1, capped: false }
+
+  /* `high` starts at the screen's own ratio; `medium` starts below it. Both
+     descend the same steps, so a drop is always one rung, never a cliff. */
+  const ceiling = q === 'high' ? Math.max(1, deviceDpr) : Math.min(2, Math.max(1, deviceDpr))
+  let dpr = DPR_STEPS.find((step) => step <= ceiling + 1e-3) ?? 1
+
+  /* The budget can only lower the number: it is there to bound the fill cost,
+     never to raise a small canvas above the screen. */
+  const cssPixels = Math.max(1, cssWidth) * Math.max(1, cssHeight)
+  let capped = false
+  while (dpr > 1 && cssPixels * dpr * dpr > PIXEL_BUDGET) {
+    const next = DPR_STEPS.find((step) => step < dpr) ?? 1
+    if (next === dpr) break
+    dpr = next
+    capped = true
+  }
+
+  return { dpr, capped }
+}
+
+/** How many times the scene has had to give up clarity. Read by the report in
+ *  the acceptance table, so a regression is visible as a number. */
+export function clarityStep(): number {
+  return clarityIndex
+}
+
+let clarityIndex = 0
+
+/** Called when a window is slow for long enough that the scene should be
+ *  drawn more cheaply. Returns true when it actually stepped down, so callers
+ *  can tell a real change from a repeated request. */
+export function lowerClarity(): boolean {
+  if (clarityIndex >= DPR_STEPS.length - 1) return false
+  clarityIndex += 1
+  publish()
+  return true
+}
+
+/** Resets the ladder after a period of good frames. */
+export function raiseClarity(): boolean {
+  if (clarityIndex <= 0) return false
+  clarityIndex -= 1
+  publish()
+  return true
+}
+
+/** The resolution a scene should ask its renderer for, right now. */
+export function measuredDpr(q: Quality, cssWidth: number, cssHeight: number): number {
+  const base = resolutionFor(q, cssWidth, cssHeight, deviceDpr())
+  /* The clarity ladder is applied after the budget: a slow device steps down
+     from where it was, rather than jumping to a floor. */
+  const step = DPR_STEPS[Math.min(clarityIndex, DPR_STEPS.length - 1)]
+  const limited = Math.min(base.dpr, step)
+  return Math.max(1, limited)
+}
+
+/** The screen's own ratio, defensively: some embedded browsers report 0. */
+function deviceDpr(): number {
+  const raw = typeof window !== 'undefined' ? window.devicePixelRatio : 1
+  return Number.isFinite(raw) && raw > 0 ? raw : 1
 }

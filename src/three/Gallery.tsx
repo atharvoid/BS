@@ -4,7 +4,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Lights, Studio, getShadowTexture } from './objects'
 import { CATEGORY_OBJECTS, type CategoryMotif } from './categoryObjects'
 import { frameModel, type Framing } from './framing'
-import { useQuality } from './performance'
+import { measuredDpr, useQuality } from './performance'
 import { useSceneSession } from './SceneSession'
 
 /* ==========================================================================
@@ -213,6 +213,21 @@ export function Gallery({ onReady, onLost }: { onReady: () => void; onLost: () =
      nothing to draw, so the fallback only has to be finite. */
   const pxPerUnit = (slots[0]?.height ?? 152) / TILE_VIEW
 
+  /* Same rule as the hero: one rung at a time, capped by a pixel budget, never
+     above the screen. The row is one canvas, so its area is the whole strip —
+     which is exactly the case the budget exists for. */
+  const [box, setBox] = React.useState({ w: 0, h: 0 })
+  React.useLayoutEffect(() => {
+    const el = host.current
+    if (!el) return
+    const read = () => setBox({ w: el.clientWidth, h: el.clientHeight })
+    read()
+    const ro = new ResizeObserver(read)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  const dpr = React.useMemo(() => measuredDpr(quality, box.w, box.h), [quality, box.w, box.h])
+
   /* Where the tiles are. Re-measured on scroll, resize and layout changes, not
      every frame: the grid only moves when the visitor scrolls it. */
   React.useEffect(() => {
@@ -254,7 +269,7 @@ export function Gallery({ onReady, onLost }: { onReady: () => void; onLost: () =
         camera={{ position: [0, 0, 10], zoom: 1, near: 0.1, far: 60 }}
         flat
         frameloop={session?.still ? 'demand' : 'always'}
-        dpr={quality === 'high' ? [1, 1.75] : [1, 1]}
+        dpr={dpr}
         gl={{ antialias: true, alpha: true, stencil: false, powerPreference: 'high-performance' }}
         style={{ pointerEvents: 'none' }}
         resize={{ scroll: false }}
