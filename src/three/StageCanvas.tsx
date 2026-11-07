@@ -1,8 +1,20 @@
 import React from 'react'
-import { Canvas, useThree } from '@react-three/fiber'
-import { useQuality, measuredDpr } from './performance'
+import { Canvas, useThree, useFrame } from '@react-three/fiber'
+import { useQuality, measuredDpr, resolutionFor } from './performance'
 import { FrameReporter } from './FrameReporting'
 import { useSceneSession } from './SceneSession'
+
+function FirstCompleteFrame({ reveal }: { reveal: () => void }) {
+  const invalidate = useThree((s) => s.invalidate)
+  const frames = React.useRef(0)
+  useFrame(() => {
+    if (frames.current >= 2) return
+    frames.current++
+    if (frames.current === 2) requestAnimationFrame(reveal)
+    else invalidate()
+  })
+  return null
+}
 
 function InvalidateBridge() {
   const scene = useSceneSession()
@@ -52,6 +64,7 @@ export default function StageCanvas({
   z,
   fov,
   onContextLost,
+  stableVisual = false,
 }: {
   children: React.ReactNode
   visible: boolean
@@ -59,8 +72,11 @@ export default function StageCanvas({
   z: number
   fov: number
   onContextLost?: () => void
+  stableVisual?: boolean
 }) {
   const quality = useQuality()
+  const [ready, setReady] = React.useState(false)
+  const reveal = React.useCallback(() => setReady(true), [])
 
   /* Measured from the element, not assumed: a canvas can be any size, and the
      budget has to know how many pixels it is being asked to fill. */
@@ -76,12 +92,14 @@ export default function StageCanvas({
     return () => ro.disconnect()
   }, [])
   const dpr = React.useMemo(
-    () => measuredDpr(quality, box.w, box.h),
-    [quality, box.w, box.h],
+    () => stableVisual
+      ? resolutionFor('high', box.w, box.h, window.devicePixelRatio || 1).dpr
+      : measuredDpr(quality, box.w, box.h),
+    [quality, box.w, box.h, stableVisual],
   )
 
   return (
-    <div ref={host} style={{ width: '100%', height: '100%' }}>
+    <div ref={host} data-scene-ready={ready} data-motion={still ? "frozen" : "running"} style={{ width: '100%', height: '100%', opacity: !stableVisual || ready ? 1 : 0, transition: stableVisual ? 'opacity 320ms ease-out' : undefined }}>
     <Canvas
       /* No tone mapping pass: the globe palette is authored in display space,
          and ACES would wash the ocean out to grey. */
@@ -94,6 +112,7 @@ export default function StageCanvas({
       resize={{ scroll: false }}
     >
       <InvalidateBridge />
+      {stableVisual ? <FirstCompleteFrame reveal={reveal} /> : null}
       <ContextLoss onLost={onContextLost} />
       {/* Only draws while the scene does, which is what makes the quality
           measurement a measure of this device rather than of the page. */}

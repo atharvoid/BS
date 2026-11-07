@@ -69,21 +69,23 @@ export async function loadGeo(): Promise<GeoFile> {
   return cached
 }
 
-let maskTexture: THREE.Texture | null = null
+let maskTexture: Promise<THREE.Texture> | null = null
 
-/** The land coverage mask, as a texture. Always the same instance. */
-export function getLandMask(): THREE.Texture {
-  if (maskTexture) return maskTexture
-  const tex = new THREE.TextureLoader().load(new URL('./geo/land.png', import.meta.url).href)
-  tex.colorSpace = THREE.NoColorSpace
-  tex.wrapS = THREE.RepeatWrapping
-  tex.wrapT = THREE.ClampToEdgeWrapping
-  tex.minFilter = THREE.LinearMipmapLinearFilter
-  tex.magFilter = THREE.LinearFilter
-  tex.generateMipmaps = true
-  tex.anisotropy = 8
-  maskTexture = tex
-  return tex
+/** Resolve the complete texture before the globe's first visible frame. */
+export function getLandMask(): Promise<THREE.Texture> {
+  if (!maskTexture) maskTexture = new THREE.TextureLoader()
+    .loadAsync(new URL('./geo/land.png', import.meta.url).href)
+    .then((tex) => {
+      tex.colorSpace = THREE.NoColorSpace
+      tex.wrapS = THREE.RepeatWrapping
+      tex.wrapT = THREE.ClampToEdgeWrapping
+      tex.minFilter = THREE.LinearMipmapLinearFilter
+      tex.magFilter = THREE.LinearFilter
+      tex.generateMipmaps = true
+      tex.anisotropy = 8
+      return tex
+    })
+  return maskTexture
 }
 
 /**

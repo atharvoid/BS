@@ -1,0 +1,508 @@
+{
+  "environment": "Local production preview; headless Chromium/SwiftShader. Fresh browser contexts share one browser process. Not physical-device or production evidence.",
+  "fresh_context_load_samples": [
+    {
+      "introClearMs": [
+        3158
+      ],
+      "longTasks": [
+        [
+          50,
+          72
+        ],
+        [
+          3794,
+          294
+        ],
+        [
+          4088,
+          680
+        ],
+        [
+          4776,
+          178
+        ],
+        [
+          4956,
+          100
+        ],
+        [
+          5097,
+          106
+        ]
+      ],
+      "totalTaskMs": 1430,
+      "maxTaskMs": 680,
+      "canvases": 2
+    },
+    {
+      "introClearMs": [
+        3166
+      ],
+      "longTasks": [
+        [
+          52,
+          76
+        ],
+        [
+          3698,
+          410
+        ],
+        [
+          4108,
+          368
+        ],
+        [
+          4479,
+          89
+        ],
+        [
+          4584,
+          76
+        ],
+        [
+          4700,
+          90
+        ]
+      ],
+      "totalTaskMs": 1109,
+      "maxTaskMs": 410,
+      "canvases": 2
+    },
+    {
+      "introClearMs": [
+        3166
+      ],
+      "longTasks": [
+        [
+          50,
+          65
+        ],
+        [
+          126,
+          53
+        ],
+        [
+          3616,
+          350
+        ],
+        [
+          3966,
+          301
+        ],
+        [
+          4270,
+          125
+        ],
+        [
+          4410,
+          67
+        ],
+        [
+          4521,
+          86
+        ]
+      ],
+      "totalTaskMs": 1047,
+      "maxTaskMs": 350,
+      "canvases": 2
+    }
+  ],
+  "renderer_ready_lifecycle_samples": [
+    {
+      "path": "/textiles",
+      "canvases": 1,
+      "created": 4,
+      "active": 1
+    },
+    {
+      "path": "/privacy",
+      "canvases": 0,
+      "created": 4,
+      "active": 0
+    },
+    {
+      "path": "/",
+      "canvases": 2,
+      "created": 6,
+      "active": 2
+    },
+    {
+      "path": "/textiles",
+      "canvases": 1,
+      "created": 7,
+      "active": 1
+    },
+    {
+      "path": "/privacy",
+      "canvases": 0,
+      "created": 7,
+      "active": 0
+    },
+    {
+      "path": "/",
+      "canvases": 2,
+      "created": 9,
+      "active": 2
+    },
+    {
+      "path": "/textiles",
+      "canvases": 1,
+      "created": 10,
+      "active": 1
+    },
+    {
+      "path": "/privacy",
+      "canvases": 0,
+      "created": 10,
+      "active": 0
+    },
+    {
+      "path": "/",
+      "canvases": 2,
+      "created": 12,
+      "active": 2
+    }
+  ],
+  "privacy_fetches_three": false,
+  "preview_unknown_route_http_status": 200,
+  "lifecycle_page_errors": [],
+  "chapter_bounds_samples": [
+    {
+      "w": 320,
+      "h": 568,
+      "i": 0,
+      "label": "Textiles & fabrics",
+      "ctaBottom": 460,
+      "shelfTop": 466,
+      "chapterTop": 178,
+      "headerBottom": 178,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 320,
+      "h": 568,
+      "i": 1,
+      "label": "Handicrafts & home decor",
+      "ctaBottom": 439,
+      "shelfTop": 466,
+      "chapterTop": 178,
+      "headerBottom": 178,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 320,
+      "h": 568,
+      "i": 2,
+      "label": "Agriculture & food",
+      "ctaBottom": 439,
+      "shelfTop": 466,
+      "chapterTop": 178,
+      "headerBottom": 178,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 320,
+      "h": 568,
+      "i": 3,
+      "label": "Industrial materials",
+      "ctaBottom": 429,
+      "shelfTop": 466,
+      "chapterTop": 178,
+      "headerBottom": 178,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 320,
+      "h": 568,
+      "i": 4,
+      "label": "Organic & sustainable",
+      "ctaBottom": 447,
+      "shelfTop": 466,
+      "chapterTop": 178,
+      "headerBottom": 178,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 320,
+      "h": 568,
+      "i": 5,
+      "label": "Other sourcing requests",
+      "ctaBottom": 457,
+      "shelfTop": 466,
+      "chapterTop": 178,
+      "headerBottom": 178,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "i": 0,
+      "label": "Textiles & fabrics",
+      "ctaBottom": 613,
+      "shelfTop": 742,
+      "chapterTop": 421,
+      "headerBottom": 168,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "i": 1,
+      "label": "Handicrafts & home decor",
+      "ctaBottom": 590,
+      "shelfTop": 742,
+      "chapterTop": 421,
+      "headerBottom": 168,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "i": 2,
+      "label": "Agriculture & food",
+      "ctaBottom": 590,
+      "shelfTop": 742,
+      "chapterTop": 421,
+      "headerBottom": 168,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "i": 3,
+      "label": "Industrial materials",
+      "ctaBottom": 590,
+      "shelfTop": 742,
+      "chapterTop": 421,
+      "headerBottom": 168,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "i": 4,
+      "label": "Organic & sustainable",
+      "ctaBottom": 613,
+      "shelfTop": 742,
+      "chapterTop": 421,
+      "headerBottom": 168,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 390,
+      "h": 844,
+      "i": 5,
+      "label": "Other sourcing requests",
+      "ctaBottom": 613,
+      "shelfTop": 742,
+      "chapterTop": 421,
+      "headerBottom": 168,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 768,
+      "h": 1024,
+      "i": 0,
+      "label": "Textiles & fabrics",
+      "ctaBottom": 585,
+      "shelfTop": 864,
+      "chapterTop": 316,
+      "headerBottom": 173,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 768,
+      "h": 1024,
+      "i": 1,
+      "label": "Handicrafts & home decor",
+      "ctaBottom": 592,
+      "shelfTop": 864,
+      "chapterTop": 316,
+      "headerBottom": 173,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 768,
+      "h": 1024,
+      "i": 2,
+      "label": "Agriculture & food",
+      "ctaBottom": 560,
+      "shelfTop": 864,
+      "chapterTop": 316,
+      "headerBottom": 173,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 768,
+      "h": 1024,
+      "i": 3,
+      "label": "Industrial materials",
+      "ctaBottom": 560,
+      "shelfTop": 864,
+      "chapterTop": 316,
+      "headerBottom": 173,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 768,
+      "h": 1024,
+      "i": 4,
+      "label": "Organic & sustainable",
+      "ctaBottom": 560,
+      "shelfTop": 864,
+      "chapterTop": 316,
+      "headerBottom": 173,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 768,
+      "h": 1024,
+      "i": 5,
+      "label": "Other sourcing requests",
+      "ctaBottom": 618,
+      "shelfTop": 864,
+      "chapterTop": 316,
+      "headerBottom": 173,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 1440,
+      "h": 900,
+      "i": 0,
+      "label": "Textiles & fabrics",
+      "ctaBottom": 583,
+      "shelfTop": 740,
+      "chapterTop": 303,
+      "headerBottom": 177,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 1440,
+      "h": 900,
+      "i": 1,
+      "label": "Handicrafts & home decor",
+      "ctaBottom": 613,
+      "shelfTop": 740,
+      "chapterTop": 303,
+      "headerBottom": 177,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 1440,
+      "h": 900,
+      "i": 2,
+      "label": "Agriculture & food",
+      "ctaBottom": 551,
+      "shelfTop": 740,
+      "chapterTop": 303,
+      "headerBottom": 177,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 1440,
+      "h": 900,
+      "i": 3,
+      "label": "Industrial materials",
+      "ctaBottom": 583,
+      "shelfTop": 740,
+      "chapterTop": 303,
+      "headerBottom": 177,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 1440,
+      "h": 900,
+      "i": 4,
+      "label": "Organic & sustainable",
+      "ctaBottom": 644,
+      "shelfTop": 740,
+      "chapterTop": 303,
+      "headerBottom": 177,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    },
+    {
+      "w": 1440,
+      "h": 900,
+      "i": 5,
+      "label": "Other sourcing requests",
+      "ctaBottom": 644,
+      "shelfTop": 740,
+      "chapterTop": 303,
+      "headerBottom": 177,
+      "ctaCovered": false,
+      "headerOverlap": false,
+      "overflow": false
+    }
+  ],
+  "mock_delivery_scenarios_passed": [
+    "accepted",
+    "storage-blocked",
+    "429 rejection",
+    "network error",
+    "malformed JSON"
+  ],
+  "real_submission_sent": false,
+  "runtime_dependency_vulnerabilities": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "short_viewport_bypass": {
+    "viewport": [
+      844,
+      390
+    ],
+    "runwayHeight": 0,
+    "directoryLinks": 6
+  }
+}

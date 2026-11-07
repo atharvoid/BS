@@ -39,10 +39,16 @@ export function Nav() {
     if (!open) return
     const previous = document.documentElement.style.overflow
     document.documentElement.style.overflow = 'hidden'
+    // The mobile drawer already traps keyboard focus. Also keep the covered
+    // main/footer out of the accessibility tree while it is open.
+    const background = [...document.querySelectorAll<HTMLElement>('main,footer')]
+    const previousInert = background.map(el => el.inert)
+    background.forEach(el => { el.inert = true })
     const frame = requestAnimationFrame(() => drawer.current?.querySelector<HTMLElement>('a,button')?.focus())
     return () => {
       cancelAnimationFrame(frame)
       document.documentElement.style.overflow = previous
+      background.forEach((el, i) => { el.inert = previousInert[i] })
     }
   }, [open])
 

@@ -1,3 +1,5 @@
+import type { CategoryMotif } from './three/categoryObjects'
+
 /**
  * Single source of truth for the words on this site.
  *
@@ -167,3 +169,13 @@ export const ENQUIRY_FIELDS = {
   name: { label: 'Your name', placeholder: 'Full name' },
   email: { label: 'Email address', hint: 'Replies come from bsexim.nexus@gmail.com.' },
 } as const
+
+/** Copy for the scroll-led category introduction; no availability claims. */
+export const CATEGORY_JOURNEY: { id: CategoryId; motif: CategoryMotif; label: string; note: string; body: string; to?: string }[] = [
+  { id: 'textiles', motif: 'textiles', label: 'Textiles & fabrics', note: 'Our primary product line', body: 'Start with the fabric, its intended use and the finish you have in mind. Explore material families and sourcing areas in India, then share your quantity, destination and sample requirements.', to: '/textiles' },
+  { id: 'handicrafts', motif: 'handicrafts', label: 'Handicrafts & home decor', note: 'Material. Craft. Intended use.', body: 'Tell us about the item, material, dimensions and finish. Share a reference and the intended use so sourcing discussions begin with a clear brief.' },
+  { id: 'agriculture-food', motif: 'agriculture', label: 'Agriculture & food', note: 'A specification-led enquiry', body: 'Name the crop, ingredient or food product. Include the grade, packing, approximate quantity and destination requirements you would like to discuss.' },
+  { id: 'industrial-materials', motif: 'industrial', label: 'Industrial materials', note: 'Inputs and components', body: 'Describe the material or manufacturing input. A grade, technical specification or reference helps establish what needs to be confirmed with potential suppliers.' },
+  { id: 'organic-sustainable', motif: 'organic', label: 'Organic & sustainable', note: 'Evidence, not assumptions', body: 'Describe the product and any certification or traceability evidence you require. Claims and supporting documents must be checked for the specific product and supplier.' },
+  { id: 'general', motif: 'general', label: 'Other sourcing requests', note: 'Begin with the requirement', body: 'If your product does not fit the categories above, tell us what you need or supply. Include its use, a reference and the destination. Scope and availability are discussed per enquiry.' },
+]

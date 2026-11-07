@@ -411,38 +411,32 @@ function OriginMarker({
 
 /* -------------------------------------------------------------------------- */
 
+// One stable promise: geometry, outlines and texture are ready together.
+const globeAssets = Promise.all([loadGeo(), loadMaskPixels(), getLandMask()])
+
 function Earth({ uniforms }: { uniforms: { uTime: THREE.IUniform<number>; uSun: THREE.IUniform<THREE.Vector3> } }) {
-  const mask = React.useMemo(() => getLandMask(), [])
+  const [, px, mask] = React.use(globeAssets)
 
   /* Carve the sphere itself: every vertex is displaced by the land coverage,
      so continents are real relief rather than a painted-on patch. 256x160 is
      about 41k vertices, which is nothing, and fine enough that the bevel reads
      at hero size. The same mask drives the shading, so the two agree. */
-  const geometry = React.useMemo(() => new THREE.SphereGeometry(1, 256, 160), [])
-  React.useEffect(() => {
-    let live = true
-    // Exact source mask; no canvas readback or rasterisation approximation.
-    loadMaskPixels().then((px) => {
-      if (!live) return
-      const pos = geometry.attributes.position as THREE.BufferAttribute
-      const uv = geometry.attributes.uv as THREE.BufferAttribute
-      const v = new THREE.Vector3()
-      for (let i = 0; i < pos.count; i++) {
-        const lon = uv.getX(i) * 360 - 180
-        const lat = 90 - uv.getY(i) * 180
-        const m = sampleMask(px.data, px.width, px.height, lon, lat)
-        const r = carveVertex(m)
-        v.fromBufferAttribute(pos, i).normalize().multiplyScalar(r)
-        pos.setXYZ(i, v.x, v.y, v.z)
-      }
-      pos.needsUpdate = true
-      geometry.computeVertexNormals()
-      geometry.computeBoundingSphere()
-    })
-    return () => {
-      live = false
+  const geometry = React.useMemo(() => {
+    const geometry = new THREE.SphereGeometry(1, 256, 160)
+    const pos = geometry.attributes.position as THREE.BufferAttribute
+    const uv = geometry.attributes.uv as THREE.BufferAttribute
+    const v = new THREE.Vector3()
+    for (let i = 0; i < pos.count; i++) {
+      const lon = uv.getX(i) * 360 - 180
+      const lat = 90 - uv.getY(i) * 180
+      const r = carveVertex(sampleMask(px.data, px.width, px.height, lon, lat))
+      v.fromBufferAttribute(pos, i).normalize().multiplyScalar(r)
+      pos.setXYZ(i, v.x, v.y, v.z)
     }
-  }, [geometry])
+    geometry.computeVertexNormals()
+    geometry.computeBoundingSphere()
+    return geometry
+  }, [px])
   React.useEffect(() => () => geometry.dispose(), [geometry])
   const mat = React.useMemo(
     () =>
@@ -480,15 +474,8 @@ function Earth({ uniforms }: { uniforms: { uTime: THREE.IUniform<number>; uSun: 
  * coastlines from showing through the ocean, and it costs nothing per frame.
  */
 function GeoLines() {
-  const [state, setState] = React.useState<{
-    coast: THREE.BufferGeometry
-    border: THREE.BufferGeometry
-  } | null>(null)
-
-  React.useEffect(() => {
-    let live = true
-    loadGeo().then((geo) => {
-      if (!live) return
+  const [geo] = React.use(globeAssets)
+  const state = React.useMemo(() => {
       const coast = ringsToGeometry(
         decodeRings(geo.coast, geo.meta.quantum).map((r) => subdivideLL(r, 0.45)),
       )
@@ -511,12 +498,8 @@ function GeoLines() {
         g.setAttribute('normal', new THREE.BufferAttribute(n, 3))
         g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1.2)
       }
-      setState({ coast, border })
-    })
-    return () => {
-      live = false
-    }
-  }, [])
+      return { coast, border }
+  }, [geo])
 
   React.useEffect(
     () => () => {
@@ -678,7 +661,7 @@ function Globe() {
   useFrame((_, delta) => {
     const d = Math.min(delta, 1 / 30)
     const g = root.current
-    if (!g) return
+    if (!g || (still && !drag.dragging)) return
     if (!drag.dragging) drag.target.y += drag.velocity.y * d
     const decay = Math.exp(-3.4 * d)
     drag.velocity.y *= decay
@@ -786,6 +769,7 @@ function Frame({ children }: { children: React.ReactNode }) {
 }
 
 export function GlobeScene() {
+  React.use(globeAssets)
   return (
     <>
       <Studio />

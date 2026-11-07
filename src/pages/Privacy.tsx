@@ -25,6 +25,7 @@ const SECTIONS = [
     d: [
       'The site does not save form entries in browser storage. Nothing you type into the enquiry is written to localStorage or cookies.',
       'After a submission is accepted, a small receipt (the enquiry subject, the visitor type and the time) is held in sessionStorage so the acknowledgement page can show what was handed over. It is cleared when the browser session ends, and it can be removed by closing the tab.',
+      'If browser storage is unavailable, the current page keeps that receipt in memory instead. This fallback is lost when the page is reloaded or closed.',
     ],
   },
   {

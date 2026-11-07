@@ -21,12 +21,12 @@ npm run preview    # serve the production build
 npm run typecheck  # types only
 ```
 
-Node 20+ recommended.
+Node 22.18+ recommended (the tests import TypeScript using Node’s built-in type stripping).
 
 ### Targeted checks
 
-`npm test` runs two Node regression tests (globe picking without traversing
-decorative geometry, and cursor proximity hysteresis) and then
+`npm test` runs the Node regression suite (geometry clearance, drag, globe
+orientation, loading boundaries, quality state, resolution and scroll choreography) and then
 `scripts/stage-scope.mjs`, a static guard that fails if a component calls
 `useFrame`/`useThree` and also renders a `<Stage>` — the mistake that produces
 "Hooks can only be used within the Canvas component" and a blank section.
@@ -50,7 +50,7 @@ The broader trade-homepage and textile-migration proposal is in
 
 | Route | Page | Purpose |
 | --- | --- | --- |
-| `/` | Overview | Hero globe, the six product areas with live tiles, how an enquiry works, and the enquiry |
+| `/` | Overview | Hero globe, six scroll-led categories, a direct category directory and how an enquiry works |
 | `/textiles` | Textiles & fabrics | The textile focus, representative swatches, the two sourcing areas, and a written enquiry brief |
 | `/enquiry` | Textile enquiry | The five-answer form, already identified as a textiles enquiry |
 | `/enquiry/acknowledgement` | Enquiry acknowledgement | Says plainly that the page alone does not confirm inbox delivery |
@@ -79,8 +79,8 @@ approximation:
   Sri Lanka, Bangladesh, Singapore, Europe, Australia and North America, each
   carrying a travelling comet so the surface reads as supply in motion.
 
-Nothing is downloaded at runtime: `src/three/geo/` holds 22 KB of mask and
-108 KB of packed vectors. `scripts/build-geo.mjs` regenerates them from Natural
+No third-party geographic service is contacted: `src/three/geo/` holds the texture, lossless CPU mask and packed vectors,
+served as local static assets when the globe loads. `scripts/build-geo.mjs` regenerates them from Natural
 Earth and is the only thing that needs the raw data:
 
 ```bash
@@ -94,20 +94,56 @@ animates by itself. There is no pause button, no reset, no arrow pad: the
 sections that once had them (`Tell us about your fabric`, and the hero globe)
 now either animate continuously or were replaced by written content.
 
-**The category row.** Six small canvases, each turning a procedural object:
-a cloth bolt, a hand-coiled basket, a seed ring, a weaving shuttle, a yarn
-bobbin and a folded swatch. Each tile links straight to an enquiry for that
-category. Because that is six WebGL contexts, the live version is reserved for
-`(min-width: 900px) and (any-pointer: fine)`; smaller and touch screens get a
-woven swatch in the tile's own colour.
+**The category journey.** One shared canvas draws six procedural models: a
+cloth roll, ceramic vase, grain sack, copper coil, cotton boll and export crate.
+Scroll-driven chapters introduce each category and move that same model into a
+persistent homepage dock. Textiles is first and the primary product line. The
+canvas never captures a pointer; category labels remain real links. All six
+links are also available in an ordinary directory, with a skip link. Reduced
+motion and missing WebGL bypass the long choreography. No separate poster is
+swapped into a loaded scene.
 
-### Adaptive quality
+### Stable renders and performance
 
-`src/three/performance.ts` measures the interval between `requestAnimationFrame`
-callbacks, watches for long tasks, and reads device hints. It settles on one of
-three states — `high`, `medium` (pixel ratio 1) or `still` (one static frame,
-redrawn only for a drag) — with hysteresis so it cannot oscillate. It is not a
-control and there is no UI for it. See `CHANGES.md` §7 for the thresholds.
+The homepage globe and category models retain their drawing resolution,
+materials and lighting when performance falls back to still mode. The same
+canvas freezes; it does not become a different image. Resolution is bounded by
+the device ratio and pixel budget, and changes only with viewport sizing, not
+with the automatic performance tier. The globe stays mounted but stops drawing
+when offscreen, preserving its orientation. Both homepage contexts are released
+when the route unmounts. The textile page retains its existing resolution policy.
+
+`src/three/performance.ts` samples actual rendered frames, not idle browser RAF
+callbacks. Hidden-tab time is excluded. No customer-facing quality control is
+added. A fresh document or lost GPU context necessarily has to render again;
+there is no claim that pixels survive browser teardown.
+
+Browser acceptance check (Playwright installed separately):
+
+```bash
+npm run build
+npm run preview
+SITE_URL=http://localhost:4173 node scripts/category-journey.check.mjs
+```
+
+Set `PLAYWRIGHT_MODULE` and optionally `BROWSER_EXECUTABLE` for a custom browser
+installation. The check covers forward/reverse scrolling, the six docked
+models, narrow layouts, retained renderer and repeated frozen-frame pixels.
+
+### SEO and launch configuration
+
+Set optional `VITE_SITE_URL` to the verified public origin before building.
+The current serving origin is used otherwise; no domain or legal identity is
+invented. Route metadata is client-rendered: production prerendering/SSR,
+real 404 status codes, redirects, cache headers and a domain-specific sitemap
+remain deployment checks. The preview should receive a server-side no-index
+header as well as its client-side metadata.
+
+Configure `VITE_WEB3FORMS_KEY` and verify delivery to the business inbox before
+launch. An unconfigured form clearly provides the email alternative. The
+reserved CAPTCHA key must remain empty until a real token flow is integrated;
+no empty CAPTCHA token or unsupported protection claim is sent. See the
+review in `docs/website-review.md` for launch blockers and unverified items.
 
 ### Design decisions worth keeping
 

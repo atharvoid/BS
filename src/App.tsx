@@ -1,3 +1,4 @@
+import { TextTransitions } from './components/TextTransitions'
 import React from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { Nav } from './components/Nav'
@@ -30,6 +31,7 @@ import NotFound from './pages/NotFound'
 
 function ScrollManager() {
   const { pathname, hash } = useLocation()
+  const lastPath = React.useRef(pathname)
 
   React.useEffect(() => {
     let raf = 0
@@ -53,6 +55,9 @@ function ScrollManager() {
   }, [pathname])
 
   React.useEffect(() => {
+    const changedRoute = lastPath.current !== pathname
+    lastPath.current = pathname
+    if (changedRoute) document.getElementById('main')?.focus({ preventScroll: true })
     if (hash) {
       let id = hash.slice(1)
       try { id = decodeURIComponent(id) } catch { /* Keep the literal fragment. */ }
@@ -76,12 +81,28 @@ function PageMetadata() {
       '/textiles': ['Textiles and fabrics | BS EXIMNEXUS', 'Explore fabric types and textile sourcing areas in India.'],
       '/enquiry': ['Start an enquiry | BS EXIMNEXUS', 'Describe what you need or supply to start a sourcing enquiry.'],
       '/privacy': ['Enquiry privacy | BS EXIMNEXUS', 'How enquiry information is handled.'],
+      '/enquiry/acknowledgement': ['Enquiry acknowledgement | BS EXIMNEXUS', 'Submission status for this browser session.'],
     }
-    const [title, description] = pages[pathname] ?? ['BS EXIMNEXUS', 'India-focused sourcing and trade coordination.']
+    const [title, description] = pages[pathname] ?? ['Page not found | BS EXIMNEXUS', 'This page is not part of the BS EXIMNEXUS website.']
     document.title = title
     document.querySelector('meta[name="description"]')?.setAttribute('content', description)
     document.querySelector('meta[property="og:title"]')?.setAttribute('content', title)
     document.querySelector('meta[property="og:description"]')?.setAttribute('content', description)
+    const publicPage = ['/', '/textiles', '/enquiry', '/privacy'].includes(pathname)
+    const preview = /(^localhost$|^127\.|\.e2b\.app$)/.test(location.hostname)
+    document.querySelector('meta[name="robots"]')?.setAttribute('content', publicPage && !preview ? 'index,follow' : 'noindex,follow')
+    // Never publish an invented domain. An optional verified deployment URL
+    // overrides the current origin; query strings and fragments are excluded.
+    let origin = location.origin
+    try {
+      const configured = import.meta.env.VITE_SITE_URL
+      if (configured && /^https?:/.test(new URL(configured).protocol)) origin = new URL(configured).origin
+    } catch { /* Use the actual serving origin for invalid configuration. */ }
+    const canonical = new URL(pathname, origin).href
+    const link = document.querySelector<HTMLLinkElement>('link[rel="canonical"]') ?? document.createElement('link')
+    link.rel = 'canonical'; link.href = canonical
+    if (!link.parentNode) document.head.appendChild(link)
+    document.querySelector('meta[property="og:url"]')?.setAttribute('content', canonical)
   }, [pathname])
   return null
 }
@@ -93,11 +114,12 @@ export default function App() {
         Skip to content
       </a>
       <ScrollManager />
+      <TextTransitions />
       <PageMetadata />
       <Cursor />
       <LogoIntro />
       <Nav />
-      <main id="main">
+      <main id="main" tabIndex={-1}>
         <Routes>
           <Route path="/" element={<Overview />} />
           <Route path="/textiles" element={<Textiles />} />

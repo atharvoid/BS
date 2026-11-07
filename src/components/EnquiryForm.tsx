@@ -1,3 +1,4 @@
+import { createReceiptStore } from './receipt-store'
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BUSINESS, ENQUIRY_FIELDS, getCategory, type CategoryId } from '../content'
@@ -67,27 +68,17 @@ const STORE_KEY = 'bs.enquiry.receipt'
  * been accepted by the provider — just enough for the acknowledgement page to
  * render. Form entries themselves are never persisted.
  */
-export function readReceipt() {
-  try {
-    const raw = sessionStorage.getItem(STORE_KEY)
-    if (!raw) return null
-    const value = JSON.parse(raw) as { subject?: unknown; role?: unknown; at?: unknown }
-    if (typeof value.subject !== 'string' || typeof value.role !== 'string' ||
-        !ENQUIRY_FIELDS.role.options.some((option) => option.value === value.role) ||
-        typeof value.at !== 'string' || !Number.isFinite(Date.parse(value.at))) return null
-    return { subject: getCategory(value.subject).id, role: value.role, at: value.at }
-  } catch {
-    return null
-  }
-}
-
-function writeReceipt(value: { subject: EnquirySubject; role: string; at: string }) {
-  try {
-    sessionStorage.setItem(STORE_KEY, JSON.stringify(value))
-  } catch {
-    /* private browsing — the acknowledgement still works without it */
-  }
-}
+type Receipt = { subject: EnquirySubject; role: string; at: string }
+const receiptStore = createReceiptStore<Receipt>(STORE_KEY, () => sessionStorage, (raw) => {
+  if (!raw || typeof raw !== 'object') return null
+  const value = raw as { subject?: unknown; role?: unknown; at?: unknown }
+  if (typeof value.subject !== 'string' || typeof value.role !== 'string' ||
+      !ENQUIRY_FIELDS.role.options.some((option) => option.value === value.role) ||
+      typeof value.at !== 'string' || !Number.isFinite(Date.parse(value.at))) return null
+  return { subject: getCategory(value.subject).id, role: value.role, at: value.at }
+})
+export const readReceipt = receiptStore.read
+const writeReceipt = receiptStore.write
 
 const ROLE_LABEL = Object.fromEntries(
   ENQUIRY_FIELDS.role.options.map((o) => [o.value, o.label]),
@@ -138,11 +129,11 @@ export function EnquiryForm() {
       const field = form.current?.querySelector<HTMLElement>(`[data-field="${firstInvalid.current}"]`)
       const el = field?.querySelector<HTMLElement>('input, textarea, [role="combobox"]') ?? field
       el?.focus()
-      el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      el?.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })
       return
     }
 
-    if (!ACCESS_KEY) {
+    if (!ACCESS_KEY || HCAPTCHA_SITEKEY) {
       // No key configured: never show a false confirmation.
       setStatus('unconfigured')
       return
@@ -167,8 +158,10 @@ export function EnquiryForm() {
       Email: snapshot.email.trim(),
       'Enquiry subject': category.label,
     }
-    if (HCAPTCHA_SITEKEY) payload['h-captcha-response'] = ''
+    // No empty/fabricated CAPTCHA token. If verification is configured but
+    // unavailable, the honest email route above is used instead.
 
+    const timeout = window.setTimeout(() => controller.abort(), 20_000)
     try {
       const res = await fetch(ENDPOINT, {
         method: 'POST',
@@ -187,6 +180,7 @@ export function EnquiryForm() {
     } catch {
       if (request.current === controller) setStatus('error')
     } finally {
+      window.clearTimeout(timeout)
       if (request.current === controller) {
         request.current = null
         setSending(false)
@@ -203,15 +197,16 @@ export function EnquiryForm() {
         </h2>
       </div>
 
+      {(!ACCESS_KEY || HCAPTCHA_SITEKEY) && <p className="notice">Online submission is not connected yet. You can prepare your brief here, then email <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a>.</p>}
       <fieldset disabled={sending} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
       {/* 1 — role */}
       <fieldset className="field field--group" data-field="role">
-        <legend className="field__label">
+        <legend className="field__label" id="role-label">
           <span className="field__num">01</span>
           {ENQUIRY_FIELDS.role.label}
           <span className="field__req" aria-hidden="true">required</span>
         </legend>
-        <div className="choice-grid" role="radiogroup" aria-describedby="role-error">
+        <div className="choice-grid" role="radiogroup" aria-labelledby="role-label" aria-required="true" aria-invalid={!!errors.role} aria-describedby={errors.role ? "role-error" : undefined}>
           {ENQUIRY_FIELDS.role.options.map((o) => (
             <label
               key={o.value}
@@ -248,6 +243,7 @@ export function EnquiryForm() {
         <p className="field__hint" id="requirement-hint">{getCategory(draft.subject).hint}</p>
         <textarea
           id="requirement"
+          aria-required="true"
           rows={4}
           value={draft.requirement}
           onChange={set('requirement')}
@@ -275,6 +271,8 @@ export function EnquiryForm() {
         <p className="field__hint" id="location-hint">{ENQUIRY_FIELDS.location.hint}</p>
         <input
           id="location"
+          aria-required="true"
+          maxLength={160}
           type="text"
           value={draft.location}
           onChange={set('location')}
@@ -296,6 +294,8 @@ export function EnquiryForm() {
           </label>
           <input
             id="name"
+            aria-required="true"
+            maxLength={120}
             type="text"
             value={draft.name}
             onChange={set('name')}
@@ -316,6 +316,8 @@ export function EnquiryForm() {
           </label>
           <input
             id="email"
+            aria-required="true"
+            maxLength={254}
             type="email"
             value={draft.email}
             onChange={set('email')}
@@ -340,7 +342,6 @@ export function EnquiryForm() {
         </button>
         <p className="form__note">
           No attachments. No passwords, payment details or sensitive personal documents, please.
-          {HCAPTCHA_SITEKEY ? ' This form is protected by hCaptcha.' : ''}
         </p>
       </div>
 

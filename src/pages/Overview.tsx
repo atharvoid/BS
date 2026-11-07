@@ -23,7 +23,7 @@ function Hero() {
           label="Interactive globe with illustrative trade routes from India. Drag to turn it."
           z={7.4}
           fov={36}
-          fallback={<HeroFallback />}
+          stableVisual
           load={loadGlobe}
         />
         <p className={`drag-hint ${engaged ? 'is-done' : ''}`} aria-hidden="true">
@@ -67,15 +67,6 @@ function Hero() {
 
       </div>
     </section>
-  )
-}
-
-function HeroFallback() {
-  return (
-    <div className="hero-fallback" aria-hidden="true">
-      <div className="hero-fallback__cloth" />
-      <div className="hero-fallback__ring" />
-    </div>
   )
 }
 

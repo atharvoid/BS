@@ -1,0 +1,119 @@
+/* Scroll-led categories. All surrounding page styling remains authored by the
+   existing theme; the canvas is decoration and never owns wheel/touch input. */
+.sourcing--journey { padding: 0; }
+.journey__runway { height: 820svh; position: relative; }
+.journey__sticky { position: sticky; top: 0; height: 100svh; overflow: clip; padding-top: max(96px, 12svh); }
+.journey__header { display: flex; align-items: end; justify-content: space-between; gap: 1rem; }
+.journey__header h2 { margin-top: .7rem; font-size: clamp(1.4rem, 2.8vw, 2.8rem); line-height: 1.07; letter-spacing: -.035em; }
+.journey__skip { font-size: .7rem; white-space: nowrap; }
+.journey__chapters { position: relative; height: 60svh; }
+.journey__chapter { position: absolute; left: 54%; top: 14svh; width: min(40%, 490px); opacity: 0; will-change: transform, opacity; }
+.journey__chapter h3 { font-family: var(--f-display); font-size: clamp(2rem, 4.2vw, 4.8rem); font-weight: 400; line-height: 1.02; letter-spacing: -.04em; color: var(--madder); margin-top: .8rem; }
+.journey__detail > p:first-child { font-family: var(--f-serif); font-size: clamp(1rem, 1.35vw, 1.25rem); line-height: 1.6; max-width: 40ch; margin: 1rem 0 1.4rem; }
+.journey__detail .tlink { display: inline-flex; align-items: center; gap: 1rem; }
+.journey__detail .tlink svg { width: 14px; height: 14px; }
+.journey__caveat { font-family: var(--f-mono); font-size: .56rem; line-height: 1.6; color: var(--fg-mute); max-width: 45ch; margin-top: 1.3rem; }
+.journey__scroll { position: absolute; bottom: 185px; left: var(--gutter); font-family: var(--f-mono); font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-mute); }
+.journey__scroll span { margin-left: 1rem; }
+.journey__visuals { position: fixed; inset: 0; z-index: 22; pointer-events: none; }
+.journey__anchor { position: absolute; left: 0; top: 0; pointer-events: none; visibility: hidden; }
+.gallery--journey { position: absolute; inset: 0; opacity: 0; transition: opacity 400ms ease-out; }
+.sourcing--journey[data-drawn='true'][data-begun='true'] .gallery--journey { opacity: 1; }
+.journey__shelf { position: fixed; inset: auto 0 0; height: 160px; padding-bottom: env(safe-area-inset-bottom); display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); background: var(--cotton); border-top: 1px solid var(--rule); z-index: 21; transition: transform 350ms var(--ease-out); }
+.journey__box { min-width: 0; border-right: 1px solid var(--rule); position: relative; color: var(--fg); transition: background 180ms ease-out; }
+.journey__box:last-child { border-right: 0; }
+.journey__box:hover, .journey__box:focus-visible { background: var(--cotton-lit); }
+.journey__box:focus-visible { outline: 2px solid var(--madder); outline-offset: -3px; }
+.journey__box-index { position: absolute; left: 12px; top: 10px; font-family: var(--f-mono); font-size: .55rem; color: var(--fg-mute); }
+.journey__box-label { display: block; position: absolute; left: 12px; right: 12px; bottom: 13px; font-size: clamp(.6rem, 1vw, .9rem); line-height: 1.2; opacity: var(--docked, 0); }
+.sourcing--journey:not([data-begun='true']) .journey__shelf { transform: translateY(105%); pointer-events: none; }
+.sourcing--journey:not([data-begun='true']) .journey__visuals { visibility: hidden; }
+.journey__directory { padding-block: 5rem; scroll-margin-top: 100px; }
+.journey__directory h2 { font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.1; margin-block: .8rem 1rem; letter-spacing: -.035em; }
+.journey__directory > p { max-width: 58ch; }
+.journey__directory ul { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 0; gap: 0 2.5rem; margin-top: 2rem; }
+.journey__directory li { padding-block: 1.2rem; border-top: 1px solid var(--rule); }
+.journey__directory li a { display: flex; align-items: center; justify-content: space-between; gap: 1rem; font-size: 1rem; }
+.journey__directory li svg { width: 14px; height: 14px; flex: none; }
+.journey__directory li p { font-size: .85rem; color: var(--fg-soft); line-height: 1.6; margin-top: .6rem; }
+.journey__availability { color: var(--fg-mute); font-size: .8rem; margin-top: 1rem; }
+.app:has(.sourcing--journey[data-begun='true']) { padding-bottom: calc(160px + env(safe-area-inset-bottom)); }
+@media (max-width: 720px) {
+  .journey__runway { height: 900svh; }
+  .journey__sticky { padding-top: 95px; }
+  .journey__header { align-items: start; }
+  .journey__header h2 { max-width: 17ch; font-size: 1.5rem; }
+  .journey__header .eyebrow { font-size: .5rem; }
+  .journey__skip { max-width: 10ch; white-space: normal; font-size: .6rem; text-align: right; }
+  .journey__chapter { left: 0; top: 30svh; width: 100%; }
+  .journey__chapter .eyebrow { font-size: .52rem; }
+  .journey__chapter h3 { font-size: clamp(1.8rem, 7.5vw, 2.8rem); max-width: 20ch; }
+  .journey__detail > p:first-child { font-size: .95rem; line-height: 1.5; margin-block: .65rem; }
+  .journey__detail .tlink { font-size: .7rem; }
+  .journey__caveat { margin-top: .7rem; font-size: .5rem; }
+  .journey__shelf { height: calc(102px + env(safe-area-inset-bottom)); }
+  .journey__box-index { top: 6px; left: 5px; font-size: .48rem; }
+  .journey__box-label { left: 4px; right: 3px; bottom: 8px; font-size: .48rem; line-height: 1.12; overflow-wrap: anywhere; }
+  .journey__scroll { bottom: 116px; font-size: .5rem; }
+  .journey__directory ul { grid-template-columns: 1fr; }
+  .app:has(.sourcing--journey[data-begun='true']) { padding-bottom: calc(102px + env(safe-area-inset-bottom)); }
+}
+/* Motion preferences are functional, not a longer animated obstacle. */
+@media (prefers-reduced-motion: reduce) {
+  .journey__runway { height: 0; }
+  .journey__sticky { display: none; }
+  .journey__shelf, .gallery--journey { transition: none; }
+  .journey__directory { padding-top: 3rem; }
+}
+@media print {
+  .journey__runway, .journey__visuals, .journey__shelf { display: none !important; }
+}
+.journey__complete { position: absolute; top: 35%; left: 0; right: 0; opacity: var(--journey-complete, 0); pointer-events: none; }
+.journey__complete h3 { font-family: var(--f-display); font-weight: 400; font-size: clamp(2.5rem, 5vw, 5rem); line-height: 1.05; letter-spacing: -.04em; margin: .8rem 0 1.4rem; }
+.journey__complete .tlink { pointer-events: auto; }
+.journey__label-short { display: none; }
+@media (max-width: 720px) {
+  .journey__label-full { display: none; }
+  .journey__label-short { display: inline; font-size: .55rem; }
+}
+@media (max-width: 720px) {
+  .journey__chapter { left: var(--gutter); right: var(--gutter); width: auto; }
+}
+/* Short landscape viewports keep the chapter and dock from fighting for space. */
+@media (max-height: 600px) and (min-width: 721px) {
+  .journey__sticky { padding-top: 80px; }
+  .journey__header h2 { font-size: 1.5rem; }
+  .journey__chapter { top: 3svh; }
+  .journey__chapter h3 { font-size: 2rem; }
+  .journey__detail > p:first-child { font-size: .85rem; margin-block: .5rem; }
+  .journey__caveat, .journey__scroll { display: none; }
+  .journey__shelf { height: 108px; }
+}
+.sourcing--journey[data-fallback='true'] .journey__runway { height: 0; }
+.sourcing--journey[data-fallback='true'] .journey__sticky,
+.sourcing--journey[data-fallback='true'] .journey__shelf,
+.sourcing--journey[data-fallback='true'] .journey__visuals { display: none; }
+.app:has(.sourcing--journey[data-fallback='true']) { padding-bottom: 0; }
+@media (max-width: 720px) and (max-height: 649px) {
+  .journey__chapter { left: 44%; top: 2svh; width: auto; }
+  .journey__chapter h3 { font-size: 1.5rem; }
+  .journey__chapter .eyebrow { font-size: .48rem; }
+  .journey__detail > p:first-child { font-size: .8rem; line-height: 1.4; }
+  .journey__caveat, .journey__scroll { display: none; }
+}
+@media (max-width: 720px) and (max-height: 649px) {
+  .journey__chapter { top: 0; }
+  .journey__detail .tlink { font-size: .6rem; gap: .6rem; }
+}
+/* The drag hint should make a promise only when the actual globe is ready. */
+.hero__canvas:not(:has([data-scene-ready='true'])) .drag-hint { opacity: 0; pointer-events: none; }
+
+/* A very short landscape/zoomed viewport cannot contain a pinned reading area
+   plus navigation and dock. Use the ordinary directory instead of clipping it. */
+@media (max-height: 479px) {
+  .journey__runway { height: 0; }
+  .journey__sticky { display: none; }
+}
+@media (max-height: 479px) and (min-width: 721px) {
+  .app:has(.sourcing--journey[data-begun='true']) { padding-bottom: calc(108px + env(safe-area-inset-bottom)); }
+}

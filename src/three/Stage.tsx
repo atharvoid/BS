@@ -35,6 +35,8 @@ type StageProps = {
   fallback?: React.ReactNode
   style?: React.CSSProperties
   label: string
+  /** Keep the exact scene/buffer across offscreen visits; pause rather than rebuild. */
+  stableVisual?: boolean
 }
 
 /** How long a canvas may sit off screen before it is released. Browsers cap the
@@ -92,6 +94,7 @@ export function StageScene({ children }: { children: React.ReactNode }) {
         z={live.z}
         fov={live.fov}
         onContextLost={live.onContextLost}
+        stableVisual={live.stableVisual}
       >
         {children}
       </StageCanvas>
@@ -106,6 +109,7 @@ type Live = {
   fov: number
   /** Told when the GPU drops the context, so the stage can rebuild. */
   onContextLost: () => void
+  stableVisual: boolean
 }
 
 const LiveContext = React.createContext<Live | null>(null)
@@ -148,6 +152,7 @@ export function Stage({
   style,
   label,
   load,
+  stableVisual = false,
 }: StageProps & { load?: LiveLoader }) {
   const host = React.useRef<HTMLDivElement>(null)
   const [near, setNear] = React.useState(false)
@@ -251,7 +256,7 @@ export function Stage({
           setNear(true)
           window.clearTimeout(dormant.current)
           setMounted(true)
-        } else if (mountedRef.current) {
+        } else if (mountedRef.current && !stableVisual) {
           window.clearTimeout(dormant.current)
           dormant.current = window.setTimeout(() => setMounted(false), DORMANT_AFTER_MS)
         }
@@ -267,7 +272,7 @@ export function Stage({
       window.clearTimeout(dormant.current)
     }
     // `mounted` is read through `mountedRef` so that this observer is built once.
-  }, [measureVisibility])
+  }, [measureVisibility, stableVisual])
 
   /* Scrolling off screen must stop the drawing; scrolling back must resume it.
      Passive, because this only ever reads geometry. */
@@ -283,15 +288,15 @@ export function Stage({
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
-  }, [measureVisibility])
+  }, [measureVisibility, stableVisual])
 
   return (
     <SceneContext.Provider value={session}>
-      <div ref={host} className={className} style={style}>
+      <div ref={host} className={className} style={style} data-webgl={ok}>
         {ok ? (
           near && mounted ? (
             <Boundary fallback={fallback}>
-              <LiveContext.Provider value={{ visible: visible && pageVisible, still, z, fov, onContextLost }}>
+              <LiveContext.Provider value={{ visible: visible && pageVisible, still, z, fov, onContextLost, stableVisual }}>
                 <React.Suspense fallback={fallback} key={remount}>
                   {load ? <LazyScene load={load} fallback={fallback} /> : children}
                 </React.Suspense>
@@ -301,7 +306,7 @@ export function Stage({
         ) : (
           fallback
         )}
-        {label ? <span className="visually-hidden" role="img" aria-label={label} /> : null}
+        {label ? <span className="visually-hidden" role="img" aria-label={ok ? label : "3D view unavailable. Page content and enquiry links remain available."} /> : null}
       </div>
     </SceneContext.Provider>
   )

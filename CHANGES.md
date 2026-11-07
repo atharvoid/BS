@@ -298,3 +298,44 @@ proven in this environment.
   offscreen/in hidden tabs, honour automatic still mode and correct tile culling.
 - Add regression checks for yaw composition and intro replay/late subscription.
   Tests: 53 passing, plus stage scope guard; production build passes.
+
+## Stable 3D, category journey, shared text transitions and site review
+
+1. Homepage objects now freeze the same renderer instead of swapping to poster
+   images. Hold resolution across performance tiers, preserve offscreen globe
+   state and prepare globe relief/outlines before first reveal. Category shaders
+   are compiled before reveal; refresh/context loss still require a fresh render.
+2. Replace the strip with six reversible scroll chapters. Each retained model
+   enters from the left, accompanying copy enters from the right, detail fades,
+   then the model docks in a persistent bottom homepage row. Include direct skip,
+   normal category directory, reduced-motion bypass and missing-WebGL fallback.
+3. Coordinate text reveals across routes without changing typography or wrapping
+   words. Preserve essential live UI, keyboard focus and reduced-motion access.
+4. Review/fix enquiry transparency and timeout, required semantics, drawer
+   background focus isolation, SPA route focus, route metadata, canonical URLs
+   and no-JS contact fallback. Update stale architecture documentation.
+
+Protected cursor/dropdown/intro/textile components and their approved design are
+unchanged. Shared text transitions on the textile page are explicitly requested.
+Full findings, a provisional **7.0/10** rating, evidence and owner/deployment
+blockers are in `docs/website-review.md`. `npm test`: **56 passing**, stage scope
+check passes; production build passes. Browser acceptance includes 1440/390px
+forward/reverse docking, retained canvas and exact repeated frozen-frame pixels.
+No real form submission or production delivery verification was performed.
+
+## Three-pass verification follow-up
+
+- Correct accepted-submission acknowledgement when sessionStorage is blocked or
+  quota-limited: retain the latest accepted receipt in document memory, without
+  fabricating acceptance on a fresh document. Clarify the fallback in privacy
+  copy and add five focused unit regressions.
+- Mark invalid visitor-role groups semantically invalid.
+- Correct a compact heading overlap at 320×568. Under 480px viewport height,
+  bypass the pinned narrative in favour of the existing category directory;
+  avoid covering action links with the dock or shrinking the approved typography.
+- Add reproducible full-category viewport/keyboard and intercepted-delivery
+  checks. No real transmission, production key or test-only app control.
+- Complete three distinct self-review passes and three fresh-context timing
+  samples. Document evidence and unresolved blockers in
+  `docs/three-pass-review.md`. Final Node tests: 61 passing, plus scope guard;
+  normal production build passes. Overall 9/10 is not claimed.
