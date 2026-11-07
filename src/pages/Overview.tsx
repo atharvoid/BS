@@ -1,10 +1,14 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Stage } from '../three/Stage'
-import { GlobeScene } from '../three/GlobeScene'
 import { useReveal, useParallax } from '../components/useReveal'
 import { Arrow } from '../components/Nav'
 import { ProductExplorer } from '../components/ProductExplorer'
+
+/* The globe is the largest scene on the site. Loading it through the stage
+   boundary keeps it off the path of the hero's own text: the headline, the lede
+   and both buttons are static markup and paint without waiting for it. */
+const loadGlobe = () => import('../three/HeroScene')
 
 function Hero() {
   const [engaged, setEngaged] = React.useState(false)
@@ -20,9 +24,8 @@ function Hero() {
           z={7.4}
           fov={36}
           fallback={<HeroFallback />}
-        >
-          <GlobeScene />
-        </Stage>
+          load={loadGlobe}
+        />
         <p className={`drag-hint ${engaged ? 'is-done' : ''}`} aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M9 11V6.5a1.5 1.5 0 0 1 3 0V11m0-2.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v5.2A4.8 4.8 0 0 1 13.2 20h-1.1a4 4 0 0 1-3.2-1.6L5.4 13.7a1.6 1.6 0 0 1 2.4-2l1.2 1.3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />

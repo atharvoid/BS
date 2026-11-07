@@ -4,13 +4,25 @@ import { Nav } from './components/Nav'
 import { Footer } from './components/Footer'
 import { Cursor } from './components/Cursor'
 import { LogoIntro } from './components/LogoIntro'
-import Overview from './pages/Overview'
-import Textiles from './pages/Textiles'
-import Enquiry from './pages/Enquiry'
-import Acknowledgement from './pages/Acknowledgement'
-import Privacy from './pages/Privacy'
-import NotFound from './pages/NotFound'
 import { EnquiryProvider } from './components/EnquiryForm'
+
+/* Every route is a boundary of its own.
+ *
+ * Without one, a visitor opening the privacy page downloaded the home page: the
+ * globe, the six product models, the generated textures, the whole of three.
+ * The nav, the cursor and the intro are static imports — they are on every page
+ * and must not wait for any route — but a page's body is only worth loading
+ * once its route is actually being rendered.
+ *
+ * The fallback is deliberately empty rather than a spinner: the nav, the
+ * headings and the footer are already painted around it, and a spinner in a
+ * page that is about to appear reads as a fault. */
+const Overview = React.lazy(() => import('./pages/Overview'))
+const Textiles = React.lazy(() => import('./pages/Textiles'))
+const Enquiry = React.lazy(() => import('./pages/Enquiry'))
+const Acknowledgement = React.lazy(() => import('./pages/Acknowledgement'))
+const Privacy = React.lazy(() => import('./pages/Privacy'))
+const NotFound = React.lazy(() => import('./pages/NotFound'))
 
 function ScrollManager() {
   const { pathname, hash } = useLocation()
@@ -82,6 +94,7 @@ export default function App() {
       <LogoIntro />
       <Nav />
       <main id="main">
+        <React.Suspense fallback={null}>
         <Routes>
           <Route path="/" element={<Overview />} />
           <Route path="/textiles" element={<Textiles />} />
@@ -90,6 +103,7 @@ export default function App() {
           <Route path="/privacy" element={<Privacy />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </React.Suspense>
       </main>
       <Footer />
     </div></EnquiryProvider>

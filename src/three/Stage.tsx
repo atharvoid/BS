@@ -1,4 +1,5 @@
 import React from 'react'
+import { useThree } from '@react-three/fiber'
 import { SceneContext } from './SceneSession'
 import { releasePerformance, useSceneStill, watchPerformance } from './performance'
 
@@ -18,7 +19,8 @@ import { releasePerformance, useSceneStill, watchPerformance } from './performan
 const StageCanvas = React.lazy(() => import('./StageCanvas'))
 
 type StageProps = {
-  children: React.ReactNode
+  /** The scene. Omitted when `load` is given instead. */
+  children?: React.ReactNode
   className?: string
   /** Camera distance; scenes are framed for this. */
   z?: number
@@ -29,9 +31,16 @@ type StageProps = {
 }
 
 /** How long a canvas may sit off screen before it is released. Browsers cap the
- *  number of live WebGL contexts; a dormant stage is rebuilt from the already
- *  loaded three.js bundle in a few milliseconds. */
-const DORMANT_AFTER_MS = 6000
+ *  number of live WebGL contexts, so a stage that is well out of view gives its
+ *  context back; it is rebuilt from the already-loaded three.js bundle in a few
+ *  milliseconds when it returns.
+ *
+ *  Six seconds, not immediately: scrolling past a stage and straight back is a
+ *  common gesture, and rebuilding in between would show a blank frame at the
+ *  exact moment the visitor is looking. Short enough that the contexts are back
+ *  well before another stage wants one — the home page has two, and a page
+ *  transition replaces both. */
+const DORMANT_AFTER_MS = 2000
 
 class Boundary extends React.Component<
   { fallback?: React.ReactNode; children: React.ReactNode },
@@ -64,7 +73,93 @@ export function webglAvailable() {
   }
 }
 
-export function Stage({ children, className, z = 6, fov = 38, fallback, style, label }: StageProps) {
+/**
+ * Renders a scene only while its stage is live.
+ *
+ * A stage is live while it is near the viewport, or for a couple of seconds
+ * after it leaves. Pulling the scenes out through this boundary is what lets
+ * the three bundle, the models and the generated textures load on demand
+ * instead of with the first paint: the page's own markup, headings, links and
+ * form controls are static imports and never wait for any of it.
+ */
+export /** Listens for a lost context from inside the canvas, where the renderer is
+ *  reachable. Rendered as a child, not around the Canvas: R3F's hooks only
+ *  exist below it. */
+function ContextLoss() {
+  const live = React.useContext(LiveContext)
+  const gl = useThree((s) => s.gl)
+  React.useEffect(() => {
+    if (!live) return
+    const el = gl.domElement
+    el.addEventListener('webglcontextlost', live.onContextLost)
+    return () => el.removeEventListener('webglcontextlost', live.onContextLost)
+  }, [gl, live])
+  return null
+}
+
+export function StageScene({ children }: { children: React.ReactNode }) {
+  const live = React.useContext(LiveContext)
+  if (!live) return null
+  return (
+    <React.Suspense fallback={null}>
+      <StageCanvas visible={live.visible} still={live.still} z={live.z} fov={live.fov}>
+        <ContextLoss />
+        {children}
+      </StageCanvas>
+    </React.Suspense>
+  )
+}
+
+type Live = {
+  visible: boolean
+  still: boolean
+  z: number
+  fov: number
+  /** Told when the GPU drops the context, so the stage can rebuild. */
+  onContextLost: () => void
+}
+
+const LiveContext = React.createContext<Live | null>(null)
+
+/** The scene content for a stage, loaded on demand. */
+function LazyScene({ load, fallback }: { load: LiveLoader; fallback?: React.ReactNode }) {
+  return (
+    <React.Suspense fallback={fallback ?? null}>
+      <LoadedScene load={load} />
+    </React.Suspense>
+  )
+}
+
+export type LiveLoader = () => Promise<{ default: React.ComponentType }>
+
+function LoadedScene({ load }: { load: LiveLoader }) {
+  const [Scene, setScene] = React.useState<React.ComponentType | null>(null)
+  React.useEffect(() => {
+    let alive = true
+    load().then((mod) => {
+      if (alive) setScene(() => mod.default)
+    }).catch(() => {
+      /* A scene that cannot load leaves its fallback in place; the stage is
+         decoration over static markup that is already on screen. */
+    })
+    return () => {
+      alive = false
+    }
+  }, [load])
+  if (!Scene) return null
+  return <Scene />
+}
+
+export function Stage({
+  children,
+  className,
+  z = 6,
+  fov = 38,
+  fallback,
+  style,
+  label,
+  load,
+}: StageProps & { load?: LiveLoader }) {
   const host = React.useRef<HTMLDivElement>(null)
   const [near, setNear] = React.useState(false)
   const [visible, setVisible] = React.useState(false)
@@ -76,6 +171,35 @@ export function Stage({ children, className, z = 6, fov = 38, fallback, style, l
   const invalidate = React.useRef<() => void>(() => {})
   const session = React.useMemo(() => ({ id, still, invalidate }), [id, still])
   const dormant = React.useRef<number | undefined>(undefined)
+  /* The observer callback below is built once and must not be rebuilt on every
+     mount change, so it cannot read `mounted` from its closure — that copy is
+     frozen at the value it had on the render that created the observer, and a
+     stage that has since mounted would take the "was never mounted" branch and
+     never schedule its release. The ref is the live value. */
+  const mountedRef = React.useRef(false)
+  React.useEffect(() => {
+    mountedRef.current = mounted
+  }, [mounted])
+
+  /* A lost context is the one failure the fallback cannot catch: the canvas
+     stays in the DOM, keeps its size, and simply stops drawing, so the stage
+     would sit there as a blank rectangle. Listening for the event means the
+     stage can be torn down and rebuilt — which is what a restore needs anyway,
+     because the React tree's GPU resources are gone with the context.
+     `remount` is a key on the canvas, not a state flag. */
+  const [remount, setRemount] = React.useState(0)
+  const lostAt = React.useRef(0)
+  const onContextLost = React.useCallback(() => {
+    /* Two losses in quick succession means this device cannot hold a canvas;
+       stop rebuilding and leave the drawn fallback up. */
+    const now = Date.now()
+    if (now - lostAt.current < 4000) {
+      setMounted(false)
+      return
+    }
+    lostAt.current = now
+    setRemount((n) => n + 1)
+  }, [])
 
   /* While this stage is mounted and near the viewport, its frames are what the
      quality sampler reads. The sampler is reference counted in performance.ts,
@@ -131,7 +255,7 @@ export function Stage({ children, className, z = 6, fov = 38, fallback, style, l
           setNear(true)
           window.clearTimeout(dormant.current)
           setMounted(true)
-        } else if (mounted) {
+        } else if (mountedRef.current) {
           window.clearTimeout(dormant.current)
           dormant.current = window.setTimeout(() => setMounted(false), DORMANT_AFTER_MS)
         }
@@ -146,8 +270,7 @@ export function Stage({ children, className, z = 6, fov = 38, fallback, style, l
       window.removeEventListener('resize', measureVisibility)
       window.clearTimeout(dormant.current)
     }
-    // `mounted` is read inside the callback and must not rebuild the observer.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // `mounted` is read through `mountedRef` so that this observer is built once.
   }, [measureVisibility])
 
   /* Scrolling off screen must stop the drawing; scrolling back must resume it.
@@ -172,11 +295,11 @@ export function Stage({ children, className, z = 6, fov = 38, fallback, style, l
         {ok ? (
           near && mounted ? (
             <Boundary fallback={fallback}>
-              <React.Suspense fallback={fallback}>
-                <StageCanvas visible={visible && pageVisible} still={still} z={z} fov={fov}>
-                  {children}
-                </StageCanvas>
-              </React.Suspense>
+              <LiveContext.Provider value={{ visible: visible && pageVisible, still, z, fov, onContextLost }}>
+                <React.Suspense fallback={fallback} key={remount}>
+                  {load ? <LazyScene load={load} fallback={fallback} /> : children}
+                </React.Suspense>
+              </LiveContext.Provider>
             </Boundary>
           ) : null
         ) : (

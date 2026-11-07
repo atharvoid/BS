@@ -4,6 +4,7 @@ import { CATEGORIES, type CategoryId } from '../content'
 import type { CategoryMotif } from '../three/categoryObjects'
 import { Arrow } from './Nav'
 import { CategoryPoster } from './CategoryPoster'
+import { introActive, onIntroChange } from './intro-state'
 
 /* ==========================================================================
    What are you looking to source?
@@ -80,6 +81,13 @@ export function ProductExplorer() {
      three bundle loads or while a lost context recovers. */
   const [live, setLive] = React.useState(false)
   const [drawn, setDrawn] = React.useState(false)
+  /* The opening holds the page for three seconds. The row's objects are the
+     first thing below the fold, so they would otherwise be compiling their
+     shaders and generating six sets of textures at the same moment the globe
+     is — behind a curtain nobody can see through. Waiting for the curtain to
+     lift costs nothing the visitor can perceive and keeps the first frames
+     after it smooth. */
+  const [introDone, setIntroDone] = React.useState(() => !introActive())
 
   const nudge = (direction: 1 | -1) => {
     strip.current?.scrollBy({ left: direction * 280, behavior: 'smooth' })
@@ -88,9 +96,11 @@ export function ProductExplorer() {
   /* The gallery is loaded only when the row is close to the viewport: the three
      bundle is the largest thing the site ships, and the row is below the fold.
      Until it arrives, and if it never does, the stills carry the row. */
+  React.useEffect(() => onIntroChange((active) => setIntroDone(!active)), [])
+
   React.useEffect(() => {
     const el = strip.current
-    if (!el || !canRender3D()) return
+    if (!el || !canRender3D() || !introDone) return
     if (!('IntersectionObserver' in window)) {
       setLive(true)
       return
@@ -108,7 +118,7 @@ export function ProductExplorer() {
     )
     io.observe(el)
     return () => io.disconnect()
-  }, [])
+  }, [introDone])
 
   return (
     <section className="sourcing" id="products">

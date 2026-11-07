@@ -2,7 +2,6 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { BUSINESS, FABRIC_TOPICS } from '../content'
 import { Arrow } from './Nav'
-import '../styles/products.css'
 
 /* ==========================================================================
    What to tell us about your fabric.
