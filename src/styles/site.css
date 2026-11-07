@@ -2740,11 +2740,16 @@ fieldset .field__label { float: none; }
   .hero__inner { order: 1; }
   .hero__canvas { order: 2; }
   .hero__controls { order: 3; }
+  /* Stacked, the stage is in flow, so it has to claim its own height before the
+     canvas exists — otherwise the section below it sits 266px too high for the
+     half-second the scene takes to arrive and then jumps down. The same
+     expression is used by the canvas once it mounts, so nothing moves. */
   .hero__stage {
     position: relative;
     inset: auto;
     width: 100%;
     height: min(72vw, 360px);
+    min-height: min(72vw, 360px);
     margin-top: 1.6rem;
   }
   /* The hero is a centred flex column, so a child would otherwise shrink to

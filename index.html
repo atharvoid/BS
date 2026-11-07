@@ -4,6 +4,32 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#14120f" />
+    <!--
+      The hero's headline is set in two Fraunces faces, roman and italic, both
+      above the fold on every page. With `font-display: swap` the browser paints
+      the fallback and re-lays the words out when each arrives; the italic lands
+      about 25 ms after the roman, so the title re-breaks twice. Asking for both
+      while the stylesheet is still parsing removes the second reflow rather
+      than hiding it.
+
+      Only these two are preloaded. The lede's Newsreader face and the mono face
+      are not above the fold on the pages that use them, and preloading five
+      faces would delay the render that matters.
+    -->
+    <link
+      rel="preload"
+      href="/node_modules/@fontsource-variable/fraunces/files/fraunces-latin-full-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="preload"
+      href="/node_modules/@fontsource-variable/fraunces/files/fraunces-latin-full-italic.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
     <title>BS EXIMNEXUS | Import and export sourcing in India</title>
     <meta
       name="description"

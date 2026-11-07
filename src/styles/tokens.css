@@ -51,7 +51,14 @@
 
   /* ---- Families -------------------------------------------------------- */
   --f-display: 'Fraunces Variable', 'Times New Roman', serif;
-  --f-serif: 'Newsreader Variable', Georgia, serif;
+  /* Georgia before the generic serif on purpose. The two faces here are
+     Newsreader and Fraunces; a generic `serif` resolves to Times on most
+     platforms, which is markedly narrower. At 390px the hero's lede reflowed by
+     a line when the webfont arrived and pushed the whole page down — measured
+     as a 0.03 layout shift late in the load, which is the worst kind: it lands
+     after the visitor has started reading. Georgia's metrics sit close enough to
+     Newsreader's that the swap does not re-break a line. */
+  --f-serif: 'Newsreader Variable', Georgia, 'Times New Roman', serif;
   --f-sans: 'Instrument Sans Variable', 'Helvetica Neue', Arial, sans-serif;
   --f-mono: 'Chivo Mono Variable', ui-monospace, 'SF Mono', monospace;
 

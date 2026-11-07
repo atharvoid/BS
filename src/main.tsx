@@ -5,6 +5,7 @@ import App from './App'
 
 import '@fontsource-variable/fraunces/full.css'
 import '@fontsource-variable/fraunces/full-italic.css'
+
 import '@fontsource-variable/newsreader/index.css'
 import '@fontsource-variable/newsreader/wght-italic.css'
 import '@fontsource-variable/instrument-sans/index.css'
