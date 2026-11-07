@@ -1,0 +1,40 @@
+/* ==========================================================================
+   The category stills.
+
+   They occupy exactly the space the live canvas would, so switching between
+   the two never moves the layout — the tiles keep their height, the labels stay
+   put, and nothing reflows when the scene arrives.
+   ========================================================================== */
+
+.poster {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* The object sits in its own letterbox, as it does in the live tiles. */
+.tile__poster {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 0.2rem 0.6rem 0;
+  transition: opacity 320ms var(--ease-out), transform 520ms var(--ease-out);
+}
+
+.tile__poster .poster {
+  width: 82%;
+  height: auto;
+  max-height: 100%;
+}
+
+/* Same gentle lift the live row has on hover. */
+.tile__link:hover .tile__poster,
+.tile__link:focus-visible .tile__poster {
+  transform: scale(1.04);
+}
+
+/* While the live canvas is drawing over it, the still steps back but stays
+   underneath, so a context loss can reveal it again without a reflow. */
+.tile__poster[data-covered='true'] { opacity: 0; }

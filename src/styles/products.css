@@ -74,19 +74,59 @@
 
 /* ---- Tiles ---------------------------------------------------------------- */
 
+/* The row is two layers: the cotton ground, then the shared canvas, then the
+   list of links on top. The canvas has to sit above the ground and below the
+   list: a negative z-index would put it behind the ground and hide every object.
+   The 1px separators are drawn on the tiles themselves, because a background on
+   the list would sit behind the canvas and be covered by the objects. */
 .tiles {
+  position: relative;
+  border: 1px solid var(--rule);
+  background: var(--cotton);
+  isolation: isolate;
+}
+
+.tiles__list {
+  position: relative;
+  z-index: 2;
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);
-  gap: 1px;
   list-style: none;
   margin: 0;
   padding: 0;
-  background: var(--rule);
-  border: 1px solid var(--rule);
 }
 
-.tile { min-width: 0; background: var(--cotton); }
+/* The shared canvas: one WebGL context for all six objects, never in the way of
+   a tap, a swipe or a focus ring.
+
+   It is only visible through the parts of the tile that are deliberately
+   transparent — the object's letterbox — so it never competes with the words. */
+.gallery {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.gallery canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* The tile is transparent so the shared canvas behind the row shows through.
+   The words sit on their own surface instead (below), which is why they stay
+   readable while the object turns behind the upper part of the tile. */
+.tile {
+  min-width: 0;
+  background: transparent;
+  /* The separators. On the tile, not the list, so they paint over the shared
+     canvas rather than under it. */
+  box-shadow: 1px 0 0 var(--rule);
+}
+
+.tile:last-child { box-shadow: none; }
 
 .tile__link {
   position: relative;
@@ -95,15 +135,41 @@
   height: 100%;
   padding: 0 0 1.1rem;
   color: inherit;
-  background: var(--cotton);
+  /* Transparent over the object's letterbox so the shared canvas shows through
+     the tile, and opaque under the words so they stay readable. The letterbox
+     and the index sit in the same band, so the index gets its own surface. */
+  background: linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(clamp(112px, 11vw, 152px) + 0.9rem),
+    var(--cotton) calc(clamp(112px, 11vw, 152px) + 0.9rem)
+  );
   transition: background 420ms var(--ease-out), color 420ms var(--ease-out);
 }
 
+/* Inverted, but still transparent over the object's letterbox: the objects stay
+   visible on hover, which is most of what makes the row feel alive. */
 .tile__link:hover,
 .tile__link:focus-visible {
-  background: var(--ink);
+  background: linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(clamp(112px, 11vw, 152px) + 0.9rem),
+    var(--ink) calc(clamp(112px, 11vw, 152px) + 0.9rem)
+  );
   color: var(--cotton-lit);
   outline: none;
+}
+
+/* The inverted tile needs its dark ground behind the letterbox too, or the
+   object would sit on cotton while the words sit on ink. */
+.tile__link:hover::before,
+.tile__link:focus-visible::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ink);
 }
 
 .tile__link:focus-visible { outline: 2px solid var(--madder); outline-offset: -3px; }
@@ -119,36 +185,29 @@
   touch-action: pan-y;
 }
 
-/* The stage host is a plain div: it needs the whole letterbox, or the camera
-   ends up rendering into a strip at the top of the tile. */
-.tile__stage > div { width: 100%; height: 100%; }
-.tile__stage canvas { display: block; width: 100% !important; height: 100% !important; }
+/* The stage is the anchor the shared canvas measures to place this tile's
+   object. It holds the still, and nothing else: the live pixels are drawn on
+   the shared canvas behind the row, not here. */
 
-/* No canvas here: a woven swatch instead of an empty box. Each tile keeps its
-   own colour, so the row still reads as material. */
-.tile__static {
+
+/* The words sit on the tile's own surface, over the object's letterbox. */
+.tile__index,
+.tile__label,
+.tile__note,
+.tile__go { position: relative; }
+
+/* The index number sits inside the letterbox band, which is transparent, so it
+   carries a small patch of tile behind it. */
+.tile__index { z-index: 1; }
+.tile__index::before {
+  content: '';
   position: absolute;
-  inset: 12% 20%;
-  display: block;
+  inset: -0.35rem -0.5rem;
+  z-index: -1;
+  background: var(--cotton);
   border-radius: 2px;
-  background:
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.18) 0 1px, transparent 1px 5px),
-    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.2) 0 1px, transparent 1px 5px),
-    linear-gradient(140deg, var(--swatch-a, #4a5a7d), var(--swatch-b, #24304a));
-  box-shadow: 0 10px 22px -16px rgba(20, 17, 13, 0.6);
-  transform: rotate(-2deg);
-  transition: transform 520ms var(--ease-out);
+  transition: background 420ms var(--ease-out);
 }
-
-.tile__link:hover .tile__static { transform: rotate(0deg) scale(1.02); }
-
-/* The six swatch colours, matching the object palettes. */
-.tile:nth-child(1) .tile__static { --swatch-a: #3f5378; --swatch-b: #1f2b45; }
-.tile:nth-child(2) .tile__static { --swatch-a: #c08a3a; --swatch-b: #6d4a1d; }
-.tile:nth-child(3) .tile__static { --swatch-a: #d5c2a0; --swatch-b: #7d6a4c; }
-.tile:nth-child(4) .tile__static { --swatch-a: #4c7b68; --swatch-b: #23413a; }
-.tile:nth-child(5) .tile__static { --swatch-a: #943f2e; --swatch-b: #4c2018; }
-.tile:nth-child(6) .tile__static { --swatch-a: #8a7440; --swatch-b: #403521; }
 
 .tile__index {
   position: absolute;
@@ -161,7 +220,11 @@
   transition: color 420ms var(--ease-out);
 }
 
-.tile__link:hover .tile__index { color: rgba(242, 235, 221, 0.6); }
+.tile__link:hover .tile__index,
+.tile__link:focus-visible .tile__index { color: rgba(242, 235, 221, 0.6); }
+
+.tile__link:hover .tile__index::before,
+.tile__link:focus-visible .tile__index::before { background: var(--ink); }
 
 .tile__label {
   padding-inline: clamp(0.85rem, 1.4vw, 1.15rem);
@@ -259,14 +322,17 @@
 
 @media (max-width: 1080px) {
   .tiles {
-    grid-auto-flow: column;
+    overflow: hidden;
+  }
+  .tile:last-child { box-shadow: none; }
+  .tiles__list {
     grid-auto-columns: minmax(200px, 1fr);
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
-  .tiles::-webkit-scrollbar { display: none; }
+  .tiles__list::-webkit-scrollbar { display: none; }
   .tile { scroll-snap-align: start; }
 }
 

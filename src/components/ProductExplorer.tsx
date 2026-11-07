@@ -1,14 +1,9 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { useFrame } from '@react-three/fiber'
-import * as THREE from 'three'
 import { CATEGORIES, type CategoryId } from '../content'
-import { Stage } from '../three/Stage'
-import { useSceneSession } from '../three/SceneSession'
-import { Lights, Studio, getShadowTexture } from '../three/objects'
-import { CATEGORY_OBJECTS, type CategoryMotif } from '../three/categoryObjects'
-import { frameModel, type Framing } from '../three/framing'
+import type { CategoryMotif } from '../three/categoryObjects'
 import { Arrow } from './Nav'
+import { CategoryPoster } from './CategoryPoster'
 
 /* ==========================================================================
    What are you looking to source?
@@ -18,41 +13,21 @@ import { Arrow } from './Nav'
    thing after the hero, so it is kept to one screen: the tiles are the
    navigation, the marquee is the inventory of what the business covers.
 
-   Each tile runs its own tiny canvas, and each of those is a real WebGL
-   context, so they are mounted only while the row is on screen. The objects are
-   the same family as the globe and the textile scenes — real models, generated
-   textures, the shared studio environment and a soft ground shadow — and they
-   turn on their own. Nothing in the row is draggable and there are no controls
-   on the objects: the tile is a link and the object inside it is decoration,
-   so a click anywhere in the tile always does the same thing.
+   The six objects are drawn by one shared canvas behind the row (see
+   Gallery), not by six: a browser caps live WebGL contexts at about eight, the
+   hero holds one, and that cap is what previously kept phones on swatches.
+   With one context the row costs the same on a phone as on a desktop, so there
+   is no longer a desktop-only gate.
+
+   Every tile also holds a still of its own object. The still is what shows
+   before the scene has drawn, on a device that should not animate, and if WebGL
+   is unavailable — so the row is never empty and never a coloured block.
+
+   Nothing in the row is draggable and there are no controls on the objects: the
+   tile is a link and the object inside it is decoration, so a tap anywhere in
+   the tile always does the same thing.
    ========================================================================== */
 
-
-/**
- * Whether this screen gets the live objects.
- *
- * Six tiles means six WebGL contexts, and a browser caps how many it will keep
- * alive — typically eight, fewer on some Android builds. The hero globe holds
- * one of them already. So the live row is reserved for a wide screen with a
- * fine pointer, where there is room and context headroom; phones and tablets
- * get a drawn swatch instead, which is the same information at no cost.
- */
-function useLiveTiles() {
-  const query = '(min-width: 900px) and (any-pointer: fine)'
-  const [live, setLive] = React.useState(
-    () => typeof window !== 'undefined' && typeof window.matchMedia === 'function'
-      ? window.matchMedia(query).matches
-      : false,
-  )
-  React.useEffect(() => {
-    if (typeof window.matchMedia !== 'function') return
-    const media = window.matchMedia(query)
-    const update = () => setLive(media.matches)
-    media.addEventListener('change', update)
-    return () => media.removeEventListener('change', update)
-  }, [])
-  return live
-}
 
 type Tile = {
   id: CategoryId
@@ -78,115 +53,62 @@ const hrefFor = (tile: Tile) => tile.to ?? `/enquiry?category=${tile.id}`
 const RIBBON = CATEGORIES.map((category) => category.label)
 
 /* -------------------------------------------------------------------------- */
-/* One turning tile                                                            */
-/* -------------------------------------------------------------------------- */
-
-/**
- * Continuous rotation, and nothing else.
- *
- * The object turns by itself for as long as the tile is on screen. There is no
- * drag, no button, no pause: the tile is a link, so every pointer press has to
- * mean "open the category" and nothing may swallow it. The rig lives inside the
- * canvas because that is where a frame loop is available.
- *
- * Framing is measured rather than guessed (see frameModel): six models of
- * different shape are scaled to one shelf height, centred on the spin axis,
- * and given a contact shadow under their own footprint.
- */
-function TurningRig({ children, speed }: { children: React.ReactNode; speed: number }) {
-  const spin = React.useRef<THREE.Group>(null)
-  const body = React.useRef<THREE.Group>(null)
-  const [frame, setFrame] = React.useState<Framing | null>(null)
-  const scene = useSceneSession()
-  const invalidate = scene?.invalidate
-
-  React.useLayoutEffect(() => {
-    const g = body.current
-    if (!g) return
-    g.scale.setScalar(1)
-    g.position.set(0, 0, 0)
-    g.updateMatrixWorld(true)
-    const next = frameModel(new THREE.Box3().setFromObject(g))
-    if (!next) return
-    setFrame(next)
-    /* A still device draws on demand, so the measured frame has to be asked
-       for explicitly or the tile would show an unmeasured model forever. */
-    invalidate?.current?.()
-  }, [invalidate])
-
-  useFrame((_, delta) => {
-    const g = spin.current
-    if (!g) return
-    const d = Math.min(delta, 1 / 30)
-    if (!scene?.still) g.rotation.y += d * speed
-  })
-
-  return (
-    <group ref={spin} rotation={[0.05, 0.7, 0]}>
-      <group ref={body} scale={frame?.scale ?? 1} position={frame?.position ?? [0, 0, 0]}>
-        {children}
-      </group>
-      {frame ? (
-        <mesh
-          rotation={[-Math.PI / 2, 0, 0]}
-          position={[0, frame.base + 0.015, 0]}
-          scale={frame.footprint * 1.7}
-        >
-          <planeGeometry args={[1, 1]} />
-          <meshBasicMaterial
-            map={getShadowTexture()}
-            transparent
-            opacity={0.4}
-            depthWrite={false}
-            toneMapped={false}
-          />
-        </mesh>
-      ) : null}
-    </group>
-  )
-}
-
-function Turning({
-  children,
-  speed,
-  live,
-}: {
-  children: React.ReactNode
-  speed: number
-  live: boolean
-}) {
-  return (
-    <div className="tile__stage" aria-hidden="true">
-      {live ? (
-        <Stage label="" z={4.6} fov={34} fallback={<WovenSwatch />}>
-          <Studio />
-          <Lights intensity={1.05} />
-          <TurningRig speed={speed}>{children}</TurningRig>
-        </Stage>
-      ) : (
-        <WovenSwatch />
-      )}
-    </div>
-  )
-}
-
-/** What a tile shows when it has no canvas: a woven swatch in the tile's own
- *  colour, so the row still reads as material rather than as empty boxes. */
-function WovenSwatch() {
-  return <span className="tile__static" aria-hidden="true" />
-}
-
-/* -------------------------------------------------------------------------- */
 /* The section                                                                 */
 /* -------------------------------------------------------------------------- */
 
+/* Whether the browser can give us a WebGL context at all. Resolved once, before
+   the row mounts, so a device without WebGL shows the stills from the first
+   paint and never downloads the three bundle. */
+const canRender3D = () =>
+  typeof window !== 'undefined' &&
+  typeof window.WebGLRenderingContext !== 'undefined' &&
+  (() => {
+    try {
+      const probe = document.createElement('canvas')
+      const gl = probe.getContext('webgl2') || probe.getContext('webgl')
+      gl?.getExtension('WEBGL_lose_context')?.loseContext()
+      return !!gl
+    } catch {
+      return false
+    }
+  })()
+
 export function ProductExplorer() {
   const strip = React.useRef<HTMLUListElement>(null)
-  const live = useLiveTiles()
+  /* `live` mounts the shared canvas; `drawn` says it has put pixels on screen.
+     The stills are only covered by `drawn`, so the row is never empty while the
+     three bundle loads or while a lost context recovers. */
+  const [live, setLive] = React.useState(false)
+  const [drawn, setDrawn] = React.useState(false)
 
   const nudge = (direction: 1 | -1) => {
     strip.current?.scrollBy({ left: direction * 280, behavior: 'smooth' })
   }
+
+  /* The gallery is loaded only when the row is close to the viewport: the three
+     bundle is the largest thing the site ships, and the row is below the fold.
+     Until it arrives, and if it never does, the stills carry the row. */
+  React.useEffect(() => {
+    const el = strip.current
+    if (!el || !canRender3D()) return
+    if (!('IntersectionObserver' in window)) {
+      setLive(true)
+      return
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setLive(true)
+          io.disconnect()
+        }
+      },
+      /* A screen of slack: the row is below the fold, and by the time it is
+         scrolled to the first frame should already be there. */
+      { rootMargin: '400px 0px' },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
 
   return (
     <section className="sourcing" id="products">
@@ -207,24 +129,32 @@ export function ProductExplorer() {
           </div>
         </div>
 
-        <ul className="tiles" ref={strip}>
-          {TILES.map((tile, index) => {
-            const object = CATEGORY_OBJECTS[tile.motif]
-            return (
+        <div className="tiles">
+          <ul className="tiles__list" ref={strip}>
+            {TILES.map((tile, index) => (
               <li key={tile.id} className="tile" style={{ ['--i' as string]: index }}>
-                <Link to={hrefFor(tile)} className="tile__link" aria-label={`${tile.label} — ${tile.note}`}>
-                  <Turning speed={object.speed} live={live}>
-                    {object.model}
-                  </Turning>
+                <Link
+                  to={hrefFor(tile)}
+                  className="tile__link"
+                  aria-label={`${tile.label} — ${tile.note}`}
+                >
+                  {/* The anchor the shared canvas measures to place this
+                      tile's object, and the still that stands in for it. */}
+                  <span className="tile__stage" data-motif={tile.motif} aria-hidden="true">
+                    <span className="tile__poster" data-covered={drawn ? 'true' : 'false'}>
+                      <CategoryPoster motif={tile.motif} />
+                    </span>
+                  </span>
                   <span className="tile__index">{String(index + 1).padStart(2, '0')}</span>
                   <span className="tile__label">{tile.label}</span>
                   <span className="tile__note">{tile.note}</span>
                   <span className="tile__go" aria-hidden="true"><Arrow /></span>
                 </Link>
               </li>
-            )
-          })}
-        </ul>
+            ))}
+          </ul>
+          {live ? <GalleryMount onReady={() => setDrawn(true)} onLost={() => setDrawn(false)} /> : null}
+        </div>
       </div>
 
       <div className="sourcing__ribbon" aria-hidden="true">
@@ -242,5 +172,17 @@ export function ProductExplorer() {
         </div>
       </div>
     </section>
+  )
+}
+
+/** The shared canvas, imported on demand so the bundle stays out of the way of
+ *  the first paint. */
+const Gallery = React.lazy(() => import('../three/Gallery').then((m) => ({ default: m.Gallery })))
+
+function GalleryMount({ onReady, onLost }: { onReady: () => void; onLost: () => void }) {
+  return (
+    <React.Suspense fallback={null}>
+      <Gallery onReady={onReady} onLost={onLost} />
+    </React.Suspense>
   )
 }

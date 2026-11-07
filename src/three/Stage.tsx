@@ -50,7 +50,9 @@ class Boundary extends React.Component<
   }
 }
 
-function webglAvailable() {
+/** Whether this browser will give us a WebGL context at all. Exported because
+ *  the shared category canvas needs the same answer before it mounts. */
+export function webglAvailable() {
   if (typeof window === 'undefined') return false
   try {
     const c = document.createElement('canvas')
