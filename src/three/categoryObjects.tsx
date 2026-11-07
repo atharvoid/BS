@@ -10,7 +10,8 @@ import {
   crateBattens,
   makeCopperCoil,
   makeBollLobe,
-  makeClothTail,
+  makeRolledCloth,
+  clothRestOffset,
   makeSpill,
   makeSackBody,
   makeSackCrown,
@@ -89,7 +90,10 @@ function TextileRoll() {
     return { map, bump }
   }, [tex])
 
-  const tail = React.useMemo(() => makeClothTail(), [])
+  /* One surface that starts on the roll and unrolls from it. The alternative —
+     a plane laid against the cylinder — puts a third of its vertices inside the
+     bolt; see makeRolledCloth. */
+  const tail = React.useMemo(() => makeRolledCloth({ radius: R, width: 1.0 }), [R])
 
   React.useEffect(
     () => () => {
@@ -100,45 +104,54 @@ function TextileRoll() {
     [rolled, tail],
   )
 
+  /* The roll and the cloth are built in one frame whose origin is the roll's
+     axis, then moved down so the roll rests on the floor line. That single
+     translation is why the cloth and the roll can never drift apart. */
+  const rest = clothRestOffset(R)
+
   return (
-    <group>
-      {/* the bolt, lying across the tile */}
-      <mesh rotation={[0, 0, Math.PI / 2]} position={[-0.14, R, 0]}>
-        <cylinderGeometry args={[R, R, L, 96, 1, true]} />
-        <meshStandardMaterial
-          map={rolled.map}
-          bumpMap={rolled.bump}
-          bumpScale={3.4}
-          roughness={0.88}
-          metalness={0.02}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-
-      {/* the cut ends, showing the spiral of cloth */}
-      {[L / 2, -L / 2].map((x) => (
-        <mesh key={x} position={[-0.14 + x, R, 0]} rotation={[0, x > 0 ? -Math.PI / 2 : Math.PI / 2, 0]}>
-          <circleGeometry args={[R, 72]} />
-          <meshStandardMaterial map={end} roughness={0.74} metalness={0.02} side={THREE.DoubleSide} />
+    <group position={[0, -rest, 0]}>
+      {/* the bolt, lying along X, in the frame the cloth was solved in */}
+      <group position={[-0.14, 0, 0]}>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[R, R, L, 96, 1, true]} />
+          <meshStandardMaterial
+            map={rolled.map}
+            bumpMap={rolled.bump}
+            bumpScale={3.4}
+            roughness={0.88}
+            metalness={0.02}
+            side={THREE.DoubleSide}
+          />
         </mesh>
-      ))}
 
-      {/* the kraft band that holds a bolt closed */}
-      <mesh rotation={[0, 0, Math.PI / 2]} position={[-0.14, R, 0]}>
-        <cylinderGeometry args={[R + 0.01, R + 0.01, 0.19, 96, 1, true]} />
-        <meshStandardMaterial color="#c9b489" roughness={0.94} metalness={0} side={THREE.DoubleSide} />
-      </mesh>
+        {/* the cut ends, showing the spiral of cloth */}
+        {[L / 2, -L / 2].map((x) => (
+          <mesh key={x} position={[x, 0, 0]} rotation={[0, x > 0 ? -Math.PI / 2 : Math.PI / 2, 0]}>
+            <circleGeometry args={[R, 72]} />
+            <meshStandardMaterial map={end} roughness={0.74} metalness={0.02} side={THREE.DoubleSide} />
+          </mesh>
+        ))}
 
-      {/* the tail, unrolling towards the front of the tile */}
-      <mesh geometry={tail} position={[0.2, 0.02, 0.4]} rotation={[-1.38, 0.1, 0.04]}>
-        <meshStandardMaterial
-          map={rolled.map}
-          bumpMap={rolled.bump}
-          bumpScale={2.4}
-          roughness={0.9}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
+        {/* the kraft band that holds a bolt closed, clear of the cloth's path */}
+        <mesh rotation={[0, 0, Math.PI / 2]} position={[0.42, 0, 0]}>
+          <cylinderGeometry args={[R + 0.008, R + 0.008, 0.17, 96, 1, true]} />
+          <meshStandardMaterial color="#c9b489" roughness={0.94} metalness={0} side={THREE.DoubleSide} />
+        </mesh>
+      </group>
+
+      {/* the cloth, unwound from the roll and lying on the floor */}
+      <group position={[-0.14, 0, 0]}>
+        <mesh geometry={tail}>
+          <meshStandardMaterial
+            map={rolled.map}
+            bumpMap={rolled.bump}
+            bumpScale={2.4}
+            roughness={0.9}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      </group>
     </group>
   )
 }

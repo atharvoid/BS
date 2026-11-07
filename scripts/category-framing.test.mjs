@@ -5,8 +5,8 @@ import { FIT_HEIGHT, FIT_SWEEP, FIT_WIDTH, frameModel } from '../src/three/frami
 import {
   CRATE,
   ROLL,
-  makeClothTail,
   makeCopperCoil,
+  makeRolledCloth,
   makeSackBody,
   makeSackCrown,
   makeVaseBody,
@@ -19,16 +19,17 @@ function boxOf(object) {
 }
 
 function rollBox() {
+  /* The roll and its cloth, in the frame the tile draws them: the cloth is
+     generated around the roll's axis, and both are moved down together. */
   const g = new THREE.Group()
   const { radius, length } = ROLL
   const bolt = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, length, 32))
   bolt.rotation.z = Math.PI / 2
-  bolt.position.set(-0.14, radius, 0)
+  bolt.position.set(-0.14, 0, 0)
   g.add(bolt)
-  const tail = new THREE.Mesh(makeClothTail())
-  tail.position.set(0.2, 0.02, 0.4)
-  tail.rotation.set(-1.38, 0.1, 0.04)
-  g.add(tail)
+  const cloth = new THREE.Mesh(makeRolledCloth())
+  cloth.position.set(-0.14, 0, 0)
+  g.add(cloth)
   return boxOf(g)
 }
 
