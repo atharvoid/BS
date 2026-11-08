@@ -1,3 +1,5 @@
+import { usePhoneMotion, useDeferred3D } from './render-budget'
+import { useCompactLayout } from '../components/useCompactLayout'
 import { webglAvailable } from './webgl'
 import React from 'react'
 import { introActive, onIntroChange } from '../components/intro-state'
@@ -44,7 +46,7 @@ type StageProps = {
  *  context back; it is rebuilt from the already-loaded three.js bundle in a few
  *  milliseconds when it returns.
  *
- *  Six seconds, not immediately: scrolling past a stage and straight back is a
+ *  Two seconds, not immediately: scrolling past a stage and straight back is a
  *  common gesture, and rebuilding in between would show a blank frame at the
  *  exact moment the visitor is looking. Short enough that the contexts are back
  *  well before another stage wants one — the home page has two, and a page
@@ -52,7 +54,7 @@ type StageProps = {
 const DORMANT_AFTER_MS = 2000
 
 class Boundary extends React.Component<
-  { fallback?: React.ReactNode; children: React.ReactNode },
+  { fallback?: React.ReactNode; children: React.ReactNode; onError: () => void },
   { failed: boolean }
 > {
   state = { failed: false }
@@ -60,6 +62,7 @@ class Boundary extends React.Component<
     return { failed: true }
   }
   componentDidCatch(err: unknown) {
+    this.props.onError()
     if (import.meta.env.DEV) console.warn('[stage] falling back:', err)
   }
   render() {
@@ -85,16 +88,17 @@ export function StageScene({ children }: { children: React.ReactNode }) {
     setOpening(introActive())
     return unsubscribe
   }, [])
-  if (!live || opening) return null
+  if (!live) return null
   return (
     <React.Suspense fallback={null}>
       <StageCanvas
         visible={live.visible}
-        still={live.still}
+        still={live.still || opening}
         z={live.z}
         fov={live.fov}
         onContextLost={live.onContextLost}
         stableVisual={live.stableVisual}
+        onReady={live.onReady}
       >
         {children}
       </StageCanvas>
@@ -110,6 +114,7 @@ type Live = {
   /** Told when the GPU drops the context, so the stage can rebuild. */
   onContextLost: () => void
   stableVisual: boolean
+  onReady: () => void
 }
 
 const LiveContext = React.createContext<Live | null>(null)
@@ -157,10 +162,18 @@ export function Stage({
   const host = React.useRef<HTMLDivElement>(null)
   const [near, setNear] = React.useState(false)
   const [visible, setVisible] = React.useState(false)
-  const [ok] = React.useState(webglAvailable)
+  const [capable] = React.useState(webglAvailable)
+  const deferred = useDeferred3D()
+  const ok = capable && !deferred
   const [mounted, setMounted] = React.useState(false)
   const [pageVisible, setPageVisible] = React.useState(!document.hidden)
-  const still = useSceneStill()
+  const compact = useCompactLayout()
+  const opening = React.useSyncExternalStore(onIntroChange, introActive, () => false)
+  const [drawn, setDrawn] = React.useState(false)
+  const onReady = React.useCallback(() => setDrawn(true), [])
+  const onError = React.useCallback(() => setDrawn(false), [])
+  const settled = usePhoneMotion(label, drawn && visible && pageVisible)
+  const still = useSceneStill() || settled || opening
   const id = React.useId()
   const invalidate = React.useRef<() => void>(() => {})
   const session = React.useMemo(() => ({ id, still, invalidate }), [id, still])
@@ -170,6 +183,7 @@ export function Stage({
      frozen at the value it had on the render that created the observer, and a
      stage that has since mounted would take the "was never mounted" branch and
      never schedule its release. The ref is the live value. */
+  React.useEffect(() => { if (!mounted || !ok) setDrawn(false) }, [mounted, ok])
   const mountedRef = React.useRef(false)
   React.useEffect(() => {
     mountedRef.current = mounted
@@ -182,19 +196,18 @@ export function Stage({
      because the React tree's GPU resources are gone with the context.
      `remount` is a key on the canvas, not a state flag. */
   const [remount, setRemount] = React.useState(0)
-  const lostAt = React.useRef(0)
+  const losses = React.useRef(0)
   const dead = React.useRef(false)
   const onContextLost = React.useCallback(() => {
+    setDrawn(false)
     /* Rebuilding is not immediate. A lost context stays lost for the rest of the
        task that lost it — the renderer still holds the dead object, and any
        draw or shader upload against it throws (`shaderSource: parameter 1 is not
        of type WebGLShader`). Remounting on the next frame removes the canvas
        first, so React disposes the old renderer before a new one is built.
-       Two losses close together means this device cannot hold a canvas at all:
-       the stage gives up and keeps its drawn fallback rather than thrashing. */
-    const now = Date.now()
-    if (!lostAt.current) lostAt.current = now
-    else if (now - lostAt.current < 5000) {
+       Retry once for this stage instance. A second loss keeps the fallback
+       rather than rebuilding a context repeatedly on an unstable device. */
+    if (++losses.current > 1) {
       dead.current = true
       setMounted(false)
       return
@@ -209,10 +222,10 @@ export function Stage({
   React.useEffect(() => {
     /* Measure only while this stage is actually drawing. A sampler that keeps
        running over the footer would be reading the frame rate of nothing. */
-    if (!near || !visible || !pageVisible) return
+    if (!near || !visible || !pageVisible || still) return
     watchPerformance()
     return () => releasePerformance()
-  }, [near, visible, pageVisible])
+  }, [near, visible, pageVisible, still])
 
   React.useEffect(() => {
     const update = () => setPageVisible(!document.hidden)
@@ -256,7 +269,7 @@ export function Stage({
           setNear(true)
           window.clearTimeout(dormant.current)
           setMounted(true)
-        } else if (mountedRef.current && !stableVisual) {
+        } else if (mountedRef.current && (!stableVisual || compact)) {
           window.clearTimeout(dormant.current)
           dormant.current = window.setTimeout(() => setMounted(false), DORMANT_AFTER_MS)
         }
@@ -272,7 +285,7 @@ export function Stage({
       window.clearTimeout(dormant.current)
     }
     // `mounted` is read through `mountedRef` so that this observer is built once.
-  }, [measureVisibility, stableVisual])
+  }, [measureVisibility, stableVisual, compact])
 
   /* Scrolling off screen must stop the drawing; scrolling back must resume it.
      Passive, because this only ever reads geometry. */
@@ -288,25 +301,24 @@ export function Stage({
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
-  }, [measureVisibility, stableVisual])
+  }, [measureVisibility, stableVisual, compact])
 
   return (
     <SceneContext.Provider value={session}>
       <div ref={host} className={className} style={style} data-webgl={ok}>
+        {!drawn && <div className="scene-poster">{fallback}</div>}
         {ok ? (
           near && mounted ? (
-            <Boundary fallback={fallback}>
-              <LiveContext.Provider value={{ visible: visible && pageVisible, still, z, fov, onContextLost, stableVisual }}>
-                <React.Suspense fallback={fallback} key={remount}>
-                  {load ? <LazyScene load={load} fallback={fallback} /> : children}
+            <Boundary onError={onError}>
+              <LiveContext.Provider value={{ visible: visible && pageVisible, still, z, fov, onContextLost, stableVisual, onReady }}>
+                <React.Suspense fallback={null} key={remount}>
+                  {load ? <LazyScene load={load} /> : children}
                 </React.Suspense>
               </LiveContext.Provider>
             </Boundary>
           ) : null
-        ) : (
-          fallback
-        )}
-        {label ? <span className="visually-hidden" role="img" aria-label={ok ? label : "3D view unavailable. Page content and enquiry links remain available."} /> : null}
+        ) : null}
+        {label ? <span className="visually-hidden" role="img" aria-label={ok ? label : label.replace("Interactive ", "Illustrative ").replace(" Drag to turn it.", "")} /> : null}
       </div>
     </SceneContext.Provider>
   )

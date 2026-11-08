@@ -98,7 +98,7 @@
   margin: 0;
   padding: 0.28rem;
   list-style: none;
-  max-height: min(18rem, 46vh);
+  max-height: min(20rem, var(--select-room, 46dvh));
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;

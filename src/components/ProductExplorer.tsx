@@ -5,11 +5,18 @@ import { Arrow } from './Nav'
 import { webglAvailable } from '../three/webgl'
 import { introActive, onIntroChange } from './intro-state'
 import { journeyPose, clamp01, CATEGORY_COUNT, ease } from './category-journey'
+import { useCompactLayout } from './useCompactLayout'
+import { MobileProducts } from './MobileProducts'
 
 const hrefFor = (tile: typeof TILES[number]) => tile.to ?? `/enquiry?category=${tile.id}`
 const Gallery = React.lazy(() => import('../three/Gallery').then(m => ({ default: m.Gallery })))
 
 export function ProductExplorer() {
+  const compact = useCompactLayout()
+  return compact ? <MobileProducts /> : <DesktopProductExplorer />
+}
+
+function DesktopProductExplorer() {
   const root = React.useRef<HTMLElement>(null)
   const [live, setLive] = React.useState(false)
   const [drawn, setDrawn] = React.useState(false)
@@ -41,7 +48,7 @@ export function ProductExplorer() {
       el.dataset.compact = String(compactViewport)
       const reducedMotion = reduced.matches || !capable || failed || compactViewport
       const progress = reducedMotion ? CATEGORY_COUNT : clamp01(-r.top / Math.max(1, el.querySelector<HTMLElement>('.journey__runway')!.offsetHeight - h)) * CATEGORY_COUNT
-      const begun = reducedMotion ? r.top < h * .6 : r.top <= 90
+      const begun = (reducedMotion ? r.top < h * .6 : r.top <= 90) && r.bottom > 0
       el.dataset.begun = String(begun)
       el.dataset.reduced = String(reducedMotion)
       el.style.setProperty('--journey-progress', String(progress / CATEGORY_COUNT))

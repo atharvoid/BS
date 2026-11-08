@@ -21,6 +21,11 @@ npm run preview    # serve the production build
 npm run typecheck  # types only
 ```
 
+The phone layout uses normal-flow category cards, visible-only 3D preparation
+and a finite automatic motion window. The implementation and remaining device
+qualification are recorded in [the mobile receipt](docs/part3/MOBILE_IMPLEMENTATION_STATUS.md).
+`npm run assets:swatches` regenerates the prebuilt woven images.
+
 Node 22.18+ recommended (the tests import TypeScript using Node’s built-in type stripping).
 
 ### Targeted checks

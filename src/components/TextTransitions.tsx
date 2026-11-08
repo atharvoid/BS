@@ -1,5 +1,6 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom'
+import { COMPACT_QUERY } from '../three/render-policy'
 import { introActive, onIntroChange } from './intro-state'
 
 const TEXT = 'h1,h2,h3,h4,h5,h6,p,li,a,button,label,legend,dt,dd,figcaption,summary,small,span'
@@ -10,6 +11,10 @@ const EXCLUDE = '.cursor,.nav,.drawer,#brand-intro,[data-text-reveal="off"],.vis
 export function TextTransitions() {
   const { pathname } = useLocation()
   React.useLayoutEffect(() => {
+    if (matchMedia(COMPACT_QUERY).matches) {
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('is-in'))
+      return
+    }
     const reduced = matchMedia('(prefers-reduced-motion: reduce)')
     const pending = new Set<HTMLElement>()
     const seen = new WeakSet<HTMLElement>()

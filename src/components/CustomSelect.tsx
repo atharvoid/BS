@@ -91,9 +91,14 @@ export function CustomSelect({ id, label, value, choices, disabled = false, onCh
     const el = wrap.current
     if (!el) return
     const rect = el.getBoundingClientRect()
-    const below = window.innerHeight - rect.bottom
-    const above = rect.top
-    setPlacement(below < Math.min(rect.height * 4 + 24, 260) && above > below ? 'above' : 'below')
+    const viewport = window.visualViewport
+    const top = viewport?.offsetTop ?? 0
+    const bottom = top + (viewport?.height ?? window.innerHeight)
+    const below = bottom - rect.bottom
+    const above = rect.top - top - 76
+    const placement = below < 310 && above > below ? 'above' : 'below'
+    setPlacement(placement)
+    el.style.setProperty('--select-room', `${Math.max(48, (placement === 'above' ? above : below) - 12)}px`)
   }, [open])
 
   /* Keep the active option in view while the arrows walk the list. */
@@ -120,10 +125,14 @@ export function CustomSelect({ id, label, value, choices, disabled = false, onCh
     document.addEventListener('pointerdown', onPointerDown, true)
     window.addEventListener('scroll', onScroll, true)
     window.addEventListener('resize', onScroll)
+    window.visualViewport?.addEventListener('resize', onScroll)
+    window.visualViewport?.addEventListener('scroll', onScroll)
     return () => {
       document.removeEventListener('pointerdown', onPointerDown, true)
       window.removeEventListener('scroll', onScroll, true)
       window.removeEventListener('resize', onScroll)
+      window.visualViewport?.removeEventListener('resize', onScroll)
+      window.visualViewport?.removeEventListener('scroll', onScroll)
     }
   }, [open])
 

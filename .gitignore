@@ -8,3 +8,7 @@ dist-ssr
 .env.*
 !.env.example
 npm-debug.log*
+
+.prerender/
+.poster-build/
+.mobile-preview/

@@ -15,8 +15,11 @@ import './styles/products.css'
 import './styles/journey.css'
 import './styles/posters.css'
 import './styles/logo-intro.css'
+import './styles/mobile.css'
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+if (import.meta.env.MODE === 'posters') {
+  import('./dev/PosterCapture').then(({default: Capture}) => ReactDOM.createRoot(document.getElementById('root')!).render(<Capture />))
+} else ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <App />

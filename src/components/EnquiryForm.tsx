@@ -1,3 +1,4 @@
+import { enquiryBrief } from './enquiry-brief'
 import { createReceiptStore } from './receipt-store'
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -90,6 +91,8 @@ export function EnquiryForm() {
   const [errors, setErrors] = React.useState<Errors>({})
   const [status, setStatus] = React.useState<Status>('idle')
   const request = React.useRef<AbortController | null>(null)
+  const [prepared, setPrepared] = React.useState<ReturnType<typeof enquiryBrief> | null>(null)
+  React.useEffect(() => setPrepared(null), [draft])
   const form = React.useRef<HTMLFormElement>(null)
   const firstInvalid = React.useRef<string | null>(null)
 
@@ -135,6 +138,7 @@ export function EnquiryForm() {
 
     if (!ACCESS_KEY || HCAPTCHA_SITEKEY) {
       // No key configured: never show a false confirmation.
+      setPrepared(enquiryBrief({...draft, role:ROLE_LABEL[draft.role] ?? draft.role}, getCategory(draft.subject).label, BUSINESS.email))
       setStatus('unconfigured')
       return
     }
@@ -333,7 +337,7 @@ export function EnquiryForm() {
 
       <div className="form__submit">
         <button className="btn btn--submit" type="submit" disabled={status === 'sending'}>
-          {status === 'sending' ? 'Sending…' : 'Send the enquiry'}
+          {status === 'sending' ? 'Sending…' : (!ACCESS_KEY || HCAPTCHA_SITEKEY) ? 'Prepare email' : 'Send the enquiry'}
           {status !== 'sending' && (
             <svg className="btn__arrow" viewBox="0 0 14 14" fill="none" aria-hidden="true">
               <path d="M2 12 12 2M5 2h7v7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" />
@@ -353,10 +357,13 @@ export function EnquiryForm() {
             <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a>.
           </p>
         )}
-        {status === 'unconfigured' && (
-          <p className="notice notice--warn">
-            To send your enquiry, email <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a>.
-          </p>
+        {status === 'unconfigured' && prepared && (
+          <div className="notice notice--warn prepared-brief">
+            <p>Your email brief is ready. It has not been sent.</p>
+            <label htmlFor="prepared-brief">{prepared?.copyRequired ? 'Copy this brief and paste it into your email.' : 'Your brief'}</label>
+            <textarea id="prepared-brief" readOnly value={prepared?.text ?? ''} onFocus={e => e.currentTarget.select()} />
+            <a className="btn" href={prepared?.href}>Open email app</a>
+          </div>
         )}
       </div>
     </form>

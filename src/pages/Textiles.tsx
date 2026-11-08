@@ -13,9 +13,7 @@ import { EnquiryForm, useEnquiryDraft } from '../components/EnquiryForm'
    the fabric list, the region notes and the enquiry form — the page's actual
    content — independent of it. */
 const loadHeroScene = () => import('../three/TextileHeroScene')
-const SwatchPlane = React.lazy(() =>
-  import('../three/TextileHeroScene').then((m) => ({ default: m.SwatchPlane })),
-)
+
 
 function SwatchWall() {
   const swatches = [
@@ -37,9 +35,7 @@ function SwatchWall() {
         >
           {/* The weave arrives with the same module as the hero cloth. Until it
               does, the frame holds its own shape rather than collapsing. */}
-          <React.Suspense fallback={<div className="wall__placeholder" />}>
-            <SwatchPlane palette={s.key} index={i} />
-          </React.Suspense>
+          <div className="wall__frame"><img src={`/swatches/${s.key}.webp`} alt="" width={840} height={840} loading="lazy" decoding="async" /></div>
           <figcaption>
             <strong>{s.label}</strong>
             <span>{s.note}</span>
@@ -68,7 +64,7 @@ export default function Textiles() {
             label="Interactive green textile illustration. Drag to turn it."
             z={6.2}
             fov={36}
-            fallback={<div className="page-hero__fallback" aria-hidden="true" />}
+            fallback={<img className="cloth-poster" src="/posters/cloth-mobile.webp" srcSet="/posters/cloth-mobile-small.webp 500w, /posters/cloth-mobile.webp 1000w" sizes="(max-width:540px) 100vw, 500px" alt="" width={1000} height={800} />}
             load={loadHeroScene}
           />
         </div>

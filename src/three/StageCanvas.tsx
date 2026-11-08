@@ -1,20 +1,9 @@
 import React from 'react'
-import { Canvas, useThree, useFrame } from '@react-three/fiber'
-import { useQuality, measuredDpr, resolutionFor } from './performance'
-import { FrameReporter } from './FrameReporting'
+import { Canvas, useThree } from '@react-three/fiber'
+import { useQuality, measuredDpr } from './performance'
+import { SceneFrames } from './FrameReporting'
+import { useRenderBudget } from './render-budget'
 import { useSceneSession } from './SceneSession'
-
-function FirstCompleteFrame({ reveal }: { reveal: () => void }) {
-  const invalidate = useThree((s) => s.invalidate)
-  const frames = React.useRef(0)
-  useFrame(() => {
-    if (frames.current >= 2) return
-    frames.current++
-    if (frames.current === 2) requestAnimationFrame(reveal)
-    else invalidate()
-  })
-  return null
-}
 
 function InvalidateBridge() {
   const scene = useSceneSession()
@@ -31,7 +20,7 @@ function InvalidateBridge() {
 
    `frameloop` is the whole performance story:
 
-   - visible + animated: "always", at whatever the display does
+   - visible + animated: "demand", invalidated at the selected draw cadence
    - visible + still:    "demand", so a scene with a stopped clock costs
                          nothing until something asks for a frame (a drag, a
                          new object, a resize)
@@ -65,6 +54,7 @@ export default function StageCanvas({
   fov,
   onContextLost,
   stableVisual = false,
+  onReady,
 }: {
   children: React.ReactNode
   visible: boolean
@@ -73,10 +63,11 @@ export default function StageCanvas({
   fov: number
   onContextLost?: () => void
   stableVisual?: boolean
+  onReady?: () => void
 }) {
   const quality = useQuality()
   const [ready, setReady] = React.useState(false)
-  const reveal = React.useCallback(() => setReady(true), [])
+  const reveal = React.useCallback(() => { setReady(true); onReady?.() }, [onReady])
 
   /* Measured from the element, not assumed: a canvas can be any size, and the
      budget has to know how many pixels it is being asked to fill. */
@@ -91,20 +82,17 @@ export default function StageCanvas({
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
-  const dpr = React.useMemo(
-    () => stableVisual
-      ? resolutionFor('high', box.w, box.h, window.devicePixelRatio || 1).dpr
-      : measuredDpr(quality, box.w, box.h),
-    [quality, box.w, box.h, stableVisual],
-  )
+  const desired = measuredDpr(quality, box.w, box.h)
+  const { dpr, permit } = useRenderBudget(host, desired, box.w, box.h, visible && !still)
+
 
   return (
-    <div ref={host} data-scene-ready={ready} data-motion={still ? "frozen" : "running"} style={{ width: '100%', height: '100%', opacity: !stableVisual || ready ? 1 : 0, transition: stableVisual ? 'opacity 320ms ease-out' : undefined }}>
+    <div ref={host} data-scene-ready={ready} data-motion={still || !permit ? "frozen" : "running"} style={{ width: '100%', height: '100%', opacity: !stableVisual || ready ? 1 : 0, transition: stableVisual ? 'opacity 320ms ease-out' : undefined }}>
     <Canvas
       /* No tone mapping pass: the globe palette is authored in display space,
          and ACES would wash the ocean out to grey. */
       flat
-      frameloop={visible ? (still ? 'demand' : 'always') : 'never'}
+      frameloop={visible ? 'demand' : 'never'}
       dpr={dpr}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance', stencil: false }}
       camera={{ position: [0, 0, z], fov, near: 0.1, far: 60 }}
@@ -112,12 +100,13 @@ export default function StageCanvas({
       resize={{ scroll: false }}
     >
       <InvalidateBridge />
-      {stableVisual ? <FirstCompleteFrame reveal={reveal} /> : null}
       <ContextLoss onLost={onContextLost} />
       {/* Only draws while the scene does, which is what makes the quality
           measurement a measure of this device rather than of the page. */}
-      <FrameReporter />
-      {children}
+      <React.Suspense fallback={null}>
+        {children}
+        <SceneFrames animated={visible && !still && permit} onReady={reveal} />
+      </React.Suspense>
     </Canvas>
     </div>
   )

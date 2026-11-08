@@ -3,6 +3,7 @@ import { useThree, type ThreeEvent } from '@react-three/fiber'
 import * as THREE from 'three'
 import type { DragState } from './drag'
 import { useSceneSession } from './SceneSession'
+import { horizontalIntent } from './render-policy'
 import { reportScenePointer } from './interaction'
 
 /* ==========================================================================
@@ -39,6 +40,7 @@ export function useSceneDrag(drag: DragState, node: React.RefObject<THREE.Group 
   /* The pointer's own description of what it is over. The custom cursor listens
      for this so it can say "Drag" over a scene and go back to normal when the
      pointer leaves one. */
+  const touch = React.useRef<Pointer | null>(null)
   const pointer = React.useRef({ id: -1, type: 'mouse' })
   const report = (phase: 'enter' | 'leave' | 'press' | 'drag' | 'release' | 'cancel' | 'remove', event?: Pointer) => {
     if (event) pointer.current = { id: event.pointerId, type: event.pointerType }
@@ -54,6 +56,7 @@ export function useSceneDrag(drag: DragState, node: React.RefObject<THREE.Group 
     const object = node.current
     if (!object) return
     const stop = () => {
+      touch.current = null
       if (drag.dragging) {
         drag.cancel()
         invalidate()
@@ -98,6 +101,7 @@ export function useSceneDrag(drag: DragState, node: React.RefObject<THREE.Group 
     },
     onPointerDown: (event: Pointer) => {
       if (event.button !== 0 || event.isPrimary === false || drag.dragging) return
+      if (event.pointerType === 'touch') { touch.current = event; return }
       event.stopPropagation()
       sync()
       currentOptions.current.resetPhase()
@@ -106,6 +110,17 @@ export function useSceneDrag(drag: DragState, node: React.RefObject<THREE.Group 
       invalidate()
     },
     onPointerMove: (event: Pointer) => {
+      const start = touch.current
+      if (start && start.pointerId === event.pointerId) {
+        const intent = horizontalIntent(event.clientX - start.clientX, event.clientY - start.clientY)
+        if (intent === 'pending') return
+        touch.current = null
+        if (intent === 'scroll') return
+        sync()
+        currentOptions.current.resetPhase()
+        bind.onPointerDown(start)
+        report('press', event)
+      }
       bind.onPointerMove(event)
       if (drag.dragging) {
         report('drag', event)
@@ -113,12 +128,14 @@ export function useSceneDrag(drag: DragState, node: React.RefObject<THREE.Group 
       }
     },
     onPointerUp: (event: Pointer) => {
+      touch.current = null
       if (!drag.dragging) return
       bind.onPointerUp(event)
       report('release', event)
       invalidate()
     },
     onPointerCancel: (event: Pointer) => {
+      touch.current = null
       bind.onPointerCancel(event)
       report('cancel', event)
       sync()
@@ -130,6 +147,7 @@ export function useSceneDrag(drag: DragState, node: React.RefObject<THREE.Group 
       invalidate()
     },
     onLostPointerCapture: (event: Pointer) => {
+      touch.current = null
       if (drag.dragging) drag.cancel()
       report('cancel', event)
       invalidate()

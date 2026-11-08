@@ -118,6 +118,7 @@ type DraggableProps = {
   squash?: number
   /** Idle roll amplitude, radians. Flat objects want almost none. */
   roll?: number
+  yawLimit?: number
   onEngage?: () => void
 }
 
@@ -130,6 +131,7 @@ export function Draggable({
   squash = 1,
   roll = 0.035,
   onEngage,
+  yawLimit,
 }: DraggableProps) {
   const group = React.useRef<THREE.Group>(null)
   const drag = React.useMemo(() => createDrag(tilt), [tilt])
@@ -199,6 +201,7 @@ export function Draggable({
     if (animating && spin) turn.current += spin * d
     const t = phase.current
 
+    if (yawLimit) drag.target.y = THREE.MathUtils.clamp(drag.target.y, -yawLimit, yawLimit)
     const ty = drag.target.y + turn.current + idleSway(t)
     const tx = drag.target.x
 

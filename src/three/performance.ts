@@ -142,14 +142,15 @@ const frame = { count: 0, intervalTotal: 0 }
 let lastReport = 0
 
 /** Called by every scene, once per drawn frame. Both figures are milliseconds. */
-export function reportFrame(sinceLastMs: number) {
+export function reportFrame(sinceLastMs: number, targetFps = 60) {
   if (!(sinceLastMs >= 0)) return
   /* A gap longer than the window is a pause, not a frame: the page was hidden,
      the stage was off screen, or a tab was in the background. Those are excluded
      from the mean rather than dragging it up. */
   if (sinceLastMs > WINDOW_MS * 2) return
   frame.count += 1
-  frame.intervalTotal += sinceLastMs
+  // Judge achieved cadence against the requested cadence, including 30Hz mode.
+  frame.intervalTotal += sinceLastMs * targetFps / 60
   lastReport = typeof performance !== 'undefined' ? performance.now() : Date.now()
 }
 

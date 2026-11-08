@@ -13,18 +13,18 @@ import type { CategoryMotif } from '../three/categoryObjects'
    what the category contains. A render matches the live tile exactly, so the
    switch from still to 3D is invisible.
 
-   Kept small: 384×270 WebP, 21 KB for all six. Served from /public rather than
+   750×600 transparent WebP renders. Served from /public rather than
    bundled, so each is a stable URL that can be cached across deploys and can be
    fetched by a page that never loads the three bundle at all.
    ========================================================================== */
 
 const STILLS: Record<CategoryMotif, string> = {
-  textiles: '/posters/textiles.webp',
-  handicrafts: '/posters/handicrafts.webp',
-  agriculture: '/posters/agriculture.webp',
-  industrial: '/posters/industrial.webp',
-  organic: '/posters/organic.webp',
-  general: '/posters/general.webp',
+  textiles: '/posters/textiles-mobile.webp',
+  handicrafts: '/posters/handicrafts-mobile.webp',
+  agriculture: '/posters/agriculture-mobile.webp',
+  industrial: '/posters/industrial-mobile.webp',
+  organic: '/posters/organic-mobile.webp',
+  general: '/posters/general-mobile.webp',
 }
 
 type Props = { motif: CategoryMotif; className?: string }
@@ -43,9 +43,11 @@ export function CategoryPoster({ motif, className }: Props) {
     <img
       className={className ? `poster ${className}` : 'poster'}
       src={STILLS[motif]}
+      srcSet={`${STILLS[motif].replace('.webp','-small.webp')} 375w, ${STILLS[motif]} 750w`}
+      sizes="(max-width:355px) 90vw, (max-width:599px) 44vw, (max-width:980px) 30vw, 300px"
       alt=""
-      width={384}
-      height={270}
+      width={750}
+      height={600}
       /* Below the fold until the row is scrolled to; the live scene covers it
          long before a visitor gets there. */
       loading="lazy"

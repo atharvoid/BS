@@ -583,7 +583,7 @@ function GeoLines() {
 
 /* -------------------------------------------------------------------------- */
 
-function Globe() {
+export function Globe() {
   const uniforms = React.useMemo(
     () => ({
       uTime: { value: 0 },
@@ -661,7 +661,7 @@ function Globe() {
   useFrame((_, delta) => {
     const d = Math.min(delta, 1 / 30)
     const g = root.current
-    if (!g || (still && !drag.dragging)) return
+    if (!g) return
     if (!drag.dragging) drag.target.y += drag.velocity.y * d
     const decay = Math.exp(-3.4 * d)
     drag.velocity.y *= decay
@@ -674,6 +674,7 @@ function Globe() {
     drag.current.x = THREE.MathUtils.lerp(drag.current.x, drag.target.x, 1 - Math.exp(-5.6 * d))
     g.rotation.x = drag.current.x * 0.55
     g.rotation.z = 0.06
+    if (still && (Math.abs(drag.current.y - yaw) > .001 || Math.abs(drag.current.x - drag.target.x) > .001 || Math.abs(drag.velocity.y) > .001)) session?.invalidate.current()
   })
 
   const bind = useSceneDrag(drag, root, { initialYaw: startY, tilt: 0.5, pitchScale: 0.55, resetPhase: () => {},
@@ -732,12 +733,12 @@ function Globe() {
  */
 const COPY_MAX_PX = 720
 
-function Frame({ children }: { children: React.ReactNode }) {
+function Frame({ children, compact = false }: { children: React.ReactNode; compact?: boolean }) {
   const viewport = useThree((s) => s.viewport)
   const size = useThree((s) => s.size)
   /* The same breakpoint as the stylesheet, inclusive: at exactly 980 the CSS
      has already stacked, so the scene must not still be laying out for desktop. */
-  const stacked = size.width <= 980
+  const stacked = compact || size.width <= 980
 
   let radius: number
   let x: number
@@ -768,12 +769,12 @@ function Frame({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function GlobeScene() {
+export function GlobeScene({ compact = false }: {compact?: boolean}) {
   React.use(globeAssets)
   return (
     <>
       <Studio />
-      <Frame>
+      <Frame compact={compact}>
         <Globe />
       </Frame>
     </>

@@ -57,7 +57,7 @@ export function Nav() {
       if (!open) return
       if (e.key === 'Escape') { setOpen(false); toggle.current?.focus(); return }
       if (e.key !== 'Tab') return
-      const items = Array.from(drawer.current?.querySelectorAll<HTMLElement>('a[href], button:not([disabled])') ?? [])
+      const items = [toggle.current, ...Array.from(drawer.current?.querySelectorAll<HTMLElement>('a[href], button:not([disabled])') ?? [])].filter((el): el is HTMLElement => !!el)
       if (!items.length) return
       if (e.shiftKey && document.activeElement === items[0]) { e.preventDefault(); items[items.length - 1].focus() }
       else if (!e.shiftKey && document.activeElement === items[items.length - 1]) { e.preventDefault(); items[0].focus() }

@@ -1,5 +1,6 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom'
+import { COMPACT_QUERY } from '../three/render-policy'
 import { Logo } from './Logo'
 
 /* ==========================================================================
@@ -63,9 +64,14 @@ export function LogoIntro() {
     const play = () => {
       finish()
       if (reduced.matches || typeof art.animate !== 'function') return
+      const box = headerLogo.getBoundingClientRect()
+      intro.style.setProperty('--intro-left', `${box.left}px`)
+      intro.style.setProperty('--intro-top', `${box.top}px`)
+      intro.style.setProperty('--intro-width', `${box.width}px`)
+      intro.style.setProperty('--intro-height', `${box.height}px`)
       document.documentElement.dataset.introActive = 'true'
       intro.hidden = false
-      intro.setAttribute('aria-hidden', 'false')
+      intro.setAttribute('aria-hidden', matchMedia(COMPACT_QUERY).matches ? 'true' : 'false')
       intro.dataset.state = 'drawing'
       const origin = art.getBoundingClientRect()
       try {

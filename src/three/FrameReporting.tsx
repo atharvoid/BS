@@ -1,54 +1,34 @@
 import React from 'react'
-import { useFrame } from '@react-three/fiber'
-import { reportFrame, reportStall } from './performance'
+import { useFrame, useThree } from '@react-three/fiber'
+import { reportFrame, reportStall, useQuality } from './performance'
 
-/* ==========================================================================
-   Frame reporting, from inside a canvas.
-
-   This is the only thing in the quality system that needs the renderer, so it
-   is the only thing in a module that imports one. Keeping it separate is not
-   tidiness: `performance.ts` is reachable from `Stage.tsx`, which both pages
-   import statically, so anything it imports ends up in the entry bundle. When
-   the reporter lived there it dragged three onto `/privacy`.
-
-   Rendered as a child of a `<Canvas>`, where the frame loop exists. It is what
-   makes "measure only while rendering" true rather than intended: R3F calls
-   `useFrame` exactly once per drawn frame, so the gap between calls is the real
-   interval between frames — and when the scene stops drawing (a still tier
-   waiting for input, a stage scrolled out of view, a hidden tab) the reports
-   stop too. The sampler then finds no data and leaves the quality alone,
-   instead of reading a quiet page as a slow one.
-   ========================================================================== */
-
-export function FrameReporter() {
+/** Own the actual draw, so sampled frames are rendered frames, including 30Hz. */
+export function SceneFrames({ prepared = true, animated, onReady }: {prepared?: boolean; animated: boolean; onReady?: () => void}) {
+  const { gl, scene, camera, invalidate } = useThree()
+  const quality = useQuality()
   const last = React.useRef(0)
-  const hidden = React.useRef(false)
-
+  const frames = React.useRef(0)
+  const pending = React.useRef(0)
+  const ready = React.useRef(onReady)
+  ready.current = onReady
   React.useEffect(() => {
-    const update = () => {
-      hidden.current = document.hidden
-      /* A tab that comes back has a stale interval; start again from zero so the
-         gap while it was away is not reported as one enormous frame. */
-      if (document.hidden) last.current = 0
+    last.current = 0
+    if (prepared) invalidate()
+  }, [animated, prepared, quality, invalidate])
+  React.useEffect(() => () => cancelAnimationFrame(pending.current), [])
+  useFrame(() => {
+    if (!prepared) return
+    const now = performance.now()
+    const target = quality === 'medium' ? 30 : 60
+    if (animated && last.current && now - last.current < 1000 / target - 2) { invalidate(); return }
+    gl.render(scene, camera)
+    if (animated && last.current) {
+      reportFrame(now - last.current, target)
+      reportStall(now - last.current)
     }
-    update()
-    document.addEventListener('visibilitychange', update)
-    return () => document.removeEventListener('visibilitychange', update)
-  }, [])
-
-  useFrame((_, delta) => {
-    if (hidden.current) return
-    /* `delta` is in seconds and already excludes time the loop was stopped, so a
-       paused loop resumes without a spike. */
-    const ms = delta * 1000
-    if (last.current === 0) {
-      last.current = ms
-      return
-    }
-    last.current = ms
-    reportFrame(ms)
-    reportStall(ms)
-  })
-
+    last.current = now
+    if (++frames.current === 2) pending.current = requestAnimationFrame(() => ready.current?.())
+    if (animated || frames.current < 2) invalidate()
+  }, 1)
   return null
 }

@@ -84,6 +84,19 @@ test('a fast device keeps the highest tier', () => {
   perf.releasePerformance()
 })
 
+test('a deliberately rendered 30fps tier is not classified as a slow 60fps renderer', () => {
+  perf.watchPerformance()
+  run(30, 60)
+  const before = perf.clarityStep()
+  for (let i = 0; i < 450; i++) {
+    perf.reportFrame(1000 / 30, 30)
+    tick(1000 / 30)
+  }
+  assert.equal(perf.clarityStep(), before)
+  assert.equal(perf.currentQuality(), 'high')
+  perf.releasePerformance()
+})
+
 test('one bad window changes nothing', () => {
   perf.watchPerformance()
   run(20, 60)

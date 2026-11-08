@@ -23,6 +23,7 @@ function Hero() {
           label="Interactive globe with illustrative trade routes from India. Drag to turn it."
           z={7.4}
           fov={36}
+          fallback={<picture><source media="(max-width:980px), (max-height:479px)" srcSet="/posters/globe-mobile-small.webp 500w, /posters/globe-mobile.webp 1000w" sizes="(max-width:540px) 100vw, 500px" /><img className="globe-poster" src="/posters/globe-desktop.webp" alt="" width={1280} height={800} fetchPriority="high" /></picture>}
           stableVisual
           load={loadGlobe}
         />

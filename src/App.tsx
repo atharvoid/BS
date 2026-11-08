@@ -1,6 +1,6 @@
 import { TextTransitions } from './components/TextTransitions'
 import React from 'react'
-import { Route, Routes, useLocation } from 'react-router-dom'
+import { Route, Routes, useLocation, useNavigationType } from 'react-router-dom'
 import { Nav } from './components/Nav'
 import { Footer } from './components/Footer'
 import { Cursor } from './components/Cursor'
@@ -30,13 +30,17 @@ import Privacy from './pages/Privacy'
 import NotFound from './pages/NotFound'
 
 function ScrollManager() {
-  const { pathname, hash } = useLocation()
+  const { pathname, hash, key } = useLocation()
+  const navigationType = useNavigationType()
+  const positions = React.useRef(new Map<string, number>())
+  const scroll = React.useRef(0)
   const lastPath = React.useRef(pathname)
 
   React.useEffect(() => {
     let raf = 0
     const update = () => {
       raf = 0
+      scroll.current = window.scrollY
       const max = document.documentElement.scrollHeight - window.innerHeight
       const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0
       document.documentElement.style.setProperty('--progress', p.toFixed(4))
@@ -54,7 +58,12 @@ function ScrollManager() {
     }
   }, [pathname])
 
+  React.useLayoutEffect(() => () => { positions.current.set(key, scroll.current) }, [key])
   React.useEffect(() => {
+    if (navigationType === 'POP' && positions.current.has(key)) {
+      const frame = requestAnimationFrame(() => window.scrollTo({top:positions.current.get(key)!, behavior:'instant'}))
+      return () => cancelAnimationFrame(frame)
+    }
     const changedRoute = lastPath.current !== pathname
     lastPath.current = pathname
     if (changedRoute) document.getElementById('main')?.focus({ preventScroll: true })
@@ -68,7 +77,7 @@ function ScrollManager() {
       }
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
-  }, [pathname, hash])
+  }, [pathname, hash, key, navigationType])
 
   return null
 }
