@@ -1,0 +1,21 @@
+{
+  "results": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "reducedMotion": "still"
+}

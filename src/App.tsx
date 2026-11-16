@@ -37,6 +37,12 @@ function ScrollManager() {
   const lastPath = React.useRef(pathname)
 
   React.useEffect(() => {
+    const previous = history.scrollRestoration
+    history.scrollRestoration = 'manual'
+    return () => { history.scrollRestoration = previous }
+  }, [])
+
+  React.useEffect(() => {
     let raf = 0
     const update = () => {
       raf = 0
@@ -59,13 +65,13 @@ function ScrollManager() {
   }, [pathname])
 
   React.useLayoutEffect(() => () => { positions.current.set(key, scroll.current) }, [key])
-  React.useEffect(() => {
-    if (navigationType === 'POP' && positions.current.has(key)) {
-      const frame = requestAnimationFrame(() => window.scrollTo({top:positions.current.get(key)!, behavior:'instant'}))
-      return () => cancelAnimationFrame(frame)
-    }
+  React.useLayoutEffect(() => {
     const changedRoute = lastPath.current !== pathname
     lastPath.current = pathname
+    if (navigationType === 'POP' && positions.current.has(key)) {
+      window.scrollTo({top:positions.current.get(key)!, behavior:'instant'})
+      return
+    }
     if (changedRoute) document.getElementById('main')?.focus({ preventScroll: true })
     if (hash) {
       let id = hash.slice(1)
@@ -76,7 +82,7 @@ function ScrollManager() {
         return
       }
     }
-    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }, [pathname, hash, key, navigationType])
 
   return null
@@ -119,7 +125,12 @@ function PageMetadata() {
 export default function App() {
   return (
     <EnquiryProvider><div className="app grain">
-      <a className="skip-link" href="#main">
+      <a className="skip-link" href="#main" onClick={event => {
+        event.preventDefault()
+        const main = document.getElementById('main')
+        main?.focus({preventScroll:true})
+        main?.scrollIntoView({behavior:'instant',block:'start'})
+      }}>
         Skip to content
       </a>
       <ScrollManager />

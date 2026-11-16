@@ -7,6 +7,9 @@ import { introActive, onIntroChange } from './intro-state'
 import { journeyPose, clamp01, CATEGORY_COUNT, ease } from './category-journey'
 import { useCompactLayout } from './useCompactLayout'
 import { MobileProducts } from './MobileProducts'
+import { CategoryPoster } from './CategoryPoster'
+import type { CategoryMotif } from '../three/categoryObjects'
+import { useDeferred3D } from '../three/render-budget'
 
 const hrefFor = (tile: typeof TILES[number]) => tile.to ?? `/enquiry?category=${tile.id}`
 const Gallery = React.lazy(() => import('../three/Gallery').then(m => ({ default: m.Gallery })))
@@ -21,18 +24,22 @@ function DesktopProductExplorer() {
   const [live, setLive] = React.useState(false)
   const [drawn, setDrawn] = React.useState(false)
   const [failed, setFailed] = React.useState(false)
+  const [hovered, setHovered] = React.useState<CategoryMotif | null>(null)
+  const [focused, setFocused] = React.useState<CategoryMotif | null>(null)
+  const deferred = useDeferred3D()
   const ready = React.useCallback(() => setDrawn(true), [])
+  const preparing = React.useCallback(() => setDrawn(false), [])
   const lost = React.useCallback(() => setFailed(true), [])
 
   React.useEffect(() => {
     const el = root.current
     if (!el) return
     const reduced = matchMedia('(prefers-reduced-motion: reduce)')
-    const capable = webglAvailable()
+    const capable = webglAvailable() && !deferred
     el.dataset.fallback = String(!capable || failed)
     let raf = 0
     const prepare = () => {
-      if (!introActive() && webglAvailable()) setLive(true)
+      if (!introActive() && capable) setLive(true)
     }
     const unsubscribe = onIntroChange(active => { if (!active) prepare() })
     const near = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) prepare() }, { rootMargin: '800px 0px' })
@@ -64,6 +71,7 @@ function DesktopProductExplorer() {
         anchor.style.height = `${pose.height}px`
         anchor.style.transform = `translate3d(${pose.x - pose.height / 2}px,${pose.y - pose.height / 2}px,0)`
         anchor.dataset.active = String(begun && pose.visible)
+        anchor.dataset.docked = String(pose.docked >= .999)
         const chapter = el.querySelector<HTMLElement>(`[data-chapter="${i}"]`)!
         chapter.style.opacity = String(pose.title)
         chapter.style.transform = `translate3d(${pose.textX}px,0,0)`
@@ -94,14 +102,14 @@ function DesktopProductExplorer() {
       reduced.removeEventListener('change', queue)
       cancelAnimationFrame(raf)
     }
-  }, [failed])
+  }, [failed, deferred])
 
   return (
     <section className="sourcing sourcing--journey" id="products" ref={root} data-tone="light" data-drawn={drawn} data-failed={failed} aria-labelledby="journey-title">
       <div className="journey__runway"><div className="journey__sticky" data-text-reveal="off">
         <header className="journey__header shell">
           <div><p className="eyebrow">Product areas · textile-led sourcing</p><h2 id="journey-title">A requirement. <em className="display-italic">A starting point.</em></h2></div>
-          <a className="journey__skip tlink" href="#category-directory">Skip to all categories ↓</a>
+          <Link className="journey__skip tlink" to="/#category-directory">Skip to all categories ↓</Link>
         </header>
         <div className="journey__chapters shell">
           {TILES.map((tile, i) => (
@@ -112,22 +120,25 @@ function DesktopProductExplorer() {
             </article>
           ))}
         </div>
-        <div className="journey__complete shell"><p className="eyebrow">Six starting points. One conversation.</p><h3>Tell us what you<br /><em className="display-italic">have in mind.</em></h3><a href="#category-directory" className="tlink">View all categories ↓</a></div>
+        <div className="journey__complete shell"><p className="eyebrow">Six starting points. One conversation.</p><h3>Tell us what you<br /><em className="display-italic">have in mind.</em></h3><Link to="/#category-directory" className="tlink">View all categories ↓</Link></div>
         <p className="journey__scroll">Scroll to explore <span aria-hidden="true">↓</span></p>
       </div>
       </div>
       <div className="journey__visuals" aria-hidden="true" data-text-reveal="off">
-        {TILES.map((tile, i) => <div className="journey__anchor" key={tile.id} data-motif={tile.motif} data-journey-index={i} />)}
-        {live && !failed ? <JourneyBoundary onError={lost}><React.Suspense fallback={null}><Gallery onReady={ready} onLost={lost} journey /></React.Suspense></JourneyBoundary> : null}
+        {TILES.map((tile, i) => <div className="journey__anchor" key={tile.id} data-motif={tile.motif} data-journey-index={i}>{(tile.motif === 'agriculture' || tile.motif === 'textiles') && <CategoryPoster motif={tile.motif} sizes="76vh" />}</div>)}
+        {live && !failed && !deferred ? <JourneyBoundary onError={lost}><React.Suspense fallback={null}><Gallery onReady={ready} onLost={lost} onPreparing={preparing} activeMotif={hovered ?? focused} journey /></React.Suspense></JourneyBoundary> : null}
       </div>
       <nav className="journey__shelf" data-text-reveal="off" aria-label="Product category shortcuts">
-        {TILES.map((tile, i) => <Link className="journey__box" key={tile.id} data-dock={i} to={hrefFor(tile)} aria-label={tile.label}><span className="journey__box-index">{String(i + 1).padStart(2, '0')}</span><span className="journey__box-label"><span className="journey__label-full">{tile.label}</span><span className="journey__label-short">{["Textiles", "Crafts", "Food", "Materials", "Organic", "Other"][i]}</span></span></Link>)}
+        {TILES.map((tile, i) => <Link className="journey__box" key={tile.id} data-dock={i} to={hrefFor(tile)} aria-label={tile.label}
+          onPointerEnter={e => { if (e.pointerType !== 'touch') setHovered(tile.motif) }} onPointerLeave={() => setHovered(null)}
+          onFocus={() => setFocused(tile.motif)} onBlur={() => setFocused(null)}
+        ><span className="journey__box-index">{String(i + 1).padStart(2, '0')}</span><span className="journey__box-label"><span className="journey__label-full">{tile.label}</span><span className="journey__label-short">{["Textiles", "Crafts", "Food", "Materials", "Organic", "Other"][i]}</span></span></Link>)}
       </nav>
       <div className="journey__directory shell" id="category-directory">
         <p className="eyebrow">All product areas</p>
         <h2>Choose your <em className="display-italic">starting point.</em></h2>
         <p>Textiles and fabrics are our primary focus. Other requirements are discussed case by case.</p>
-        <ul>{TILES.map(tile => <li key={tile.id}><Link to={hrefFor(tile)}>{tile.label}<Arrow /></Link><p>{CATEGORIES.find(c => c.id === tile.id)?.hint}</p></li>)}</ul>
+        <ul>{TILES.map(tile => <li key={tile.id}>{(tile.motif === 'agriculture' || tile.motif === 'textiles') && <CategoryPoster motif={tile.motif} sizes="100px" className={`journey__directory-specimen${tile.motif === 'agriculture' ? ' journey__directory-wheat' : ' journey__directory-textile'}`} />}<Link to={hrefFor(tile)}>{tile.label}<Arrow /></Link><p>{CATEGORIES.find(c => c.id === tile.id)?.hint}</p></li>)}</ul>
         {!live || failed ? <p className="journey__availability">Category details and enquiry links are available even when 3D previews cannot be displayed.</p> : null}
       </div>
     </section>

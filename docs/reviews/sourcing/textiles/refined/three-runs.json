@@ -1,0 +1,68 @@
+[
+  {
+    "preparationMs": 3051.1999999955297,
+    "calls": 3,
+    "triangles": 2810,
+    "geometries": 4,
+    "textures": 8,
+    "modelGeometries": 3,
+    "meshes": 3,
+    "instances": 0,
+    "vertices": 1812,
+    "materialTextureBytesEstimate": 873813,
+    "width": 750,
+    "height": 600,
+    "camera": {
+      "zoom": 214.2857142857143
+    },
+    "initialRotation": [
+      0.05,
+      0.7,
+      0
+    ]
+  },
+  {
+    "preparationMs": 903.3999999985099,
+    "calls": 3,
+    "triangles": 2810,
+    "geometries": 4,
+    "textures": 8,
+    "modelGeometries": 3,
+    "meshes": 3,
+    "instances": 0,
+    "vertices": 1812,
+    "materialTextureBytesEstimate": 873813,
+    "width": 750,
+    "height": 600,
+    "camera": {
+      "zoom": 214.2857142857143
+    },
+    "initialRotation": [
+      0.05,
+      0.7,
+      0
+    ]
+  },
+  {
+    "preparationMs": 888.6999999955297,
+    "calls": 3,
+    "triangles": 2810,
+    "geometries": 4,
+    "textures": 8,
+    "modelGeometries": 3,
+    "meshes": 3,
+    "instances": 0,
+    "vertices": 1812,
+    "materialTextureBytesEstimate": 873813,
+    "width": 750,
+    "height": 600,
+    "camera": {
+      "zoom": 214.2857142857143
+    },
+    "initialRotation": [
+      0.05,
+      0.7,
+      0
+    ]
+  }
+]

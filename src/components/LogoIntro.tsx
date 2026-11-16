@@ -1,5 +1,5 @@
 import React from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigationType } from 'react-router-dom'
 import { COMPACT_QUERY } from '../three/render-policy'
 import { Logo } from './Logo'
 
@@ -25,10 +25,14 @@ const CLEAR_AT = 2550
 const END = 3000
 
 export function LogoIntro() {
-  const { pathname, hash } = useLocation()
+  const { pathname, hash, key } = useLocation()
+  const navigationType = useNavigationType()
+  const initialKey = React.useRef(key)
+  const navigated = React.useRef(false)
   const host = React.useRef<HTMLDivElement>(null)
 
   React.useEffect(() => {
+    if (key !== initialKey.current) navigated.current = true
     const intro = host.current
     const brand = document.querySelector<HTMLAnchorElement>('.nav .brand')
     const headerLogo = brand?.querySelector<SVGSVGElement>('.brand-logo')
@@ -139,13 +143,14 @@ export function LogoIntro() {
       play()
     }
     brand.addEventListener('click', replay)
-    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
-    if (!hash || navigation?.type === 'reload' || navigation?.type === 'back_forward') play()
+    // Back restores an existing reading position. It must not put a new
+    // opening curtain over that chapter or rewind a direct section entry.
+    if (!hash && (!navigated.current || navigationType !== 'POP')) play()
     return () => {
       brand.removeEventListener('click', replay)
       finish()
     }
-  }, [pathname, hash])
+  }, [pathname, hash, key, navigationType])
 
   if (pathname !== '/') return null
   return (

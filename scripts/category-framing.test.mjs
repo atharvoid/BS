@@ -9,6 +9,8 @@ import {
 } from '../src/three/categoryGeometry.ts'
 
 import { makeFabricSamples, makeCommoditySamples } from '../src/three/sourcingGeometry.ts'
+import { makeWheatHead } from '../src/three/wheatGeometry.ts'
+import { makeTextileSample } from '../src/three/textileGeometry.ts'
 
 /* One box per model, built from the real geometry the tiles mount. */
 function boxOf(object) {
@@ -16,8 +18,12 @@ function boxOf(object) {
   return new THREE.Box3().setFromObject(object)
 }
 
-function textileBox() { return boxOf(makeFabricSamples()) }
-function agricultureBox() { return boxOf(makeCommoditySamples()) }
+function textileBox() {
+  const model=makeTextileSample(),box=boxOf(model)
+  model.traverse(mesh=>{if(mesh.isMesh){mesh.geometry.dispose();mesh.material.dispose()}})
+  return box
+}
+function agricultureBox() { const g=makeWheatHead(); const box=boxOf(new THREE.Mesh(g)); g.dispose(); return box }
 
 function vaseBox() {
   return boxOf(new THREE.Mesh(makeVaseBody(32)))

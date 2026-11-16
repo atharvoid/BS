@@ -21,7 +21,7 @@ npm run preview    # serve the production build
 npm run typecheck  # types only
 ```
 
-The phone layout uses normal-flow category cards, visible-only 3D preparation
+The phone layout uses normal-flow category cards, one shared canvas with visible-only drawing
 and a finite automatic motion window. The implementation and remaining device
 qualification are recorded in [the mobile receipt](docs/part3/MOBILE_IMPLEMENTATION_STATUS.md).
 `npm run assets:swatches` regenerates the prebuilt woven images.
@@ -100,9 +100,12 @@ sections that once had them (`Tell us about your fabric`, and the hero globe)
 now either animate continuously or were replaced by written content.
 
 **The category journey.** One shared canvas draws six procedural models: a
-cloth roll, ceramic vase, grain sack, copper coil, cotton boll and export crate.
+cloth roll, ceramic vase, golden wheat head, copper coil, cotton boll and export crate.
 Scroll-driven chapters introduce each category and move that same model into a
 persistent homepage dock. Textiles is first and the primary product line. The
+featured model turns while its chapter is active; docked models turn only under
+pointer hover or keyboard focus. The motion repairs and desktop/phone checks are
+recorded in [the motion receipt](docs/reviews/MOTION_REPAIR_RECEIPT.md). The
 canvas never captures a pointer; category labels remain real links. All six
 links are also available in an ordinary directory, with a skip link. Reduced
 motion and missing WebGL bypass the long choreography. No separate poster is

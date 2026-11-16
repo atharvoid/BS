@@ -1,0 +1,49 @@
+import * as THREE from 'three'
+
+/** Neutral shape candidate. It is not registered in the production gallery. */
+function clothPoint(u: number, v: number) {
+  const t = THREE.MathUtils.clamp((u - .74) / .26, 0, 1)
+  const corner = t * t * (3 - 2 * t)
+  const sag = Math.sin(Math.PI * u) ** 2
+  return new THREE.Vector3(
+    .62 * Math.sin(Math.PI * 2 * u) + .25 * corner * v ** 4,
+    v * (1.55 - .12 * sag) - .055 * sag * Math.sin(Math.PI * v) - .31 * corner * v ** 6,
+    1.85 * (u - .5) + .50 * corner * v ** 5,
+  )
+}
+
+export function makeOpenPleat() {
+  const across = 48, vertical = 12, row = across + 1
+  const layer = row * (vertical + 1)
+  const positions: number[] = [], uv: number[] = [], indices: number[] = []
+  for (const side of [1, -1]) for (let j = 0; j <= vertical; j++) for (let i = 0; i <= across; i++) {
+    const u = i / across, v = j / vertical, e = .0001
+    const tangent = clothPoint(u + e, v).sub(clothPoint(u - e, v))
+    const crosswise = clothPoint(u, v + e).sub(clothPoint(u, v - e))
+    const normal = tangent.cross(crosswise).normalize()
+    const point = clothPoint(u, v).addScaledVector(normal, side * .004)
+    positions.push(point.x, point.y, point.z)
+    uv.push(u, v)
+  }
+  for (let j = 0; j < vertical; j++) for (let i = 0; i < across; i++) {
+    const a = j * row + i, b = a + 1, d = a + row, c = d + 1
+    indices.push(a, b, d, b, c, d)
+    indices.push(a + layer, d + layer, b + layer, b + layer, d + layer, c + layer)
+  }
+  const boundary = [
+    ...Array.from({ length: row }, (_, i) => i),
+    ...Array.from({ length: vertical }, (_, j) => (j + 1) * row + across),
+    ...Array.from({ length: across }, (_, i) => vertical * row + across - i - 1),
+    ...Array.from({ length: vertical - 1 }, (_, j) => (vertical - j - 1) * row),
+  ]
+  for (let i = 0; i < boundary.length; i++) {
+    const a = boundary[i], b = boundary[(i + 1) % boundary.length]
+    indices.push(a, b + layer, b, a, a + layer, b + layer)
+  }
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2))
+  geometry.setIndex(indices)
+  geometry.computeVertexNormals()
+  return geometry
+}

@@ -1,0 +1,80 @@
+# Golden wheat for Agriculture & food
+
+**Implementation handoff for GPT‑6.1 Sol · BS EXIMNEXUS**
+
+Replace the stepped commodity holder in the third product category with the approved single wheat head. A buyer should recognize ripe wheat from the staggered husks and short cut stem, even in the small phone card. In the large chapter, the overlapping faces should show why the object reads as a real specimen. The category continues to represent the broader Agriculture & food business.
+
+## Starting point
+
+- The reference checkout is `arena/e210227c-bs` at `9c57be9`, plus the local wheat study. Run `git status --short --branch` first. On a newer checkout, reconcile the paths and preserve current work. A fresh checkout of that commit alone lacks the approved mesh.
+- The shape authority is [WheatHead.tsx](../../../../src/dev/WheatHead.tsx), SHA‑256 `FE8B4DC8844B3EA7CC54056AF0FC731905F3FAE4B8E314433C5ADDECF82AC419` in this checkout. The [four phone-size angles](phone-turn.png) and [35-second study](index.html) are the visual references. The portable handoff includes those files and the authoring version of `src/dev/PosterCapture.tsx`. Compare files before importing them into another worktree.
+- The measured phone image stage was 168.61 × 134.88 CSS px at a 390 × 844 viewport. The desktop proof used a 1440 × 900 layout and a 240 × 160 dock cell. Compare at browser zoom 100% first. The study is a recording of the real mesh. Its 3.7 MB animated WebP belongs in review materials only.
+- Production identity is motif `agriculture`, content ID `agriculture-food`, chapter 3 of 6 and enquiry link `/enquiry?category=agriculture-food`. The sale, ordering and availability copy already belongs to the site.
+
+## Art direction Sol can implement directly
+
+**Ripe harvest gold under the existing studio lights.** Retain the approved geometry byte-for-byte in its position and index attributes, including the seven staggered levels, short awns, stem proportions and baked −0.36 radian lean. Keep the normals, pivot and framing. The change is surface colour.
+
+| Surface | sRGB starting colour | Placement |
+|---|---|---|
+| Main husks | `#C99B49` | The dominant honey-gold midtone on the broad faces. |
+| Raised husk ridges | `#DDB96F` | Blend up to one-third toward pale straw along the raised rib and upper shoulder. Let the studio light supply the highlight. |
+| Husk roots | `#9D783C` | Blend up to one-third toward toasted ochre at the bottom of each husk. Leave most of the shading to the geometry. |
+| Cut stem and awns | `#B79453` and `#CDA958` | Use a quieter stem and slightly lighter tips. Both must remain visible against the site's cream surfaces. |
+
+Use one matte `MeshStandardMaterial`. Set `roughness = 0.90`, `metalness = 0`, `emissive = black`, `vertexColors = true` and the material base to white. Convert the sRGB swatches with the installed Three colour API before interpolating vertex colours. Give each source part a compatible colour attribute before merging. Use the existing ring, side and part identities so the colour follows the husk when it turns. The geometry already provides relief. Additional geometry, maps, glints, random hue variation or postprocessing would add cost without resolving the colour request.
+
+Inspect the result under `Studio`, `Lights intensity={1.05}` and the existing contact shadow. Keep diffuse warm light on the camera-facing side and a visible cool-side separation as the head turns. Check the small card on `#FAF5EA` and the dock on `#F2EBDD`. If the face reads orange, ease the base toward straw. If it disappears on cream, darken the husk midtone slightly before touching the tips. Confine any correction to these local swatches, record the final values, and keep the same material in every view.
+
+## Build sequence
+
+| Order | Implementation | Review output |
+|---|---|---|
+| 1. Lock the silhouette | Extract the existing mesh factory into a testable production module under `src/three/`. Let the authoring study and product component use that same geometry. Preserve the existing neutral study and capture four reference poses before colouring. Assign a single owner to disposal of the merged geometry and its material. | The neutral geometry and four silhouettes match the approved reference at the opening angle and successive quarter turns. |
+| 2. Finish the material | Apply the palette above. Produce the golden study using the production camera, shadow, lights and angle. Check a complete revolution for disappearing husks, bright flashes and orange or green casts. | One golden turntable plus four frames at true phone size, shown beside the neutral reference under identical lighting. |
+| 3. Connect the real category | Replace only `CATEGORY_OBJECTS.agriculture.model` in `src/three/categoryObjects.tsx`. Preserve speed `0.18`, shared `Exhibit`, orthographic camera, `frameModel` and the existing scroll-to-dock transform. Keep authoring imports out of the production entry. The full category tile remains the link, with decorative, pointer-transparent imagery. | A local production-build preview showing chapter 3, box 3 of the six-box dock, and the linked phone card. Forward and reverse scrolling carry the same model through the transition. |
+| 4. Match first paint and retained frames | Generate the two production posters below. Use the state rules in the next section for loading, pause, remount and refresh. Limit any gallery/poster changes to the target motif unless a shared fix is necessary and covered by a regression check. | Cold load, mid-turn freeze, return, same-tab refresh and static fallback captures from the actual website. |
+| 5. Qualify the candidate | Run the canonical gates and the targeted browser checks below on the final files. Compare the other five slots, the globe and the dedicated textile page against the starting checkout. | A short implementation receipt with preview, actual metrics, changed paths, test results and any outstanding device evidence. |
+
+## Motion and continuity
+
+| Situation | Required behavior and implementation detail |
+|---|---|
+| First visit | Use the gallery opening rotation `[0.05, 0.7, 0]`. Show the matching golden poster while preparing. Reveal the first successfully drawn frame at that pose, then start rotation. Include the contact shadow in both. Avoid a double-dark edge from overlapping semi-transparent copies during the handoff. |
+| Desktop chapter and dock | Rotate automatically at 0.18 rad/s, about 34.9 seconds per turn at target cadence. Scrolling changes the measured slot's position and size. It must not reset or accelerate the specimen. Test the middle of a fast forward and reverse scroll. Keep drag, buttons and pointer handlers off the model. |
+| Phone | Reuse `render-policy.ts` and `render-budget.ts`. The site gives the product section one 4,500 ms motion window with a bounded yaw, then holds. A late-arriving card can legitimately be still. The review turntable deliberately shows all sides. Vertical scrolling, pinch zoom and a tap through to the correct enquiry remain native. |
+| Pause, offscreen, return | Keep the last **presented** pose. `Exhibit` currently stores phase in a mount-local ref, mobile filters out non-visible exhibits, and `FrameReporting.tsx` can skip a draw at the medium tier. Record the minimal pose/phase at a successful draw, including the bounded-motion phase if relevant. Retain it across an ordinary remount and resume from it. Avoid wall-clock catch-up, per-frame React state and per-frame pixel readback. A visible adaptive freeze should retain the canvas image. |
+| Normal same-tab reload | When meaningful, retain the last drawn pose for this motif/version in tab-scoped storage on a lifecycle boundary. Use a matching still for that resume pose before revealing a frame drawn at it. One practical option is a bounded snapshot of just the visible specimen and shadow taken at the last valid draw on a planned suspension. Validate the crop, pose, aspect and asset version before reuse. Keep storage and snapshot failures recoverable. If an exact resume pair is unavailable, use the canonical poster **and canonical first frame together**. Never show the canonical still followed by a different saved angle. A forced process kill or sudden GPU loss can make the last frame unavailable. Report that case separately. |
+| Static or lost renderer | Mobile already uses `CategoryPoster`. Desktop `ProductExplorer.tsx` has empty, hidden measurement anchors, and its no-WebGL CSS hides the entire visuals layer. For a loading poster, position a decorative child at the *existing* active anchor and explicitly manage its visibility. For the directory-only fallback, put the compact golden specimen in the agriculture directory item. Keep all six links in their current order. On context loss, display a valid retained frame when available and use the canonical gold still as the fallback. Both paths work without a second renderer. |
+
+For the square desktop anchor, centre the 5:4 transparent poster **by height** and clip its spare horizontal margin. The live scale comes from slot height divided by 2.8. Fitting the whole image by width inside the square silently shrinks the wheat by 20%. On the phone, the 5:4 poster and the card stage already share an aspect ratio. When scaling a retained bitmap after a viewport change would blur it, use the appropriately sized canonical pair or redraw at the saved pose before reveal.
+
+## Generate production posters
+
+Build the existing poster entry with the project's local Vite in `--mode posters`, using a separate ignored output such as `.poster-build/golden-wheat`. Serve it locally. At 750 × 600, DPR 1, load `/?motif=agriculture&matte=white` and the equivalent `matte=black` URL. Wait for **Capture ready** on both. Use the final production registry at its canonical yaw with the ordinary production material. Save the two **composited** PNGs as `agriculture-white.png` and `agriculture-black.png`. A transparent WebGL readback alone omits the matte and is unsuitable for this two-background script.
+
+Run `node scripts/build-posters.mjs "<capture-dir>" agriculture`. Expected outputs are `public/posters/agriculture-mobile.webp` at 750 × 600 and `agriculture-mobile-small.webp` at 375 × 300. Check the actual `currentSrc` on phone and desktop. If a cached old URL can give returning visitors the stepped holder, version both agriculture URLs together in `CategoryPoster.tsx` and test a warmed cache. Keep all other poster hashes intact. Deliver the static gold artwork and the registry switch as one change.
+
+## Acceptance checks
+
+| Check | Pass condition |
+|---|---|
+| Geometry, colour and scale | Production wheat positions, indices and normals agree with the approved factory. Compare object-only masks at yaw `0.7 + n × π/2` for n = 0…3. At matching size, each outline and the stem tip are within 1 CSS px of the reference. Gold appears on both front and back, the side view retains distinct husks, and the shared lighting and neighbouring objects retain their colour. Inspect a complete turn in addition to these four samples. |
+| Poster and live parity | Compare the object and shadow on the actual card and dock backgrounds at the same pose, crop and DPR. Compare on the object mask, since blank margins can hide a bad colour match. Target mean absolute RGB difference ≤3/255 on fully opaque object pixels and ≤1 CSS px silhouette drift. Review thin awns visually. For a freeze at fixed layout/DPR, consecutive settled frames should be pixel-identical. |
+| Real entry points | At 1440 × 900, enter chapter 3, scroll into box 3, reverse, refresh at the chapter and dock, and follow the agriculture link. At 390 × 844 inspect the measured card at 100% zoom, return after scrolling out, then navigate away and Back. At 320 × 568 exercise reduced motion and test the single-column layout if active. Also cover Save-Data, delayed 3D, unavailable WebGL and context loss. Check six working links, a single gallery canvas when live, no horizontal overflow and no page exceptions. |
+| Rendering cost | Match the neutral study at **2 draw calls and 2,914 triangles** in the isolated gallery capture including the shadow. Use zero new material textures and keep estimated material texture bytes, including the existing shared shadow, at or below 349,525. Target static posters ≤10 KB full and ≤5 KB small (decimal). The production request log must exclude the review turntable and authoring bundle. Inspect the quality transition, offscreen/hidden-tab work and normal scrolling under the existing phone pixel cap. Compare three like-for-like runs against the existing holder. Device smoothness needs a physical-device observation. |
+| Regression coverage | Update `scripts/category-framing.test.mjs` and `scripts/sourcing-geometry.test.mjs` so a passing production check actually exercises the wheat. Retain checks covering still-used comparison fixtures. Add the smallest targeted check that would fail for pose reset, mismatched poster fit or the wrong registry entry. Run `npm test`, `npm run build`, and `git diff --check`. The older `scripts/category-journey.check.mjs` expects desktop runway markup at 390 px. Split desktop and phone assertions or use the actual phone card in a focused browser check. A green desktop script alone does not qualify the phone. |
+
+Screen sizes above are browser test conditions. Record physical Android, iPhone/Safari and public deployment evidence only if actually obtained. If a budget or comparison fails, identify the failed view, fix the relevant mesh/material/poster or pose handoff, and repeat it on the final candidate. Report fresh results with the local preview.
+
+## Companion work package for Textiles & fabrics
+
+Gold belongs only to Agriculture & food. The earlier textile direction is an **open indigo pleat**. Its silhouette still needs the owner's review. Agriculture can go through local integration independently. The textile work proceeds in three steps when both objects are assigned.
+
+1. **Shape proof.** Build one short piece of cloth resting on its lower edge in a broad, open S. Turn one upper corner outward to expose the reverse. Leave a visible opening between the lobes at phone size. Sweep a thin, closed ribbon along a smooth curve with a slight crosswise sag. Use a rounded fold radius and test positive clearance between sections, including the turned corner. Show the neutral front, side, back and full turn at the three wheat review sizes. This is the textile shape decision.
+2. **Material after shape approval.** Use washed indigo `#34495F` on the face, softened blue-grey `#526476` on the reverse and a narrow warm ecru selvedge `#D5C8A9` along one long edge. Use matte roughness around 0.93 and zero metalness. Try a vertex-colour selvedge and the existing filtered weave first. At phone size the broad fold and contrasting edge should carry the image. Inspect zoom, the side view and the reverse for shimmer and crossing surfaces.
+3. **Integration and evidence.** Replace the `textiles` motif in slot 1 once its shape is approved. Use the shared motion, fitting and poster checks above with the `textiles` generator argument and its own state key. Keep the `/textiles` link and dedicated page. Measure against the current textile envelope of 4 calls, 2,930 triangles and 1,048,576 estimated material texture bytes including shadow. Aim for ≤12 KB full and ≤5 KB small posters. Return a separate textile preview and checks so wheat approval cannot accidentally count as textile approval.
+
+## Dispatch text
+
+> Implement the golden wheat Agriculture & food object using this handoff and the supplied approved mesh. Start from the existing checkout and preserve concurrent work. Carry the material, production gallery integration, matching posters, state continuity and focused verification through to a local preview. Show the true phone-size result beside the desktop chapter and dock. Return the final palette, measured rendering cost, test results and remaining evidence gaps. Scope this assignment to agriculture. Leave publication for a separate instruction.

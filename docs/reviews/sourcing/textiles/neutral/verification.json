@@ -1,0 +1,24 @@
+{
+  "views": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "wheatPosters": {
+    "agriculture-mobile.webp": "327931342670c5235dbc7010a3534b0ca29de98fa11f572c565910bb2eb9a5a5",
+    "agriculture-mobile-small.webp": "38cd46c3ee857f62b7fb5753b545c5893816362038c9b0f7e4d98aad97b0aaea"
+  }
+}

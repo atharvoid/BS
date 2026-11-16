@@ -1,0 +1,37 @@
+{
+  "media": [
+    {
+      "duration": 28.92,
+      "currentTime": 6.502055,
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "duration": 19.48,
+      "currentTime": 5.503095,
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "frames": [
+    {
+      "currentTime": 9,
+      "corner": [
+        59,
+        55,
+        51,
+        255
+      ]
+    },
+    {
+      "currentTime": 6,
+      "corner": [
+        23,
+        19,
+        17,
+        255
+      ]
+    }
+  ],
+  "errors": []
+}

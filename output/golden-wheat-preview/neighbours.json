@@ -1,0 +1,30 @@
+[
+  {
+    "motif": "textiles",
+    "pixelIdentical": true
+  },
+  {
+    "motif": "handicrafts",
+    "pixelIdentical": true
+  },
+  {
+    "motif": "industrial",
+    "pixelIdentical": true
+  },
+  {
+    "motif": "organic",
+    "pixelIdentical": true
+  },
+  {
+    "motif": "general",
+    "pixelIdentical": true
+  },
+  {
+    "motif": "globe",
+    "pixelIdentical": true
+  },
+  {
+    "motif": "cloth",
+    "pixelIdentical": true
+  }
+]

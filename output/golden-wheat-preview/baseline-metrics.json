@@ -1,0 +1,140 @@
+[
+  {
+    "model": "holder",
+    "preparationMs": 720.7000000001863,
+    "calls": 8,
+    "triangles": 3878,
+    "geometries": 5,
+    "textures": 5,
+    "modelGeometries": 4,
+    "meshes": 8,
+    "instances": 144,
+    "vertices": 458,
+    "materialTextureBytesEstimate": 349525,
+    "width": 750,
+    "height": 600,
+    "camera": {
+      "zoom": 214.2857142857143
+    },
+    "initialRotation": [
+      0.05,
+      0.7,
+      0
+    ]
+  },
+  {
+    "model": "holder",
+    "preparationMs": 1449.9000000003725,
+    "calls": 8,
+    "triangles": 3878,
+    "geometries": 5,
+    "textures": 5,
+    "modelGeometries": 4,
+    "meshes": 8,
+    "instances": 144,
+    "vertices": 458,
+    "materialTextureBytesEstimate": 349525,
+    "width": 750,
+    "height": 600,
+    "camera": {
+      "zoom": 214.2857142857143
+    },
+    "initialRotation": [
+      0.05,
+      0.7,
+      0
+    ]
+  },
+  {
+    "model": "holder",
+    "preparationMs": 1435.6000000000931,
+    "calls": 8,
+    "triangles": 3878,
+    "geometries": 5,
+    "textures": 5,
+    "modelGeometries": 4,
+    "meshes": 8,
+    "instances": 144,
+    "vertices": 458,
+    "materialTextureBytesEstimate": 349525,
+    "width": 750,
+    "height": 600,
+    "camera": {
+      "zoom": 214.2857142857143
+    },
+    "initialRotation": [
+      0.05,
+      0.7,
+      0
+    ]
+  },
+  {
+    "model": "neutral-wheat",
+    "preparationMs": 1458.2000000001863,
+    "calls": 2,
+    "triangles": 2914,
+    "geometries": 3,
+    "textures": 5,
+    "modelGeometries": 2,
+    "meshes": 2,
+    "instances": 0,
+    "vertices": 1768,
+    "materialTextureBytesEstimate": 349525,
+    "width": 750,
+    "height": 600,
+    "camera": {
+      "zoom": 214.2857142857143
+    },
+    "initialRotation": [
+      0.05,
+      0.7,
+      0
+    ]
+  },
+  {
+    "model": "neutral-wheat",
+    "preparationMs": 250.8000000002794,
+    "calls": 2,
+    "triangles": 2914,
+    "geometries": 3,
+    "textures": 5,
+    "modelGeometries": 2,
+    "meshes": 2,
+    "instances": 0,
+    "vertices": 1768,
+    "materialTextureBytesEstimate": 349525,
+    "width": 750,
+    "height": 600,
+    "camera": {
+      "zoom": 214.2857142857143
+    },
+    "initialRotation": [
+      0.05,
+      0.7,
+      0
+    ]
+  },
+  {
+    "model": "neutral-wheat",
+    "preparationMs": 1548.5999999996275,
+    "calls": 2,
+    "triangles": 2914,
+    "geometries": 3,
+    "textures": 5,
+    "modelGeometries": 2,
+    "meshes": 2,
+    "instances": 0,
+    "vertices": 1768,
+    "materialTextureBytesEstimate": 349525,
+    "width": 750,
+    "height": 600,
+    "camera": {
+      "zoom": 214.2857142857143
+    },
+    "initialRotation": [
+      0.05,
+      0.7,
+      0
+    ]
+  }
+]

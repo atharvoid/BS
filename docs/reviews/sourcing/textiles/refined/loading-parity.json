@@ -1,0 +1,12 @@
+[
+  {
+    "view": "desktop delayed loading to first frame",
+    "mae": 2.5346310496257023,
+    "yaw": "0.7",
+    "retained": true
+  },
+  {
+    "view": "dock retained pair",
+    "mae": 0.5093838689004851
+  }
+]

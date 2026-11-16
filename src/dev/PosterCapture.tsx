@@ -1,4 +1,7 @@
 import { SourcingIteration, type Iteration } from './SourcingIterations'
+import { WheatHead } from './WheatHead'
+import { TextileRollStudy } from './TextileRollStudy'
+import { TextileSample } from '../three/TextileSample'
 import React from 'react'
 import * as THREE from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
@@ -54,7 +57,22 @@ function CaptureReady({ready}: {ready: () => void}) {
 }
 /** Studio-only inspection. Production never imports this entry. */
 function InspectModel({ motif, params }: { motif: string; params: URLSearchParams }) {
-  const { scene } = useThree()
+  const { scene, gl, camera } = useThree()
+  // Export directly after drawing so transparent edges and the canonical
+  // camera match the gallery without screen grabs or wall-clock timing.
+  React.useEffect(() => {
+    if (!params.has('turntable')) return
+    const capture = (yaw: number) => {
+      const model = scene.getObjectByName(`category-spin-${motif}`)
+      if (!model) throw new Error('Category model has not been framed yet')
+      model.rotation.y = yaw
+      gl.render(scene, camera)
+      return gl.domElement.toDataURL('image/png')
+    }
+    const host = window as Window & { captureTurntablePose?: typeof capture }
+    host.captureTurntablePose = capture
+    return () => { delete host.captureTurntablePose }
+  }, [params, motif, scene, gl, camera])
   React.useLayoutEffect(() => {
     if (!params.has('neutral') && !params.has('mask')) return
     const clones: THREE.Material[] = []
@@ -85,6 +103,9 @@ export default function PosterCapture() {
   const motif = params.get('motif') || 'globe'
   if (motif === 'agriculture' && params.has('variant')) CATEGORY_OBJECTS.agriculture.model = <CommoditySamples variant={params.get('variant') === 'shallow' ? 'shallow' : 'stepped'} />
   const iteration = params.get('iteration')
+  if (motif === 'textiles' && iteration === 'fabric-roll') CATEGORY_OBJECTS.textiles.model = <TextileRollStudy />
+  if (motif === 'textiles' && iteration === 'fabric-sample') CATEGORY_OBJECTS.textiles.model = <TextileSample />
+  if (motif === 'agriculture' && iteration === 'wheat') CATEGORY_OBJECTS.agriculture.model = <WheatHead />
   if (iteration && ['swatches','rail','scoops','bowls'].includes(iteration) && (motif === 'textiles' || motif === 'agriculture')) CATEGORY_OBJECTS[motif].model = <SourcingIteration kind={iteration as Iteration} />
   const globe = motif === 'globe'
   const cloth = motif === 'cloth'

@@ -54,14 +54,14 @@ function Hero() {
               Start an enquiry
               <Arrow />
             </Link>
-            <a href="#products" className="hero__secondary">
+            <Link to="/#products" className="hero__secondary">
               <span className="hero__secondary-ring" aria-hidden="true">
                 <svg viewBox="0 0 12 12" fill="none">
                   <path d="M6 1v10M2 7l4 4 4-4" stroke="currentColor" strokeWidth="1.4" />
                 </svg>
               </span>
               Explore products
-            </a>
+            </Link>
           </div>
         </div>
 

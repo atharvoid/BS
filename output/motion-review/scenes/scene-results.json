@@ -1,0 +1,99 @@
+{
+  "results": [
+    {
+      "flow": "settled globe horizontal rotation and native vertical touch scroll",
+      "beforeY": 0,
+      "afterY": 155,
+      "events": [
+        {
+          "sceneId": "_r_2_",
+          "phase": "enter",
+          "pointerId": 2,
+          "pointerType": "touch"
+        },
+        {
+          "sceneId": "_r_2_",
+          "phase": "press",
+          "pointerId": 2,
+          "pointerType": "touch"
+        },
+        {
+          "sceneId": "_r_2_",
+          "phase": "drag",
+          "pointerId": 2,
+          "pointerType": "touch"
+        },
+        {
+          "sceneId": "_r_2_",
+          "phase": "drag",
+          "pointerId": 2,
+          "pointerType": "touch"
+        },
+        {
+          "sceneId": "_r_2_",
+          "phase": "drag",
+          "pointerId": 2,
+          "pointerType": "touch"
+        },
+        {
+          "sceneId": "_r_2_",
+          "phase": "drag",
+          "pointerId": 2,
+          "pointerType": "touch"
+        },
+        {
+          "sceneId": "_r_2_",
+          "phase": "drag",
+          "pointerId": 2,
+          "pointerType": "touch"
+        },
+        {
+          "sceneId": "_r_2_",
+          "phase": "drag",
+          "pointerId": 2,
+          "pointerType": "touch"
+        },
+        {
+          "sceneId": "_r_2_",
+          "phase": "drag",
+          "pointerId": 2,
+          "pointerType": "touch"
+        },
+        {
+          "sceneId": "_r_2_",
+          "phase": "drag",
+          "pointerId": 2,
+          "pointerType": "touch"
+        },
+        {
+          "sceneId": "_r_2_",
+          "phase": "drag",
+          "pointerId": 2,
+          "pointerType": "touch"
+        },
+        {
+          "sceneId": "_r_2_",
+          "phase": "drag",
+          "pointerId": 2,
+          "pointerType": "touch"
+        },
+        {
+          "sceneId": "_r_2_",
+          "phase": "release",
+          "pointerId": 2,
+          "pointerType": "touch"
+        },
+        {
+          "sceneId": "_r_2_",
+          "phase": "leave",
+          "pointerId": 2,
+          "pointerType": "touch"
+        }
+      ]
+    },
+    {
+      "flow": "desktop globe, home section, textile enquiry section, content skip and privacy anchors"
+    }
+  ],
+  "errors": []
+}

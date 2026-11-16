@@ -1,0 +1,8 @@
+{
+  "opening": "passed",
+  "replay": "passed",
+  "directHash": "passed",
+  "hashReload": "passed",
+  "contextLoss": "directory recovered",
+  "errors": []
+}

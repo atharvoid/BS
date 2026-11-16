@@ -1,4 +1,5 @@
-import { FabricSamples, CommoditySamples } from './SourcingSamples'
+import { TextileSample } from './TextileSample'
+import { WheatHead } from './WheatHead'
 import React from 'react'
 import * as THREE from 'three'
 import {
@@ -269,9 +270,9 @@ export type CategoryMotif =
  * at this size.
  */
 export const CATEGORY_OBJECTS: Record<CategoryMotif, { model: React.ReactNode; speed: number }> = {
-  textiles: { model: <FabricSamples />, speed: 0.18 },
+  textiles: { model: <TextileSample />, speed: 0.18 },
   handicrafts: { model: <PotteryVase />, speed: 0.18 },
-  agriculture: { model: <CommoditySamples />, speed: 0.18 },
+  agriculture: { model: <WheatHead />, speed: 0.18 },
   industrial: { model: <CopperCoil />, speed: 0.18 },
   organic: { model: <CottonBoll />, speed: 0.18 },
   general: { model: <ExportCrate />, speed: 0.18 },

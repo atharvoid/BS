@@ -1,0 +1,14 @@
+{
+  "origin": "http://127.0.0.1:4383",
+  "results": [
+    {
+      "flow": "reduced motion",
+      "width": 1440
+    },
+    {
+      "flow": "reduced motion",
+      "width": 390
+    }
+  ],
+  "errors": []
+}

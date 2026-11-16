@@ -1,0 +1,22 @@
+{
+  "preparationMs": 761.0999999996275,
+  "calls": 2,
+  "triangles": 2546,
+  "geometries": 3,
+  "textures": 5,
+  "modelGeometries": 2,
+  "meshes": 2,
+  "instances": 0,
+  "vertices": 1278,
+  "materialTextureBytesEstimate": 349525,
+  "width": 750,
+  "height": 600,
+  "camera": {
+    "zoom": 214.2857142857143
+  },
+  "initialRotation": [
+    0.05,
+    0.7,
+    0
+  ]
+}

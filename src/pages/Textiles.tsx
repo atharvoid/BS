@@ -72,7 +72,7 @@ export default function Textiles() {
           <p className="eyebrow">Textiles &amp; fabrics</p>
           <h1 className="page-hero__title">Textiles and fabrics <em className="display-italic">from India</em>.</h1>
           <p className="page-hero__lede">Explore fabric types and the regions where we’re beginning our sourcing work.</p>
-          <a href="#textile-enquiry" className="btn btn--light">Start a textile enquiry <Arrow /></a>
+          <Link to="/textiles#textile-enquiry" className="btn btn--light">Start a textile enquiry <Arrow /></Link>
         </div>
       </section>
 

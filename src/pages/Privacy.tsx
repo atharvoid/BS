@@ -70,17 +70,17 @@ export default function Privacy() {
               <ol>
                 {SECTIONS.map((s, i) => (
                   <li key={s.id}>
-                    <a href={`#${s.id}`}>
+                    <Link to={`/privacy#${s.id}`}>
                       <span>{String(i + 1).padStart(2, '0')}</span>
                       {s.t}
-                    </a>
+                    </Link>
                   </li>
                 ))}
                 <li>
-                  <a href="#contact">
+                  <Link to="/privacy#contact">
                     <span>{String(SECTIONS.length + 1).padStart(2, '0')}</span>
                     Contact
-                  </a>
+                  </Link>
                 </li>
               </ol>
             </nav>

@@ -2,6 +2,7 @@ import React from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { BUSINESS } from '../content'
 import { Logo } from './Logo'
+import { useCompactLayout } from './useCompactLayout'
 
 const LINKS = [
   { to: '/#products', label: 'Products', end: false },
@@ -15,8 +16,14 @@ export function Nav() {
   const toggle = React.useRef<HTMLButtonElement>(null)
   const drawer = React.useRef<HTMLDivElement>(null)
   const { pathname, hash } = useLocation()
+  const compact = useCompactLayout()
 
   React.useEffect(() => setOpen(false), [pathname, hash])
+  React.useEffect(() => {
+    if (compact) return
+    setOpen(false)
+    if (drawer.current?.contains(document.activeElement)) document.querySelector<HTMLElement>('.nav__links a')?.focus({preventScroll:true})
+  }, [compact])
 
   React.useEffect(() => {
     let raf = 0

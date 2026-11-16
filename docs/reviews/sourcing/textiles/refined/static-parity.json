@@ -1,0 +1,12 @@
+{
+  "results": [
+    {
+      "view": "canonical phone parity",
+      "mae": 1.660777686740407,
+      "objectPixels": 19528,
+      "nativePixelBand": 2
+    }
+  ],
+  "errors": [],
+  "requests": []
+}

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wheat head study · BS EXIMNEXUS</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #faf5ea; color: #302b26; font: 16px/1.5 "Instrument Sans", system-ui, sans-serif; }
+    main { max-width: 1030px; padding: clamp(20px, 4vw, 46px); margin: auto; }
+    header { border-bottom: 1px solid #cfc4b1; margin-bottom: 20px; padding-bottom: 16px; }
+    h1 { margin: 2px 0 4px; font: 400 clamp(2.2rem, 5vw, 3.7rem)/1.1 "Newsreader", Georgia, serif; }
+    p { margin: 0; }
+    .category, figcaption { font-size: .85rem; }
+    .views { display: grid; grid-template-columns: minmax(0, 1fr) 240px; align-items: center; gap: clamp(20px, 4vw, 44px); }
+    figure { margin: 0; }
+    figcaption { margin-bottom: 7px; color: #574e42; }
+    .stage { display: grid; place-items: center; overflow: hidden; background: #f2ebdd; position: relative; }
+    .stage picture { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+    .stage img { height: 100%; width: auto; max-width: none; flex: none; }
+    .chapter { height: min(549px, 56vw); }
+    .references { display: grid; gap: 30px; }
+    .phone { width: 170.609375px; background: #faf5ea; border: 1px solid #d6cbb8; }
+    .phone .stage { width: 100%; aspect-ratio: 5 / 4; background: inherit; }
+    .phone p { padding: 3px 12px 12px; font-weight: 600; font-size: 1.05rem; }
+    .dock { width: 240px; height: 160px; background: #f2ebdd; border-block: 1px solid #d6cbb8; position: relative; }
+    .dock .stage { height: 121.6px; }
+    .dock span { position: absolute; top: 10px; left: 12px; font: 10px monospace; color: #62594e; }
+    .dock p { position: absolute; left: 12px; bottom: 13px; font-size: .9rem; }
+    @media (max-width: 660px) {
+      .views { grid-template-columns: 1fr; }
+      .references { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 20px; }
+      .chapter { height: min(330px, 78vw); }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="category">Agriculture &amp; food</p>
+      <h1>Wheat head study</h1>
+      <p>One untextured head, shown at three sizes. A full turn takes 35 seconds.</p>
+    </header>
+    <div class="views">
+      <figure>
+        <figcaption>Large product view</figcaption>
+        <div class="stage chapter">
+          <picture><source media="(prefers-reduced-motion: reduce)" srcset="wheat-still.webp"><img src="wheat-turn.webp" alt="A slightly leaning wheat head with staggered husks and a short cut stem"></picture>
+        </div>
+      </figure>
+      <div class="references">
+        <figure>
+          <figcaption>Card on a 390 px phone</figcaption>
+          <div class="phone">
+            <div class="stage"><picture><source media="(prefers-reduced-motion: reduce)" srcset="wheat-still.webp"><img src="wheat-turn.webp" alt=""></picture></div>
+            <p>Agriculture &amp; food</p>
+          </div>
+        </figure>
+        <figure>
+          <figcaption>Dock on a 1440 px desktop</figcaption>
+          <div class="dock">
+            <div class="stage"><picture><source media="(prefers-reduced-motion: reduce)" srcset="wheat-still.webp"><img src="wheat-turn.webp" alt=""></picture></div>
+            <span>03</span><p>Agriculture &amp; food</p>
+          </div>
+        </figure>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

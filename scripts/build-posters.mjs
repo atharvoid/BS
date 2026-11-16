@@ -8,7 +8,9 @@ const root = process.argv[2]
 if (!root) throw new Error('Pass the directory containing matching white/black model captures.')
 const available = ['globe-mobile','globe-desktop','cloth-mobile','textiles','handicrafts','agriculture','industrial','organic','general']
 // Optional names allow replacement assets without rewriting unrelated posters.
-const selected = process.argv.slice(3)
+const selected = process.argv.slice(3).filter(arg => !arg.startsWith('--quality='))
+const quality = Number(process.argv.find(arg => arg.startsWith('--quality='))?.split('=')[1] ?? 90)
+if (!Number.isFinite(quality) || quality < 1 || quality > 100) throw new Error('Poster quality must be between 1 and 100.')
 if (selected.some(name => !available.includes(name))) throw new Error(`Unknown poster name. Choose: ${available.join(', ')}`)
 for (const name of selected.length ? [...new Set(selected)] : available) {
   const white = await loadImage(await readFile(path.join(root, `${name}-white.png`)))
@@ -29,12 +31,12 @@ for (const name of selected.length ? [...new Set(selected)] : available) {
   if (opaque < white.width * white.height * .01) throw new Error(`Empty capture: ${name}`)
   ctx.putImageData(b,0,0)
   const file = `public/posters/${name.includes('-') ? name : name+'-mobile'}.webp`
-  const bytes = canvas.toBuffer('image/webp', 90)
+  const bytes = canvas.toBuffer('image/webp', quality)
   await writeFile(file, bytes)
   console.log(`${file}: ${white.width}×${white.height}, ${bytes.length} bytes`)
   if (name !== 'globe-desktop') {
     const small = createCanvas(Math.round(white.width / 2), Math.round(white.height / 2))
     small.getContext('2d').drawImage(canvas, 0, 0, small.width, small.height)
-    await writeFile(file.replace('.webp', '-small.webp'), small.toBuffer('image/webp', 90))
+    await writeFile(file.replace('.webp', '-small.webp'), small.toBuffer('image/webp', quality))
   }
 }
