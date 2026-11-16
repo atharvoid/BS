@@ -8,6 +8,8 @@ import { measuredDpr, useQuality, useSceneStill, watchPerformance, releasePerfor
 import { SceneFrames } from './FrameReporting'
 import { useRenderBudget, usePhoneMotion } from './render-budget'
 import { useSceneSession } from './SceneSession'
+import { galleryViewport, reallocatedDpr } from './gallery-viewport'
+import { drawingDpr } from './render-policy'
 import { productYaw } from './render-policy'
 
 /* ==========================================================================
@@ -112,7 +114,7 @@ export function Exhibit({ motif, slot, pxPerUnit, paused, bounded = false }: { m
 
   return (
     <group position={[worldX, worldY, 0]} visible={slot.visible} scale={slot.height / (pxPerUnit * TILE_VIEW)}>
-      <group ref={spin} rotation={[0.05, 0.7, 0]}>
+      <group name={`category-spin-${motif}`} ref={spin} rotation={[0.05, 0.7, 0]}>
         <group ref={body} scale={framing?.scale ?? 1} position={framing?.position ?? [0, 0, 0]}>
           {entry.model}
         </group>
@@ -261,7 +263,10 @@ export function Gallery({ onReady, onLost, onPreparing, journey = false }: { onR
     return () => ro.disconnect()
   }, [])
   const settled = usePhoneMotion('products', prepared && visible && pageVisible && !adaptiveStill)
-  const { dpr, permit } = useRenderBudget(host, measuredDpr(quality, box.w, box.h), box.w, box.h, visible && pageVisible && !adaptiveStill && !settled)
+  const viewport = journey ? galleryViewport(slots, box.w, box.h) : {x:0,y:0,width:box.w,height:box.h}
+  const previousDpr = drawingDpr(measuredDpr(quality, box.w, box.h), box.w, box.h, journey ? 3_000_000 : 1_500_000, !journey)
+  const desired = journey ? reallocatedDpr(measuredDpr(quality, viewport.width, viewport.height), previousDpr, box.w, box.h, viewport.width, viewport.height) : measuredDpr(quality, box.w, box.h)
+  const { dpr, permit } = useRenderBudget(host, desired, viewport.width, viewport.height, visible && pageVisible && !adaptiveStill && !settled)
   const animated = !adaptiveStill && !session?.still && !settled && permit
   React.useEffect(() => {
     if (!visible || !pageVisible || !animated) return
@@ -311,6 +316,7 @@ export function Gallery({ onReady, onLost, onPreparing, journey = false }: { onR
 
   return (
     <div className={journey ? "gallery gallery--journey" : "gallery gallery--cards"} data-ready={prepared} data-motion={animated ? "running" : "frozen"} ref={host} aria-hidden="true">
+      <div style={journey ? {position:'absolute',left:viewport.x,top:viewport.y,width:viewport.width,height:viewport.height,pointerEvents:'none'} : {width:'100%',height:'100%',pointerEvents:'none'}}>
       <Canvas
         orthographic
         camera={{ position: [0, 0, 10], zoom: 1, near: 0.1, far: 60 }}
@@ -326,9 +332,10 @@ export function Gallery({ onReady, onLost, onPreparing, journey = false }: { onR
         <Studio />
         <Lights intensity={1.05} />
         {models.map((slot) => (
-          <Exhibit key={slot.motif} motif={slot.motif} slot={slot} pxPerUnit={pxPerUnit} paused={!prepared || !animated} bounded={!journey} />
+          <Exhibit key={slot.motif} motif={slot.motif} slot={journey ? {...slot,x:slot.x-viewport.x,y:slot.y-viewport.y} : slot} pxPerUnit={pxPerUnit} paused={!prepared || !animated} bounded={!journey} />
         ))}
       </Canvas>
+      </div>
     </div>
   )
 }

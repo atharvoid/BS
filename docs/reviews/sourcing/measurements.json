@@ -1,0 +1,395 @@
+{
+  "method": "750x600 DPR1; frozen gallery Exhibit; Chromium SwiftShader; 3 new pages in one browser, each model, same script and camera; module evaluation to frame 3, not full load; texture bytes are estimated decoded material maps incl mipmaps, not measured VRAM",
+  "before": [
+    {
+      "motif": "textiles",
+      "run": 0,
+      "preparationMs": 587.8999999985099,
+      "calls": 6,
+      "triangles": 4370,
+      "geometries": 7,
+      "textures": 8,
+      "modelGeometries": 6,
+      "meshes": 6,
+      "instances": 0,
+      "vertices": 2555,
+      "materialTextureBytesEstimate": 4543829,
+      "width": 750,
+      "height": 600,
+      "camera": {
+        "zoom": 214.2857142857143
+      },
+      "initialRotation": [
+        0.05,
+        0.7,
+        0
+      ]
+    },
+    {
+      "motif": "textiles",
+      "run": 1,
+      "preparationMs": 364,
+      "calls": 6,
+      "triangles": 4370,
+      "geometries": 7,
+      "textures": 8,
+      "modelGeometries": 6,
+      "meshes": 6,
+      "instances": 0,
+      "vertices": 2555,
+      "materialTextureBytesEstimate": 4543829,
+      "width": 750,
+      "height": 600,
+      "camera": {
+        "zoom": 214.2857142857143
+      },
+      "initialRotation": [
+        0.05,
+        0.7,
+        0
+      ]
+    },
+    {
+      "motif": "textiles",
+      "run": 2,
+      "preparationMs": 350.30000000074506,
+      "calls": 6,
+      "triangles": 4370,
+      "geometries": 7,
+      "textures": 8,
+      "modelGeometries": 6,
+      "meshes": 6,
+      "instances": 0,
+      "vertices": 2555,
+      "materialTextureBytesEstimate": 4543829,
+      "width": 750,
+      "height": 600,
+      "camera": {
+        "zoom": 214.2857142857143
+      },
+      "initialRotation": [
+        0.05,
+        0.7,
+        0
+      ]
+    },
+    {
+      "motif": "agriculture",
+      "run": 0,
+      "preparationMs": 716.1000000014901,
+      "calls": 10,
+      "triangles": 4874,
+      "geometries": 10,
+      "textures": 9,
+      "modelGeometries": 9,
+      "meshes": 10,
+      "instances": 0,
+      "vertices": 2435,
+      "materialTextureBytesEstimate": 5941931,
+      "width": 750,
+      "height": 600,
+      "camera": {
+        "zoom": 214.2857142857143
+      },
+      "initialRotation": [
+        0.05,
+        0.7,
+        0
+      ]
+    },
+    {
+      "motif": "agriculture",
+      "run": 1,
+      "preparationMs": 662.3000000007451,
+      "calls": 10,
+      "triangles": 4874,
+      "geometries": 10,
+      "textures": 9,
+      "modelGeometries": 9,
+      "meshes": 10,
+      "instances": 0,
+      "vertices": 2435,
+      "materialTextureBytesEstimate": 5941931,
+      "width": 750,
+      "height": 600,
+      "camera": {
+        "zoom": 214.2857142857143
+      },
+      "initialRotation": [
+        0.05,
+        0.7,
+        0
+      ]
+    },
+    {
+      "motif": "agriculture",
+      "run": 2,
+      "preparationMs": 575.0999999977648,
+      "calls": 10,
+      "triangles": 4874,
+      "geometries": 10,
+      "textures": 9,
+      "modelGeometries": 9,
+      "meshes": 10,
+      "instances": 0,
+      "vertices": 2435,
+      "materialTextureBytesEstimate": 5941931,
+      "width": 750,
+      "height": 600,
+      "camera": {
+        "zoom": 214.2857142857143
+      },
+      "initialRotation": [
+        0.05,
+        0.7,
+        0
+      ]
+    }
+  ],
+  "after": [
+    {
+      "motif": "textiles",
+      "run": 0,
+      "preparationMs": 450.19999999925494,
+      "calls": 4,
+      "triangles": 2930,
+      "geometries": 5,
+      "textures": 7,
+      "modelGeometries": 4,
+      "meshes": 4,
+      "instances": 0,
+      "vertices": 1474,
+      "materialTextureBytesEstimate": 1048576,
+      "width": 750,
+      "height": 600,
+      "camera": {
+        "zoom": 214.2857142857143
+      },
+      "initialRotation": [
+        0.05,
+        0.7,
+        0
+      ]
+    },
+    {
+      "motif": "textiles",
+      "run": 1,
+      "preparationMs": 248.19999999925494,
+      "calls": 4,
+      "triangles": 2930,
+      "geometries": 5,
+      "textures": 7,
+      "modelGeometries": 4,
+      "meshes": 4,
+      "instances": 0,
+      "vertices": 1474,
+      "materialTextureBytesEstimate": 1048576,
+      "width": 750,
+      "height": 600,
+      "camera": {
+        "zoom": 214.2857142857143
+      },
+      "initialRotation": [
+        0.05,
+        0.7,
+        0
+      ]
+    },
+    {
+      "motif": "textiles",
+      "run": 2,
+      "preparationMs": 248,
+      "calls": 4,
+      "triangles": 2930,
+      "geometries": 5,
+      "textures": 7,
+      "modelGeometries": 4,
+      "meshes": 4,
+      "instances": 0,
+      "vertices": 1474,
+      "materialTextureBytesEstimate": 1048576,
+      "width": 750,
+      "height": 600,
+      "camera": {
+        "zoom": 214.2857142857143
+      },
+      "initialRotation": [
+        0.05,
+        0.7,
+        0
+      ]
+    },
+    {
+      "motif": "agriculture",
+      "run": 0,
+      "preparationMs": 291.9000000022352,
+      "calls": 8,
+      "triangles": 3878,
+      "geometries": 5,
+      "textures": 5,
+      "modelGeometries": 4,
+      "meshes": 8,
+      "instances": 144,
+      "vertices": 458,
+      "materialTextureBytesEstimate": 349525,
+      "width": 750,
+      "height": 600,
+      "camera": {
+        "zoom": 214.2857142857143
+      },
+      "initialRotation": [
+        0.05,
+        0.7,
+        0
+      ]
+    },
+    {
+      "motif": "agriculture",
+      "run": 1,
+      "preparationMs": 258.8999999985099,
+      "calls": 8,
+      "triangles": 3878,
+      "geometries": 5,
+      "textures": 5,
+      "modelGeometries": 4,
+      "meshes": 8,
+      "instances": 144,
+      "vertices": 458,
+      "materialTextureBytesEstimate": 349525,
+      "width": 750,
+      "height": 600,
+      "camera": {
+        "zoom": 214.2857142857143
+      },
+      "initialRotation": [
+        0.05,
+        0.7,
+        0
+      ]
+    },
+    {
+      "motif": "agriculture",
+      "run": 2,
+      "preparationMs": 263.80000000074506,
+      "calls": 8,
+      "triangles": 3878,
+      "geometries": 5,
+      "textures": 5,
+      "modelGeometries": 4,
+      "meshes": 8,
+      "instances": 144,
+      "vertices": 458,
+      "materialTextureBytesEstimate": 349525,
+      "width": 750,
+      "height": 600,
+      "camera": {
+        "zoom": 214.2857142857143
+      },
+      "initialRotation": [
+        0.05,
+        0.7,
+        0
+      ]
+    }
+  ],
+  "posterBytesBefore": {
+    "agriculture-mobile-small.webp": 10082,
+    "agriculture-mobile.webp": 32360,
+    "textiles-mobile-small.webp": 13202,
+    "textiles-mobile.webp": 33608
+  },
+  "posterBytesAfter": {
+    "agriculture-mobile-small.webp": 4286,
+    "agriculture-mobile.webp": 9478,
+    "textiles-mobile-small.webp": 4860,
+    "textiles-mobile.webp": 11300
+  },
+  "smallCommodityVisibilityMask": [
+    {
+      "variant": "shallow",
+      "yaw": 0.7,
+      "visiblePixels": 0
+    },
+    {
+      "variant": "shallow",
+      "yaw": 1.75,
+      "visiblePixels": 0
+    },
+    {
+      "variant": "shallow",
+      "yaw": 2.8,
+      "visiblePixels": 0
+    },
+    {
+      "variant": "shallow",
+      "yaw": 3.85,
+      "visiblePixels": 0
+    },
+    {
+      "variant": "shallow",
+      "yaw": 4.9,
+      "visiblePixels": 0
+    },
+    {
+      "variant": "shallow",
+      "yaw": 5.95,
+      "visiblePixels": 0
+    },
+    {
+      "variant": "stepped",
+      "yaw": 0.7,
+      "visiblePixels": 2482
+    },
+    {
+      "variant": "stepped",
+      "yaw": 1.75,
+      "visiblePixels": 2593
+    },
+    {
+      "variant": "stepped",
+      "yaw": 2.8,
+      "visiblePixels": 2240
+    },
+    {
+      "variant": "stepped",
+      "yaw": 3.85,
+      "visiblePixels": 1606
+    },
+    {
+      "variant": "stepped",
+      "yaw": 4.9,
+      "visiblePixels": 882
+    },
+    {
+      "variant": "stepped",
+      "yaw": 5.95,
+      "visiblePixels": 2104
+    }
+  ],
+  "posterChecks": [
+    {
+      "motif": "textiles",
+      "full": [
+        750,
+        600
+      ],
+      "small": [
+        375,
+        300
+      ],
+      "whiteCompositeMeanAbsoluteRgbError": 0.2623688888888889
+    },
+    {
+      "motif": "agriculture",
+      "full": [
+        750,
+        600
+      ],
+      "small": [
+        375,
+        300
+      ],
+      "whiteCompositeMeanAbsoluteRgbError": 0.18476814814814815
+    }
+  ]
+}

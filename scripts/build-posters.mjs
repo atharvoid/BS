@@ -6,7 +6,11 @@ import path from 'node:path'
 // Capture with the asset-authoring build; never use a screenshot of the website.
 const root = process.argv[2]
 if (!root) throw new Error('Pass the directory containing matching white/black model captures.')
-for (const name of ['globe-mobile','globe-desktop','cloth-mobile','textiles','handicrafts','agriculture','industrial','organic','general']) {
+const available = ['globe-mobile','globe-desktop','cloth-mobile','textiles','handicrafts','agriculture','industrial','organic','general']
+// Optional names allow replacement assets without rewriting unrelated posters.
+const selected = process.argv.slice(3)
+if (selected.some(name => !available.includes(name))) throw new Error(`Unknown poster name. Choose: ${available.join(', ')}`)
+for (const name of selected.length ? [...new Set(selected)] : available) {
   const white = await loadImage(await readFile(path.join(root, `${name}-white.png`)))
   const black = await loadImage(await readFile(path.join(root, `${name}-black.png`)))
   if (white.width !== black.width || white.height !== black.height) throw new Error(`Mismatched capture: ${name}`)

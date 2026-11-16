@@ -1,30 +1,19 @@
+import { FabricSamples, CommoditySamples } from './SourcingSamples'
 import React from 'react'
 import * as THREE from 'three'
-import { getTextile, type PaletteKey } from './objects'
-import { makeRollEndTexture } from './textures'
 import {
   CRATE,
-  ROLL,
   bollCalyx,
   bollLobes,
   crateBattens,
   makeCopperCoil,
   makeBollLobe,
-  makeRolledCloth,
-  clothRestOffset,
-  makeSpill,
-  makeSackBody,
-  makeSackCrown,
   makeVaseBody,
 } from './categoryGeometry'
 import {
   makeBluePotteryTexture,
   makeCottonTexture,
   makeCopperRoughness,
-  makeGrainBump,
-  makeGrainTexture,
-  makeJuteBump,
-  makeJuteTexture,
   makePlankTexture,
   makeStencilTexture,
 } from './categoryTextures'
@@ -71,91 +60,6 @@ function useSharedTexture<T>(key: string, make: () => T): T {
 /* 1 · A roll of handloom cloth (textiles)                                    */
 /* -------------------------------------------------------------------------- */
 
-function TextileRoll() {
-  const palette: PaletteKey = 'indigo'
-  const { radius: R, length: L } = ROLL
-
-  const end = useSharedTexture('roll-end', () => makeRollEndTexture(512))
-  const tex = React.useMemo(() => getTextile(palette, 16), [palette])
-
-  /* The weave is scaled to the roll's circumference, so the threads stay the
-     size they would be on a real bolt rather than stretching into stripes. */
-  const rolled = React.useMemo(() => {
-    const map = tex.map.clone()
-    const bump = tex.bump.clone()
-    map.repeat.set(2.4, 1.15)
-    bump.repeat.set(2.4, 1.15)
-    map.needsUpdate = true
-    bump.needsUpdate = true
-    return { map, bump }
-  }, [tex])
-
-  /* One surface that starts on the roll and unrolls from it. The alternative —
-     a plane laid against the cylinder — puts a third of its vertices inside the
-     bolt; see makeRolledCloth. */
-  const tail = React.useMemo(() => makeRolledCloth({ radius: R, width: 1.0 }), [R])
-
-  React.useEffect(
-    () => () => {
-      rolled.map.dispose()
-      rolled.bump.dispose()
-      tail.dispose()
-    },
-    [rolled, tail],
-  )
-
-  /* The roll and the cloth are built in one frame whose origin is the roll's
-     axis, then moved down so the roll rests on the floor line. That single
-     translation is why the cloth and the roll can never drift apart. */
-  const rest = clothRestOffset(R)
-
-  return (
-    <group position={[0, -rest, 0]}>
-      {/* the bolt, lying along X, in the frame the cloth was solved in */}
-      <group position={[-0.14, 0, 0]}>
-        <mesh rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[R, R, L, 96, 1, true]} />
-          <meshStandardMaterial
-            map={rolled.map}
-            bumpMap={rolled.bump}
-            bumpScale={3.4}
-            roughness={0.88}
-            metalness={0.02}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-
-        {/* the cut ends, showing the spiral of cloth */}
-        {[L / 2, -L / 2].map((x) => (
-          <mesh key={x} position={[x, 0, 0]} rotation={[0, x > 0 ? -Math.PI / 2 : Math.PI / 2, 0]}>
-            <circleGeometry args={[R, 72]} />
-            <meshStandardMaterial map={end} roughness={0.74} metalness={0.02} side={THREE.DoubleSide} />
-          </mesh>
-        ))}
-
-        {/* the kraft band that holds a bolt closed, clear of the cloth's path */}
-        <mesh rotation={[0, 0, Math.PI / 2]} position={[0.42, 0, 0]}>
-          <cylinderGeometry args={[R + 0.008, R + 0.008, 0.17, 96, 1, true]} />
-          <meshStandardMaterial color="#c9b489" roughness={0.94} metalness={0} side={THREE.DoubleSide} />
-        </mesh>
-      </group>
-
-      {/* the cloth, unwound from the roll and lying on the floor */}
-      <group position={[-0.14, 0, 0]}>
-        <mesh geometry={tail}>
-          <meshStandardMaterial
-            map={rolled.map}
-            bumpMap={rolled.bump}
-            bumpScale={2.4}
-            roughness={0.9}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-      </group>
-    </group>
-  )
-}
-
 /* -------------------------------------------------------------------------- */
 /* 2 · Blue pottery vase (handicrafts & home decor)                           */
 /* -------------------------------------------------------------------------- */
@@ -185,101 +89,6 @@ function PotteryVase() {
 /* -------------------------------------------------------------------------- */
 /* 3 · Jute sack of grain (agriculture & food)                                */
 /* -------------------------------------------------------------------------- */
-
-function GrainSack() {
-  const jute = useSharedTexture('jute', () => makeJuteTexture(512))
-  const juteBump = useSharedTexture('jute-bump', () => makeJuteBump(512))
-  const grain = useSharedTexture('grain', () => makeGrainTexture(512))
-  const grainBump = useSharedTexture('grain-bump', () => makeGrainBump(512))
-
-  const sack = React.useMemo(() => makeSackBody(), [])
-  const crown = React.useMemo(() => makeSackCrown(), [])
-  const spill = React.useMemo(() => makeSpill(0.19), [])
-
-  /* Sacking is a coarse weave, but a sack is two metres around, so the sheet
-     has to repeat: at one repeat the tapes come out the size of shoelaces. */
-  const juteFine = React.useMemo(() => {
-    const map = jute.clone()
-    map.repeat.set(2.2, 1.9)
-    map.needsUpdate = true
-    return map
-  }, [jute])
-  const juteBumpFine = React.useMemo(() => {
-    const map = juteBump.clone()
-    map.repeat.set(2.2, 1.9)
-    map.needsUpdate = true
-    return map
-  }, [juteBump])
-
-  React.useEffect(
-    () => () => {
-      juteFine.dispose()
-      juteBumpFine.dispose()
-    },
-    [juteFine, juteBumpFine],
-  )
-
-  React.useEffect(
-    () => () => {
-      sack.dispose()
-      crown.dispose()
-      spill.dispose()
-    },
-    [sack, crown, spill],
-  )
-
-  return (
-    /* Tipped a little towards the camera: a sack standing square reads as a
-       drum, and the mouth is the whole point of this one. The tilt is inside
-       the measured group, so the framing and the shadow follow it. */
-    <group rotation={[0.14, 0, 0]}>
-      <mesh geometry={sack}>
-        <meshStandardMaterial
-          map={juteFine}
-          bumpMap={juteBumpFine}
-          bumpScale={2.8}
-          roughness={0.96}
-          metalness={0}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      {/* the neck gathered and tied */}
-      <mesh position={[0, 0.575, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.157, 0.022, 10, 48]} />
-        <meshStandardMaterial color="#6f5730" roughness={0.94} />
-      </mesh>
-      {/* the crown of surplus sacking above the tie */}
-      <mesh geometry={crown} position={[0, 0.572, 0]}>
-        <meshStandardMaterial
-          map={juteFine}
-          bumpMap={juteBumpFine}
-          bumpScale={2.8}
-          roughness={0.96}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      {/* the stencil is part of the sheet, so it sits where the print does */}
-      {/* grain spilled at the foot of the sack, and a few loose grains */}
-      <mesh geometry={spill} position={[0.5, -0.6, 0.2]}>
-        <meshStandardMaterial map={grain} bumpMap={grainBump} bumpScale={2.2} roughness={0.88} />
-      </mesh>
-      <mesh geometry={spill} position={[-0.42, -0.6, -0.16]} scale={0.62}>
-        <meshStandardMaterial map={grain} bumpMap={grainBump} bumpScale={2.2} roughness={0.88} />
-      </mesh>
-      {[
-        [0.5, -0.62, 0.24],
-        [0.58, -0.62, -0.1],
-        [0.38, -0.62, -0.4],
-        [-0.52, -0.62, 0.2],
-      ].map((p, i) => (
-        <mesh key={i} position={p as [number, number, number]} rotation={[0, i, Math.PI / 2]}>
-          <capsuleGeometry args={[0.012, 0.036, 3, 6]} />
-          <meshStandardMaterial color="#efe2c2" roughness={0.62} />
-        </mesh>
-      ))}
-    </group>
-  )
-}
 
 /* -------------------------------------------------------------------------- */
 /* 4 · Copper wire coil (industrial materials)                                */
@@ -460,9 +269,9 @@ export type CategoryMotif =
  * at this size.
  */
 export const CATEGORY_OBJECTS: Record<CategoryMotif, { model: React.ReactNode; speed: number }> = {
-  textiles: { model: <TextileRoll />, speed: 0.18 },
+  textiles: { model: <FabricSamples />, speed: 0.18 },
   handicrafts: { model: <PotteryVase />, speed: 0.18 },
-  agriculture: { model: <GrainSack />, speed: 0.18 },
+  agriculture: { model: <CommoditySamples />, speed: 0.18 },
   industrial: { model: <CopperCoil />, speed: 0.18 },
   organic: { model: <CottonBoll />, speed: 0.18 },
   general: { model: <ExportCrate />, speed: 0.18 },

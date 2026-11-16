@@ -1,0 +1,95 @@
+[
+  {
+    "width": 1440,
+    "height": 900,
+    "motion": "no-preference",
+    "overflow": false,
+    "canvases": 2,
+    "canvasPointerEvents": [],
+    "errors": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "motion": "no-preference",
+    "images": [
+      {
+        "src": "http://127.0.0.1:4181/posters/textiles-mobile-small.webp",
+        "loaded": true
+      },
+      {
+        "src": "http://127.0.0.1:4181/posters/handicrafts-mobile-small.webp",
+        "loaded": true
+      },
+      {
+        "src": "http://127.0.0.1:4181/posters/agriculture-mobile-small.webp",
+        "loaded": true
+      },
+      {
+        "src": "http://127.0.0.1:4181/posters/industrial-mobile-small.webp",
+        "loaded": true
+      },
+      {
+        "src": "http://127.0.0.1:4181/posters/organic-mobile-small.webp",
+        "loaded": true
+      },
+      {
+        "src": "http://127.0.0.1:4181/posters/general-mobile-small.webp",
+        "loaded": true
+      }
+    ],
+    "drawn": "true"
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "motion": "no-preference",
+    "overflow": false,
+    "canvases": 1,
+    "canvasPointerEvents": [
+      "none"
+    ],
+    "errors": []
+  },
+  {
+    "width": 320,
+    "height": 568,
+    "motion": "reduce",
+    "images": [
+      {
+        "src": "http://127.0.0.1:4181/posters/textiles-mobile-small.webp",
+        "loaded": true
+      },
+      {
+        "src": "http://127.0.0.1:4181/posters/handicrafts-mobile-small.webp",
+        "loaded": true
+      },
+      {
+        "src": "http://127.0.0.1:4181/posters/agriculture-mobile-small.webp",
+        "loaded": true
+      },
+      {
+        "src": "http://127.0.0.1:4181/posters/industrial-mobile-small.webp",
+        "loaded": true
+      },
+      {
+        "src": "http://127.0.0.1:4181/posters/organic-mobile-small.webp",
+        "loaded": true
+      },
+      {
+        "src": "http://127.0.0.1:4181/posters/general-mobile-small.webp",
+        "loaded": true
+      }
+    ],
+    "drawn": "false"
+  },
+  {
+    "width": 320,
+    "height": 568,
+    "motion": "reduce",
+    "overflow": false,
+    "canvases": 0,
+    "canvasPointerEvents": [],
+    "errors": []
+  }
+]

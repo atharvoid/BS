@@ -1,0 +1,107 @@
+[
+  {
+    "zoom": 1,
+    "width": 1440,
+    "height": 900,
+    "dpr": 2,
+    "buffer": [
+      2684,
+      284
+    ],
+    "pixels": 762256,
+    "css": [
+      1342,
+      142
+    ],
+    "density": 2,
+    "visibleModels": 6,
+    "overflow": false,
+    "pointerEvents": "none",
+    "glError": 0,
+    "errors": []
+  },
+  {
+    "zoom": 0.8,
+    "width": 1800,
+    "height": 1125,
+    "dpr": 1.600000023841858,
+    "buffer": [
+      2463,
+      213
+    ],
+    "pixels": 524619,
+    "css": [
+      1642,
+      142
+    ],
+    "density": 1.5,
+    "visibleModels": 6,
+    "overflow": false,
+    "pointerEvents": "none",
+    "glError": 0,
+    "errors": []
+  },
+  {
+    "zoom": 0.67,
+    "width": 2149,
+    "height": 1343,
+    "dpr": 1.340000033378601,
+    "buffer": [
+      2416,
+      177
+    ],
+    "pixels": 427632,
+    "css": [
+      1933,
+      142
+    ],
+    "density": 1.2498706673564408,
+    "visibleModels": 6,
+    "overflow": false,
+    "pointerEvents": "none",
+    "glError": 0,
+    "errors": []
+  },
+  {
+    "zoom": 0.5,
+    "width": 2880,
+    "height": 1800,
+    "dpr": 1,
+    "buffer": [
+      2542,
+      142
+    ],
+    "pixels": 360964,
+    "css": [
+      2542,
+      142
+    ],
+    "density": 1,
+    "visibleModels": 6,
+    "overflow": false,
+    "pointerEvents": "none",
+    "glError": 0,
+    "errors": []
+  },
+  {
+    "zoom": 1.25,
+    "width": 1152,
+    "height": 720,
+    "dpr": 2.5,
+    "buffer": [
+      2204,
+      284
+    ],
+    "pixels": 625936,
+    "css": [
+      1102,
+      142
+    ],
+    "density": 2,
+    "visibleModels": 6,
+    "overflow": false,
+    "pointerEvents": "none",
+    "glError": 0,
+    "errors": []
+  }
+]

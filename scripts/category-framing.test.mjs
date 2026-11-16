@@ -4,13 +4,11 @@ import * as THREE from 'three'
 import { FIT_HEIGHT, FIT_SWEEP, FIT_WIDTH, frameModel } from '../src/three/framing.ts'
 import {
   CRATE,
-  ROLL,
   makeCopperCoil,
-  makeRolledCloth,
-  makeSackBody,
-  makeSackCrown,
   makeVaseBody,
 } from '../src/three/categoryGeometry.ts'
+
+import { makeFabricSamples, makeCommoditySamples } from '../src/three/sourcingGeometry.ts'
 
 /* One box per model, built from the real geometry the tiles mount. */
 function boxOf(object) {
@@ -18,32 +16,11 @@ function boxOf(object) {
   return new THREE.Box3().setFromObject(object)
 }
 
-function rollBox() {
-  /* The roll and its cloth, in the frame the tile draws them: the cloth is
-     generated around the roll's axis, and both are moved down together. */
-  const g = new THREE.Group()
-  const { radius, length } = ROLL
-  const bolt = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, length, 32))
-  bolt.rotation.z = Math.PI / 2
-  bolt.position.set(-0.14, 0, 0)
-  g.add(bolt)
-  const cloth = new THREE.Mesh(makeRolledCloth())
-  cloth.position.set(-0.14, 0, 0)
-  g.add(cloth)
-  return boxOf(g)
-}
+function textileBox() { return boxOf(makeFabricSamples()) }
+function agricultureBox() { return boxOf(makeCommoditySamples()) }
 
 function vaseBox() {
   return boxOf(new THREE.Mesh(makeVaseBody(32)))
-}
-
-function sackBox() {
-  const g = new THREE.Group()
-  g.add(new THREE.Mesh(makeSackBody(32)))
-  const crown = new THREE.Mesh(makeSackCrown())
-  crown.position.y = 0.572
-  g.add(crown)
-  return boxOf(g)
 }
 
 function coilBox() {
@@ -57,9 +34,9 @@ function crateBox() {
 }
 
 const MODELS = {
-  textiles: rollBox,
+  textiles: textileBox,
   handicrafts: vaseBox,
-  agriculture: sackBox,
+  agriculture: agricultureBox,
   industrial: coilBox,
   general: crateBox,
 }
@@ -108,10 +85,10 @@ test('a model with nothing in it is not framed', () => {
   assert.equal(frameModel(new THREE.Box3(new THREE.Vector3(1, 1, 1), new THREE.Vector3(1, 1, 1))), null)
 })
 
-test('the roll and the crate are the two extremes the row has to reconcile', () => {
-  const roll = frameModel(rollBox())
-  const crate = frameModel(crateBox())
-  /* A long thin bolt needs a much smaller scale than a cube of the same size;
-     if these were ever equal the framing would have collapsed to a constant. */
-  assert.ok(roll.scale < crate.scale, 'the long bolt must be scaled down more than the crate')
+test('replacement framing is derived from the actual folded-length and stepped-holder factories', () => {
+  const fabric = makeFabricSamples(), holder = makeCommoditySamples()
+  assert.equal(fabric.children.filter(child => child.name.startsWith('folded-length-')).length, 3)
+  assert.ok(holder.getObjectByName('sample-holder-stepped'))
+  assert.equal(holder.children.filter(child => child.isInstancedMesh).length, 3)
+  assert.notEqual(frameModel(boxOf(fabric)).scale, frameModel(crateBox()).scale)
 })
