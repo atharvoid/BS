@@ -1,8 +1,8 @@
 /** Renderer-free policy: page content never imports Three through this file. */
 export const PHONE_MOTION_MS = 4500
 export const COMPACT_QUERY = '(max-width: 980px), (max-height: 479px)'
-export function productYaw(seconds: number, speed: number, compact: boolean) {
-  return .7 + (compact ? Math.sin(seconds * speed) * .26 : seconds * speed)
+export function productYaw(seconds: number, speed: number) {
+  return .7 + seconds * speed
 }
 export function mobileMotionDone(start: number, now: number) { return now - start >= PHONE_MOTION_MS }
 export function drawingDpr(desired: number, width: number, height: number, budget: number, compact: boolean) {

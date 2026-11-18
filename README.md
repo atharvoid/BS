@@ -21,8 +21,8 @@ npm run preview    # serve the production build
 npm run typecheck  # types only
 ```
 
-The phone layout uses normal-flow category cards, one shared canvas with visible-only drawing
-and a finite automatic motion window. The implementation and remaining device
+The phone layout uses normal-flow category cards and one shared canvas that draws
+when the cards are visible. The implementation and remaining device
 qualification are recorded in [the mobile receipt](docs/part3/MOBILE_IMPLEMENTATION_STATUS.md).
 `npm run assets:swatches` regenerates the prebuilt woven images.
 
@@ -55,9 +55,10 @@ The broader trade-homepage and textile-migration proposal is in
 
 | Route | Page | Purpose |
 | --- | --- | --- |
-| `/` | Overview | Hero globe, six scroll-led categories, a direct category directory and how an enquiry works |
+| `/` | Overview | Hero globe, six product areas at `/#products`, and how an enquiry works |
+| `/#product-tour` | Product tour | The scroll-led tour of all six models, directly below the category cards on supported viewports |
 | `/textiles` | Textiles & fabrics | The textile focus, representative swatches, the two sourcing areas, and a written enquiry brief |
-| `/enquiry` | Textile enquiry | The five-answer form, already identified as a textiles enquiry |
+| `/enquiry` | Sourcing enquiry | Five questions and a product category that can be preselected through a category link |
 | `/enquiry/acknowledgement` | Enquiry acknowledgement | Says plainly that the page alone does not confirm inbox delivery |
 | `/privacy` | Enquiry privacy | What is collected, how it is processed, how to request a correction |
 | `*` | Not found | — |
@@ -94,22 +95,19 @@ Earth and is the only thing that needs the raw data:
 node scripts/build-geo.mjs
 ```
 
-**Nothing on the site has controls.** Every scene turns by dragging it and
-animates by itself. There is no pause button, no reset, no arrow pad: the
-sections that once had them (`Tell us about your fabric`, and the hero globe)
-now either animate continuously or were replaced by written content.
+**Hero motion.** The globe and textile illustration settle after a short motion
+window. Both still respond to dragging. Reduced motion and Save Data show stills.
 
-**The category journey.** One shared canvas draws six procedural models: a
+**The product tour.** One shared canvas draws six procedural models: a
 cloth roll, ceramic vase, golden wheat head, copper coil, cotton boll and export crate.
 Scroll-driven chapters introduce each category and move that same model into a
-persistent homepage dock. Textiles is first and the primary product line. The
+labelled dock during the tour. Textiles is first and the primary product line. The
 featured model turns while its chapter is active; docked models turn only under
-pointer hover or keyboard focus. The motion repairs and desktop/phone checks are
-recorded in [the motion receipt](docs/reviews/MOTION_REPAIR_RECEIPT.md). The
-canvas never captures a pointer; category labels remain real links. All six
-links are also available in an ordinary directory, with a skip link. Reduced
-motion and missing WebGL bypass the long choreography. No separate poster is
-swapped into a loaded scene.
+pointer hover or keyboard focus. The canvas leaves pointer input to the page
+and its links. Products opens the six cards directly. The cards rotate while
+visible when settings and performance allow. On viewports that can fit the
+tour, it follows the cards and begins on scroll on every visit. Reduced
+motion, Save Data and unavailable WebGL show the directory stills.
 
 ### Stable renders and performance
 
@@ -132,6 +130,7 @@ Browser acceptance check (Playwright installed separately):
 npm run build
 npm run preview
 SITE_URL=http://localhost:4173 node scripts/category-journey.check.mjs
+SITE_URL=http://localhost:4173 node scripts/design-audit.check.mjs
 ```
 
 Set `PLAYWRIGHT_MODULE` and optionally `BROWSER_EXECUTABLE` for a custom browser
@@ -147,11 +146,8 @@ real 404 status codes, redirects, cache headers and a domain-specific sitemap
 remain deployment checks. The preview should receive a server-side no-index
 header as well as its client-side metadata.
 
-Configure `VITE_WEB3FORMS_KEY` and verify delivery to the business inbox before
-launch. An unconfigured form clearly provides the email alternative. The
-reserved CAPTCHA key must remain empty until a real token flow is integrated;
-no empty CAPTCHA token or unsupported protection claim is sent. See the
-review in `docs/website-review.md` for launch blockers and unverified items.
+Configure the form and verify delivery from the hosted origin before launch.
+See the enquiry setup below.
 
 ### Design decisions worth keeping
 
@@ -185,24 +181,18 @@ blank box.
 
 ## Enquiry delivery
 
-The form posts to **Web3Forms**, with optional **hCaptcha**. Both are configured by
-environment variable — see `.env.example`.
+The form sends submissions to **Web3Forms**, which checks submissions for spam.
+Visitors can submit without an interactive challenge.
 
-```bash
-cp .env.example .env
-# add VITE_WEB3FORMS_KEY
-```
+1. In the Web3Forms dashboard, verify the notification recipient and ensure the form does not require a CAPTCHA.
+2. Set `VITE_WEB3FORMS_KEY` in ignored `.env.local` for development and in the intended hosting environment before building. Set `VITE_ENQUIRY_CONTACT_EMAIL` to override the business address used for manual recovery. The access key controls automatic delivery.
+3. Submit one labelled test from the intended origin. Confirm arrival in the selected inbox and check that Gmail's Reply action addresses the visitor.
+4. For client handover, configure the equivalent settings on the client's form, swap the access key and manual recovery contact, rebuild, and repeat the delivery check.
 
-**Delivery is not yet verified.** The project handoff records that Web3Forms account
-setup and real delivery still need confirming. If no access key is present the form
-deliberately shows the visitor a "not connected yet" note instead of a success
-message, and does not navigate to the acknowledgement page. Before this form is
-relied upon:
-
-1. Set `VITE_WEB3FORMS_KEY`.
-2. Submit a real enquiry.
-3. Confirm it arrives at **bsexim.nexus@gmail.com**.
-4. Only then treat the form as working.
+The form preserves the draft after errors and shows the acknowledgement only after
+Web3Forms accepts the submission. If a timed-out request may have been accepted,
+check before resending. The browser check in `scripts/enquiry-delivery.check.mjs`
+uses a fixture key and intercepted requests. It never sends email.
 
 Form entries are never written to browser storage. A small receipt (subject, visitor
 type, timestamp) is kept in `sessionStorage` after a successful submission so the

@@ -36,6 +36,7 @@
   --fg-mute: #6f6353;
   --rule: rgba(26, 22, 17, 0.14);
   --rule-soft: rgba(26, 22, 17, 0.075);
+  --control-border: #837661;
   --accent: var(--madder);
   --accent-quiet: var(--saffron);
 
@@ -48,6 +49,7 @@
   --fs-body: clamp(0.965rem, 1.02vw, 1.06rem);
   --fs-small: 0.875rem;
   --fs-micro: 0.708rem;
+  --fs-meta: 0.75rem;
 
   /* ---- Families -------------------------------------------------------- */
   --f-display: 'Fraunces Variable', 'Times New Roman', serif;

@@ -7,8 +7,8 @@ import type { PresentationStore } from './category-presentation'
 
 type Slot = { x: number; y: number; height: number; visible: boolean }
 /** Retain the presented pose and its still for one versioned category asset. */
-export function CategoryContinuity({ motif, presentation, spin, slot, paused, bounded, speed }: {
-  motif: string; presentation: PresentationStore; spin: React.RefObject<THREE.Group | null>; slot: Slot; paused: boolean; bounded: boolean; speed: number
+export function CategoryContinuity({ motif, presentation, spin, slot, paused, speed }: {
+  motif: string; presentation: PresentationStore; spin: React.RefObject<THREE.Group | null>; slot: Slot; paused: boolean; speed: number
 }) {
   const { gl, scene, camera, invalidate } = useThree()
   const phase = React.useRef(0)
@@ -18,24 +18,24 @@ export function CategoryContinuity({ motif, presentation, spin, slot, paused, bo
   const capture = React.useRef(() => {})
   const anchor = React.useRef<HTMLElement | null>(null)
   React.useLayoutEffect(() => {
-    anchor.current = document.querySelector<HTMLElement>(`[data-motif="${motif}"]`)
-    if (spin.current) spin.current.rotation.y = productYaw(phase.current, speed, bounded)
-  }, [spin, speed, bounded, motif])
+    const gallery = gl.domElement.closest('.gallery')
+    anchor.current = gallery?.parentElement?.querySelector<HTMLElement>(`[data-motif="${motif}"]`) ?? null
+    if (spin.current) spin.current.rotation.y = productYaw(phase.current, speed)
+  }, [gl, spin, speed, motif])
   useDrawFrame(delta => {
     const group = spin.current
     if (!group || !slot.visible) return
     if (!advanced.current) {
       const pair = presentation.get()
-      phase.current = presentation.valid(pair, slot.height, window.devicePixelRatio, bounded) ? pair.phase : 0
+      phase.current = presentation.valid(pair, slot.height, window.devicePixelRatio, false) ? pair.phase : 0
     }
     if (!paused && advanced.current) phase.current += delta
-    group.rotation.y = productYaw(phase.current, speed, bounded)
+    group.rotation.y = productYaw(phase.current, speed)
   }, () => {
     if (!spin.current?.parent?.visible || !anchor.current) return
     advanced.current = true
     const r = anchor.current.getBoundingClientRect(), box = gl.domElement.getBoundingClientRect()
     presented.current = { phase: phase.current, slot: {x:r.left+r.width/2-box.left,y:r.top+r.height/2-box.top,height:r.height,visible:true}, width:box.width, height:box.height }
-    if (anchor.current) anchor.current.dataset.presentedYaw = String(productYaw(phase.current, speed, bounded))
     if (capturePending.current) { capturePending.current = false; capture.current() }
   })
 
@@ -57,9 +57,9 @@ export function CategoryContinuity({ motif, presentation, spin, slot, paused, bo
       crop.getContext('2d')!.drawImage(gl.domElement,
         (last.slot.x - w / 2) * ratio, (last.slot.y - h / 2) * ratio, w * ratio, h * ratio,
         0, 0, crop.width, crop.height)
-      presentation.retain({ version: presentation.version, phase: last.phase, bounded, image: crop.toDataURL('image/png'), height: h, dpr: window.devicePixelRatio })
+      presentation.retain({ version: presentation.version, phase: last.phase, bounded: false, image: crop.toDataURL('image/png'), height: h, dpr: window.devicePixelRatio })
     } catch { /* Context/readback failures leave the canonical pair usable. */ }
-  }, [gl, bounded, presentation])
+  }, [gl, presentation])
   capture.current = snapshot
   React.useLayoutEffect(() => {
     if (paused || !slot.visible) { capturePending.current = true; invalidate() }

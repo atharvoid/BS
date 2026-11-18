@@ -1,4 +1,4 @@
-import { usePhoneMotion, useDeferred3D } from './render-budget'
+import { useMotionWindow, useDeferred3D } from './render-budget'
 import { useCompactLayout } from '../components/useCompactLayout'
 import { webglAvailable } from './webgl'
 import React from 'react'
@@ -21,8 +21,8 @@ import { releasePerformance, useSceneStill, watchPerformance } from './performan
    - holds a static frame when the device cannot animate smoothly
    - degrades to a styled still when WebGL is unavailable
 
-   There are no controls here. Every scene turns by dragging it and animates by
-   itself; nothing needs a button.
+   Illustrations can turn by dragging. Automatic motion can settle into
+   an on-demand frame without removing the scene.
    ========================================================================== */
 
 const StageCanvas = React.lazy(() => import('./StageCanvas'))
@@ -39,6 +39,7 @@ type StageProps = {
   label: string
   /** Keep the exact scene/buffer across offscreen visits; pause rather than rebuild. */
   stableVisual?: boolean
+  finiteMotion?: boolean
 }
 
 /** How long a canvas may sit off screen before it is released. Browsers cap the
@@ -158,6 +159,7 @@ export function Stage({
   label,
   load,
   stableVisual = false,
+  finiteMotion = false,
 }: StageProps & { load?: LiveLoader }) {
   const host = React.useRef<HTMLDivElement>(null)
   const [near, setNear] = React.useState(false)
@@ -172,7 +174,7 @@ export function Stage({
   const [drawn, setDrawn] = React.useState(false)
   const onReady = React.useCallback(() => setDrawn(true), [])
   const onError = React.useCallback(() => setDrawn(false), [])
-  const settled = usePhoneMotion(label, drawn && visible && pageVisible)
+  const settled = useMotionWindow(label, drawn && visible && pageVisible, compact || finiteMotion)
   const still = useSceneStill() || settled || opening
   const id = React.useId()
   const invalidate = React.useRef<() => void>(() => {})

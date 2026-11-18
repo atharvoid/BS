@@ -25,7 +25,7 @@ async function scroll(page,y,wait=180) {
   await page.waitForTimeout(wait)
 }
 async function chapter(page,p) {
-  const y=await page.locator('#products').evaluate((el,p)=>scrollY+el.getBoundingClientRect().top+(el.querySelector('.journey__runway').offsetHeight-innerHeight)*p/6,p)
+  const y=await page.locator('#product-tour').evaluate((el,p)=>scrollY+el.getBoundingClientRect().top+(el.querySelector('.journey__runway').offsetHeight-innerHeight)*p/6,p)
   await scroll(page,y)
 }
 async function angles(page) {
@@ -56,13 +56,13 @@ try {
   assert.equal(state.started,true);assert.equal(state.hidden,true);assert.equal(state.active,undefined)
  }
  await chapter(desktop,.3)
- await desktop.locator('.gallery[data-ready="true"]').waitFor({timeout:60000})
+ await desktop.locator('.gallery--journey[data-ready="true"]').waitFor({timeout:60000})
  if(process.env.DEEP_SCROLL) {
   await desktop.evaluate(async()=>{
    const url=performance.getEntriesByType('resource').find(e=>e.name.includes('/@react-three_fiber.js?v='))?.name
    if(!url) throw Error('DEEP_SCROLL requires the Vite dev server')
    const {_roots}=await import(url)
-   const canvas=document.querySelector('.gallery canvas'),state=_roots.get(canvas).store.getState(),render=state.gl.render.bind(state.gl)
+   const canvas=document.querySelector('.gallery--journey canvas'),state=_roots.get(canvas).store.getState(),render=state.gl.render.bind(state.gl)
    window.motionDraws=[]
    state.gl.render=(scene,camera)=>{
     render(scene,camera)
@@ -102,17 +102,17 @@ try {
  await desktop.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'))})
  await desktop.waitForTimeout(200)
  const suspended=await angles(desktop)
- const frozen=await desktop.locator('.gallery canvas').screenshot()
+ const frozen=await desktop.locator('.gallery--journey canvas').screenshot()
  await desktop.waitForTimeout(250)
  assert.deepEqual(await angles(desktop),suspended,'hidden tab holds every phase')
- assert.deepEqual(await desktop.locator('.gallery canvas').screenshot(),frozen,'hidden canvas retains its pixels')
+ assert.deepEqual(await desktop.locator('.gallery--journey canvas').screenshot(),frozen,'hidden canvas retains its pixels')
  await desktop.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>false});document.dispatchEvent(new Event('visibilitychange'))})
  await assertOneTurns(desktop,0)
  await desktop.mouse.move(700,350)
  await desktop.screenshot({path:`${out}/desktop-shelf.png`})
- const dimsBefore=await desktop.locator('.gallery canvas').evaluate(el=>({w:el.width,h:el.height,css:el.getBoundingClientRect().toJSON()}))
+ const dimsBefore=await desktop.locator('.gallery--journey canvas').evaluate(el=>({w:el.width,h:el.height,css:el.getBoundingClientRect().toJSON()}))
  await desktop.evaluate(async()=>{
-  const el=document.querySelector('#products'),y=scrollY+el.getBoundingClientRect().top,range=el.querySelector('.journey__runway').offsetHeight-innerHeight
+  const el=document.querySelector('#product-tour'),y=scrollY+el.getBoundingClientRect().top,range=el.querySelector('.journey__runway').offsetHeight-innerHeight
   for(const dir of [1,-1]) for(let i=0;i<=120;i++) {
    scrollTo({top:y+range*(dir===1?i/120:1-i/120),behavior:'instant'})
    await new Promise(requestAnimationFrame)
@@ -121,7 +121,7 @@ try {
  await chapter(desktop,.3)
  await desktop.waitForTimeout(250)
  await desktop.screenshot({path:`${out}/desktop-chapter.png`})
- const dimsAfter=await desktop.locator('.gallery canvas').evaluate(el=>({w:el.width,h:el.height,css:el.getBoundingClientRect().toJSON()}))
+ const dimsAfter=await desktop.locator('.gallery--journey canvas').evaluate(el=>({w:el.width,h:el.height,css:el.getBoundingClientRect().toJSON()}))
  assert.equal(dimsAfter.css.width,dimsBefore.css.width)
  assert.equal(dimsAfter.css.height,dimsBefore.css.height,'scroll never resizes the canvas surface')
  if(process.env.DEEP_SCROLL) {
@@ -141,17 +141,18 @@ try {
  assert.ok(Math.abs(await desktop.evaluate(()=>scrollY)-previous)<2)
  assert.equal(await desktop.locator('#brand-intro').evaluate(el=>el.hidden),true,'Back must not replay the opening')
  await chapter(desktop,6)
- await desktop.locator('.journey__skip').click()
- await desktop.waitForFunction(()=>document.querySelector('#category-directory').getBoundingClientRect().top<innerHeight*.3,{},{timeout:10000})
- assert.ok(await desktop.locator('#category-directory').evaluate(el=>el.getBoundingClientRect().top<innerHeight*.3),'skip reaches readable directory')
- const end=await desktop.locator('#products').evaluate(el=>scrollY+el.getBoundingClientRect().bottom)
- await scroll(desktop,end+100)
- assert.equal(await desktop.locator('#products').getAttribute('data-begun'),'false')
+ await desktop.waitForFunction(()=>document.querySelectorAll('[data-dock][data-filled="true"]').length===6)
+ const end=await desktop.locator('#product-tour').evaluate(el=>scrollY+el.getBoundingClientRect().bottom)
+ await scroll(desktop,end-500)
+ assert.equal(await desktop.locator('#product-tour').getAttribute('data-begun'),'false')
  assert.equal(await desktop.locator('.journey__shelf').evaluate(el=>el.inert),true)
  assert.equal(await desktop.locator('.journey__visuals').evaluate(el=>getComputedStyle(el).visibility),'hidden')
  await desktop.screenshot({path:`${out}/below-products.png`})
+ await desktop.locator('#category-directory').evaluate(el=>el.scrollIntoView({behavior:'instant'}))
+ await desktop.waitForFunction(()=>document.querySelector('#product-tour')?.dataset.begun==='false')
+ assert.equal(await desktop.locator('#product-tour').count(),1,'scrolling up leaves the tour in the page flow')
  await noOverflow(desktop)
- results.push({flow:'desktop intro, six chapters, hover, focus, reverse, skip, routes and Back',hover,dimsBefore,dimsAfter})
+ results.push({flow:'desktop intro, six chapters, hover, focus, reverse, routes and Back',hover,dimsBefore,dimsAfter})
  await desktop.close()
  console.log('PASS desktop scrolling, shelf ownership, routes and Back')
  }
@@ -163,7 +164,7 @@ try {
    assert.ok(body.includes('let sustained = initialQuality();'),'adaptive-still fixture targets the actual quality module')
    await route.fulfill({response,body:body.replace('let sustained = initialQuality();','let sustained = "still";')})
   })
-  await slow.goto(origin);await slow.keyboard.press('Escape');await chapter(slow,6)
+  await slow.goto(new URL('/#product-tour',origin).href);await chapter(slow,6)
   await slow.locator('.gallery[data-ready="true"]').waitFor({timeout:60000})
   await slow.locator('[data-dock="0"]').hover()
   await assertOneTurns(slow,0)
@@ -187,8 +188,16 @@ try {
    readyResets+=await phone.locator('.gallery[data-ready="false"]').count()
    await noOverflow(phone)
   }
-  await phone.waitForTimeout(4600)
-  assert.equal(await phone.locator('.gallery').getAttribute('data-motion'),'frozen')
+  if(width===390) {
+   await phone.locator('#products').evaluate(el=>el.scrollIntoView({behavior:'instant'}))
+   await phone.waitForFunction(()=>document.querySelector('.gallery--cards')?.dataset.motion==='running')
+   const stage=phone.locator('.product-card__stage').first()
+   const first=Number(await stage.getAttribute('data-presented-yaw'))
+   await phone.waitForTimeout(4700)
+   const later=Number(await stage.getAttribute('data-presented-yaw'))
+   assert.ok(later>first,'phone cards keep turning through the former time limit')
+   await phone.waitForFunction(last=>Number(document.querySelector('.product-card__stage').dataset.presentedYaw)>last,later)
+  }
   await cards.first().scrollIntoViewIfNeeded()
   await phone.waitForTimeout(250)
   await phone.screenshot({path:`${out}/phone-${width}.png`})
@@ -202,22 +211,22 @@ try {
   assert.equal(await phone.evaluate(()=>scrollY),0)
   assert.equal(await phone.locator('main').evaluate(el=>el.inert),false)
   await phone.goBack()
-  await phone.locator('.mobile-products').waitFor()
+  await phone.locator('.product-directory').waitFor()
   assert.equal(await phone.locator('#brand-intro').evaluate(el=>el.hidden),true)
   await phone.locator('.nav__toggle').click()
   await phone.setViewportSize({width:1200,height:800})
-  await phone.locator('.sourcing--journey').waitFor()
+  await phone.locator('#product-tour').waitFor()
   assert.equal(await phone.locator('main').evaluate(el=>el.inert),false,'desktop breakpoint releases the drawer scroll lock')
   assert.equal(await phone.locator('.nav__toggle').getAttribute('aria-expanded'),'false')
   await chapter(phone,.3)
-  await phone.locator('.gallery[data-ready="true"]').waitFor({timeout:60000})
+  await phone.locator('.gallery--journey[data-ready="true"]').waitFor({timeout:60000})
   await phone.setViewportSize({width,height})
-  await phone.locator('.mobile-products').waitFor()
+  await phone.locator('.product-directory').waitFor()
   await phone.locator('.product-card').first().scrollIntoViewIfNeeded()
   await phone.locator('.gallery[data-ready="true"]').waitFor({timeout:60000})
   assert.equal(await phone.locator('.gallery canvas').count(),1)
   await noOverflow(phone)
-  results.push({flow:'phone cards, scroll return, motion window, drawer, routes, Back and breakpoint return',width,height,readyResets})
+  results.push({flow:'phone cards, continuous rotation, drawer, routes, Back and breakpoint return',width,height,readyResets})
   await phone.close()
   console.log(`PASS phone/tablet ${width}x${height}`)
  }
@@ -236,8 +245,8 @@ try {
  const fallback=await browser.newPage({viewport:{width:1440,height:900}})
  await fallback.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return type.startsWith('webgl')?null:original.call(this,type,...args)}})
  await fallback.goto(origin);await fallback.keyboard.press('Escape')
- assert.equal(await fallback.locator('#products').getAttribute('data-fallback'),'true')
- assert.equal(await fallback.locator('.journey__directory li a').count(),6)
+ assert.equal(await fallback.locator('#product-tour').count(),0)
+ assert.equal(await fallback.locator('.product-card').count(),6)
  await fallback.locator('#category-directory').scrollIntoViewIfNeeded()
  await fallback.screenshot({path:`${out}/fallback.png`})
  await fallback.close()

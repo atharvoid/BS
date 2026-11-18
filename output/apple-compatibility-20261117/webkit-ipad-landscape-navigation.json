@@ -1,0 +1,96 @@
+{
+  "before": {
+    "y": 7728,
+    "top": 332.265625
+  },
+  "after": {
+    "y": 7728,
+    "top": 332.265625,
+    "max": 7728
+  },
+  "requests": [
+    {
+      "args": [
+        {
+          "top": 0,
+          "left": 0,
+          "behavior": "instant"
+        }
+      ],
+      "path": "/"
+    },
+    {
+      "args": [
+        {
+          "top": 1044.5,
+          "behavior": "instant"
+        }
+      ],
+      "path": "/"
+    },
+    {
+      "args": [
+        {
+          "top": 2887.833333333333,
+          "behavior": "instant"
+        }
+      ],
+      "path": "/"
+    },
+    {
+      "args": [
+        {
+          "top": 4731.166666666666,
+          "behavior": "instant"
+        }
+      ],
+      "path": "/"
+    },
+    {
+      "args": [
+        {
+          "top": 6298,
+          "behavior": "instant"
+        }
+      ],
+      "path": "/"
+    },
+    {
+      "args": [
+        {
+          "top": 1044.5,
+          "behavior": "instant"
+        }
+      ],
+      "path": "/"
+    },
+    {
+      "args": [
+        {
+          "top": 6298,
+          "behavior": "instant"
+        }
+      ],
+      "path": "/"
+    },
+    {
+      "args": [
+        {
+          "top": 0,
+          "left": 0,
+          "behavior": "instant"
+        }
+      ],
+      "path": "/privacy"
+    },
+    {
+      "args": [
+        {
+          "top": 7728,
+          "behavior": "instant"
+        }
+      ],
+      "path": "/"
+    }
+  ]
+}

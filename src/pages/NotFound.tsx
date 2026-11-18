@@ -17,8 +17,8 @@ export default function NotFound() {
             Back to home
             <Arrow />
           </Link>
-          <Link to="/enquiry" className="tlink">
-            Start an enquiry
+          <Link to="/#products" className="tlink">
+            Browse products
           </Link>
         </div>
       </div>

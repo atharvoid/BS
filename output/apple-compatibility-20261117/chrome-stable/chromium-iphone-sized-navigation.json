@@ -1,0 +1,42 @@
+{
+  "before": {
+    "y": 2496,
+    "top": 299.9375
+  },
+  "after": {
+    "y": 2496,
+    "top": 299.9375,
+    "max": 2496
+  },
+  "requests": [
+    {
+      "args": [
+        {
+          "top": 0,
+          "left": 0,
+          "behavior": "instant"
+        }
+      ],
+      "path": "/"
+    },
+    {
+      "args": [
+        {
+          "top": 0,
+          "left": 0,
+          "behavior": "instant"
+        }
+      ],
+      "path": "/privacy"
+    },
+    {
+      "args": [
+        {
+          "top": 2496,
+          "behavior": "instant"
+        }
+      ],
+      "path": "/"
+    }
+  ]
+}

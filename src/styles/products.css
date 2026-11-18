@@ -404,7 +404,7 @@
   padding: 0.9rem clamp(1.1rem, 2.4vw, 2rem);
   border-bottom: 1px solid var(--rule);
   font-family: var(--f-mono);
-  font-size: 0.58rem;
+  font-size: var(--fs-meta);
   letter-spacing: 0.17em;
   text-transform: uppercase;
   color: var(--fg-mute);
@@ -449,11 +449,10 @@
 .brief__tag {
   margin-left: auto;
   font-family: var(--f-mono);
-  font-size: 0.55rem;
+  font-size: var(--fs-meta);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--fg-mute);
-  white-space: nowrap;
 }
 
 .brief__ask {
@@ -483,7 +482,7 @@
   display: block;
   margin-bottom: 0.2rem;
   font-family: var(--f-mono);
-  font-size: 0.53rem;
+  font-size: var(--fs-meta);
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--fg-mute);
@@ -492,7 +491,7 @@
 .brief__sheet-foot {
   padding: 1rem clamp(1.1rem, 2.4vw, 2rem) 1.2rem;
   font-family: var(--f-mono);
-  font-size: 0.6rem;
+  font-size: .875rem;
   line-height: 1.7;
   letter-spacing: 0.05em;
   color: var(--fg-mute);

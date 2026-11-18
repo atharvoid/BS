@@ -30,7 +30,7 @@
   min-height: 2.9rem;
   padding: 0.78rem 0.9rem;
   background: var(--cotton);
-  border: 1px solid var(--rule);
+  border: 1px solid var(--control-border);
   border-radius: 2px;
   font-family: var(--f-sans);
   font-size: 0.97rem;
@@ -61,13 +61,14 @@
 }
 
 .select__button:hover {
-  border-color: rgba(26, 22, 17, 0.28);
+  border-color: var(--fg-soft);
 }
 
 .select__button:hover .select__chevron { color: var(--fg); }
 
 .select__button:focus-visible {
-  outline: none;
+  outline: 2px solid var(--madder);
+  outline-offset: 2px;
   border-color: var(--madder);
   background: var(--cotton-lit);
   box-shadow: 0 0 0 3px rgba(156, 58, 45, 0.1);

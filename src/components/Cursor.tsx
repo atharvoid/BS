@@ -7,8 +7,7 @@ type Mode = 'idle' | 'approach' | 'explore' | 'action' | 'scene' | 'dragging'
 type MeasuredTarget = CursorTarget & { element: HTMLElement }
 type SceneHit = { id: string; pointerId: number; inside: boolean; dragging: boolean }
 
-/** Anything that should offer the filled Explore disc. Menu links only: these
- *  are the links that go somewhere else in the site's own structure. */
+/** Navigation targets measured for subtle hover feedback. */
 const TARGETS = '[data-cursor="menu"], .nav__link, .drawer__link'
 const NATIVE = 'input, textarea, select, [contenteditable="true"], [data-cursor="native"], iframe'
 const ACTION = 'a, button, [role="tab"], [data-cursor="action"]'
@@ -35,9 +34,7 @@ function toneAt(hit: Element | null): 'dark' | 'light' {
 /**
  * The pointer.
  *
- * Over a navigation item it becomes one contrast-inverting circular disc with the word
- * Explore set inside it, sitting exactly on the pointer. It is a disc, not a
- * pill and not a caption under the cursor: one shape, one word, no offset.
+ * Navigation uses a small transparent ring. Only draggable scenes show a label.
  */
 export function Cursor() {
   const host = React.useRef<HTMLDivElement>(null)
@@ -149,8 +146,7 @@ export function Cursor() {
           mode = 'scene'
           size = DISC
         } else if (target) {
-          mode = 'explore'
-          size = DISC
+          mode = 'action'
         } else if (action) {
           mode = 'action'
         }
@@ -164,7 +160,7 @@ export function Cursor() {
            fully on screen, using the same rule at every size. */
         let tx = x
         let ty = y
-        if (mode === 'explore' || mode === 'scene' || mode === 'dragging') {
+        if (mode === 'scene' || mode === 'dragging') {
           tx = clampToDisc(x, size, innerWidth)
           ty = clampToDisc(y, size, innerHeight)
         } else if (mode === 'idle' && target) {
@@ -177,7 +173,7 @@ export function Cursor() {
         }
 
         container.dataset.mode = mode
-        const caption = mode === 'dragging' || mode === 'scene' ? 'Drag' : 'Explore'
+        const caption = mode === 'dragging' || mode === 'scene' ? 'Drag' : ''
         if (text.textContent !== caption) text.textContent = caption
         root.classList.add('has-custom-cursor')
         container.dataset.visible = 'true'
@@ -189,7 +185,7 @@ export function Cursor() {
 
         /* The disc tracks the pointer closely enough to feel attached to it:
            a short follow, not a lag. */
-        const follow = mode === 'explore' || mode === 'scene' || mode === 'dragging' ? 42 : 70
+        const follow = mode === 'scene' || mode === 'dragging' ? 42 : 70
         const elapsed = previousTime ? Math.min(50, time - previousTime) : 16
         previousTime = time
         const amount = 1 - Math.exp(-elapsed / follow)
@@ -251,6 +247,17 @@ export function Cursor() {
       wake()
     }
     const invalidate = () => { geometryDirty = true; wake() }
+    const refresh = () => {
+      if (raf) cancelAnimationFrame(raf)
+      geometryDirty = true
+      nearId = null
+      initialized = false
+      previousTime = 0
+      tick(performance.now())
+    }
+    const logoClick = (event: MouseEvent) => {
+      if (event.target instanceof Element && event.target.closest('.nav .brand')) refresh()
+    }
     const stop = () => { mouseActive = false; scene = null; nearId = null; conceal() }
     const keyboard = () => stop()
     const preferences = () => {
@@ -260,11 +267,12 @@ export function Cursor() {
     const onVisibility = () => { if (document.hidden) stop(); else invalidate() }
     const observer = new MutationObserver(invalidate)
     observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'data-cursor', 'data-cursor-size'] })
-    const introObserver = new MutationObserver(() => { if (root.dataset.introActive === 'true') conceal(); else invalidate() })
+    const introObserver = new MutationObserver(refresh)
     introObserver.observe(root, { attributes: true, attributeFilter: ['data-intro-active'] })
 
     window.addEventListener('pointermove', move, { passive: true })
     window.addEventListener('pointerdown', move, { passive: true })
+    window.addEventListener('click', logoClick)
     window.addEventListener('bs:scene-pointer', updateScene)
     window.addEventListener('blur', stop)
     window.addEventListener('resize', invalidate)
@@ -283,6 +291,7 @@ export function Cursor() {
       disposed = true
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerdown', move)
+      window.removeEventListener('click', logoClick)
       window.removeEventListener('bs:scene-pointer', updateScene)
       window.removeEventListener('blur', stop)
       window.removeEventListener('resize', invalidate)

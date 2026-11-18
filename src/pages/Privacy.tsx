@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useReveal } from '../components/useReveal'
+import { useCompactLayout } from '../components/useCompactLayout'
 import { BUSINESS } from '../content'
 
 const SECTIONS = [
@@ -46,6 +47,7 @@ const SECTIONS = [
 
 export default function Privacy() {
   useReveal([])
+  const compact = useCompactLayout()
 
   return (
     <>
@@ -57,7 +59,7 @@ export default function Privacy() {
           </h1>
           <p className="page-hero__lede">
             A short, specific notice. It covers only the enquiry form on this site. There are no
-            accounts, no payments and no tracking on this website.
+            accounts or payments on this website.
           </p>
         </div>
       </section>
@@ -65,25 +67,17 @@ export default function Privacy() {
       <section className="privacy">
         <div className="shell">
           <div className="privacy__grid">
-            <nav className="privacy__toc reveal" aria-label="On this page">
-              <p className="eyebrow eyebrow--bare">On this page</p>
-              <ol>
-                {SECTIONS.map((s, i) => (
-                  <li key={s.id}>
-                    <Link to={`/privacy#${s.id}`}>
-                      <span>{String(i + 1).padStart(2, '0')}</span>
-                      {s.t}
-                    </Link>
-                  </li>
-                ))}
-                <li>
-                  <Link to="/privacy#contact">
-                    <span>{String(SECTIONS.length + 1).padStart(2, '0')}</span>
-                    Contact
-                  </Link>
-                </li>
-              </ol>
-            </nav>
+            <details className="privacy__toc reveal" open={!compact}>
+              <summary>On this page</summary>
+              <nav aria-label="On this page">
+                <ul>
+                  {SECTIONS.map(section => (
+                    <li key={section.id}><Link to={`/privacy#${section.id}`}>{section.t}</Link></li>
+                  ))}
+                  <li><Link to="/privacy#contact">Contact</Link></li>
+                </ul>
+              </nav>
+            </details>
 
             <div className="privacy__body">
               {SECTIONS.map((s, i) => (

@@ -19,12 +19,12 @@ export const BUSINESS = {
 } as const
 
 export const CATEGORIES = [
-  { id: 'textiles', label: 'Textiles & fabrics', hint: 'Explore fabric types and the sourcing areas of Tamil Nadu and Gujarat.' },
-  { id: 'handicrafts', label: 'Handicrafts & home decor', hint: 'Describe the item, its material and how it will be used.' },
-  { id: 'agriculture-food', label: 'Agriculture & food', hint: 'Which crop, ingredient or food product are you interested in?' },
-  { id: 'industrial-materials', label: 'Industrial materials', hint: 'Name the material or manufacturing input. Include the grade if you know it.' },
-  { id: 'organic-sustainable', label: 'Organic & sustainable products', hint: 'Describe the product and any certification you require.' },
-  { id: 'general', label: 'Other sourcing requests', hint: 'What would you like to source or supply?' },
+  { id: 'textiles', label: 'Textiles & fabrics', hint: 'Tell us the fabric, intended use and finish. Include a sample reference or approximate quantity if you have one.' },
+  { id: 'handicrafts', label: 'Handicrafts & home decor', hint: 'Describe the item, material, dimensions and finish. Mention any reference images you have.' },
+  { id: 'agriculture-food', label: 'Agriculture & food', hint: 'Name the crop or food product. Include the grade, quantity and packing if known.' },
+  { id: 'industrial-materials', label: 'Industrial materials', hint: 'Name the material or component. Include its grade, specification or reference if available.' },
+  { id: 'organic-sustainable', label: 'Organic & sustainable products', hint: 'Name the product and any certification or traceability documents you need.' },
+  { id: 'general', label: 'Other sourcing requests', hint: 'Tell us what you need or supply, how it will be used and where it is going.' },
 ] as const
 
 export type CategoryId = (typeof CATEGORIES)[number]['id']
@@ -170,12 +170,16 @@ export const ENQUIRY_FIELDS = {
   email: { label: 'Email address', hint: 'Replies come from bsexim.nexus@gmail.com.' },
 } as const
 
-/** Copy for the scroll-led category introduction; no availability claims. */
-export const CATEGORY_JOURNEY: { id: CategoryId; motif: CategoryMotif; label: string; note: string; body: string; to?: string }[] = [
-  { id: 'textiles', motif: 'textiles', label: 'Textiles & fabrics', note: 'Our primary product line', body: 'Start with the fabric, its intended use and the finish you have in mind. Explore material families and sourcing areas in India, then share your quantity, destination and sample requirements.', to: '/textiles' },
-  { id: 'handicrafts', motif: 'handicrafts', label: 'Handicrafts & home decor', note: 'Material. Craft. Intended use.', body: 'Tell us about the item, material, dimensions and finish. Share a reference and the intended use so sourcing discussions begin with a clear brief.' },
-  { id: 'agriculture-food', motif: 'agriculture', label: 'Agriculture & food', note: 'A specification-led enquiry', body: 'Name the crop, ingredient or food product. Include the grade, packing, approximate quantity and destination requirements you would like to discuss.' },
-  { id: 'industrial-materials', motif: 'industrial', label: 'Industrial materials', note: 'Inputs and components', body: 'Describe the material or manufacturing input. A grade, technical specification or reference helps establish what needs to be confirmed with potential suppliers.' },
-  { id: 'organic-sustainable', motif: 'organic', label: 'Organic & sustainable', note: 'Evidence, not assumptions', body: 'Describe the product and any certification or traceability evidence you require. Claims and supporting documents must be checked for the specific product and supplier.' },
-  { id: 'general', motif: 'general', label: 'Other sourcing requests', note: 'Begin with the requirement', body: 'If your product does not fit the categories above, tell us what you need or supply. Include its use, a reference and the destination. Scope and availability are discussed per enquiry.' },
-]
+const CATEGORY_ARTWORK: Record<CategoryId, { motif: CategoryMotif; note: string; to?: string }> = {
+  textiles: { motif: 'textiles', note: 'Our primary product line', to: '/textiles' },
+  handicrafts: { motif: 'handicrafts', note: 'Items and materials' },
+  'agriculture-food': { motif: 'agriculture', note: 'Crops and food products' },
+  'industrial-materials': { motif: 'industrial', note: 'Inputs and components' },
+  'organic-sustainable': { motif: 'organic', note: 'Certification and traceability' },
+  general: { motif: 'general', note: 'Other products' },
+}
+
+export const CATEGORY_JOURNEY = CATEGORIES.map(category => ({
+  ...category,
+  ...CATEGORY_ARTWORK[category.id],
+}))

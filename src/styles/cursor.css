@@ -23,7 +23,6 @@
   display: block;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 120ms ease-out;
 }
 
 .cursor[data-visible='true'] { opacity: 1; }
@@ -65,7 +64,7 @@
   border-radius: 50%;
   background: var(--cursor-ink, #f0e3cb);
   box-shadow: 0 0 0 1px rgba(18, 16, 13, 0.55);
-  transition: opacity 120ms ease-out, transform 160ms ease-out;
+  transition: opacity 120ms ease-out;
 }
 
 /* Ordinary buttons and links: a small, honestly-sized response. */

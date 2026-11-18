@@ -1,0 +1,12 @@
+[
+  {
+    "engine": "webkit",
+    "fallback": "visible directory, six links, no renderer download",
+    "errors": []
+  },
+  {
+    "engine": "chromium",
+    "fallback": "visible directory, six links, no renderer download",
+    "errors": []
+  }
+]

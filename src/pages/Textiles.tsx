@@ -33,9 +33,14 @@ function SwatchWall() {
           role="listitem"
           style={{ ['--reveal-delay' as string]: `${i * 80}ms` }}
         >
-          {/* The weave arrives with the same module as the hero cloth. Until it
-              does, the frame holds its own shape rather than collapsing. */}
-          <div className="wall__frame"><img src={`/swatches/${s.key}.webp`} alt="" width={840} height={840} loading="lazy" decoding="async" /></div>
+          <div className="wall__frame">
+            <img
+              src={`/swatches/${s.key}.webp`}
+              srcSet={`/swatches/${s.key}-small.webp 420w, /swatches/${s.key}.webp 840w`}
+              sizes="(max-width: 720px) 45vw, (max-width: 1180px) 30vw, 300px"
+              alt="" width={840} height={840} loading="lazy" decoding="async"
+            />
+          </div>
           <figcaption>
             <strong>{s.label}</strong>
             <span>{s.note}</span>
@@ -61,12 +66,14 @@ export default function Textiles() {
         <div className="page-hero__canvas">
           <Stage
             className="page-hero__stage"
-            label="Interactive green textile illustration. Drag to turn it."
+            label="Green woven cloth illustration"
             z={6.2}
             fov={36}
             fallback={<img className="cloth-poster" src="/posters/cloth-mobile.webp" srcSet="/posters/cloth-mobile-small.webp 500w, /posters/cloth-mobile.webp 1000w" sizes="(max-width:540px) 100vw, 500px" alt="" width={1000} height={800} />}
             load={loadHeroScene}
+            finiteMotion
           />
+          <p className="drag-hint" aria-hidden="true">Drag to turn the cloth</p>
         </div>
         <div className="shell page-hero__inner">
           <p className="eyebrow">Textiles &amp; fabrics</p>
@@ -79,7 +86,7 @@ export default function Textiles() {
       <section className="textile-intro">
         <div className="shell">
           <div className="textile-intro__grid">
-            <div><p className="eyebrow reveal">Materials</p><h2 className="textile-intro__title reveal">Fabric types</h2></div>
+            <h2 className="textile-intro__title reveal">Fabric types and swatches</h2>
             <div className="textile-intro__body">
               <p className="reveal"><strong>Fibre</strong> describes the material, such as cotton, silk or blends.</p>
               <p className="reveal"><strong>Construction</strong> describes how it is made, such as woven or knitted.</p>
@@ -116,8 +123,11 @@ export default function Textiles() {
 
       <section className="enquiry-body" id="textile-enquiry">
         <div className="shell">
-          <h2>Enquire about textiles</h2>
-          <EnquiryForm />
+          <div className="enquiry-body__textiles">
+            <h2>Enquire about textiles</h2>
+            <p>Use the <Link to="/textiles#fabric-details">example fabric brief</Link> to check what to include.</p>
+            <EnquiryForm />
+          </div>
         </div>
       </section>
     </>

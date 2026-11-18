@@ -30,11 +30,11 @@ import Privacy from './pages/Privacy'
 import NotFound from './pages/NotFound'
 
 function ScrollManager() {
-  const { pathname, hash, key } = useLocation()
+  const { pathname, search, hash, key } = useLocation()
   const navigationType = useNavigationType()
   const positions = React.useRef(new Map<string, number>())
   const scroll = React.useRef(0)
-  const lastPath = React.useRef(pathname)
+  const lastLocation = React.useRef({ pathname, search, hash })
 
   React.useEffect(() => {
     const previous = history.scrollRestoration
@@ -66,24 +66,31 @@ function ScrollManager() {
 
   React.useLayoutEffect(() => () => { positions.current.set(key, scroll.current) }, [key])
   React.useLayoutEffect(() => {
-    const changedRoute = lastPath.current !== pathname
-    lastPath.current = pathname
+    const previous = lastLocation.current
+    const changedRoute = previous.pathname !== pathname
+    lastLocation.current = { pathname, search, hash }
     if (navigationType === 'POP' && positions.current.has(key)) {
+      if (changedRoute) document.getElementById('main')?.focus({ preventScroll: true })
       window.scrollTo({top:positions.current.get(key)!, behavior:'instant'})
       return
     }
-    if (changedRoute) document.getElementById('main')?.focus({ preventScroll: true })
+    if (!changedRoute && previous.hash === hash && previous.search !== search) return
     if (hash) {
       let id = hash.slice(1)
       try { id = decodeURIComponent(id) } catch { /* Keep the literal fragment. */ }
-      const el = document.getElementById(id)
+      const el = document.getElementById(id) ??
+        (pathname === '/' && id === 'product-tour' ? document.getElementById('products') : null)
       if (el) {
-        el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' })
+        const destination = el.querySelector<HTMLElement>('h1, h2, h3') ?? el
+        destination.tabIndex = -1
+        destination.focus({ preventScroll: true })
+        el.scrollIntoView({ behavior: 'instant', block: 'start' })
         return
       }
     }
+    if (changedRoute) document.getElementById('main')?.focus({ preventScroll: true })
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-  }, [pathname, hash, key, navigationType])
+  }, [pathname, search, hash, key, navigationType])
 
   return null
 }

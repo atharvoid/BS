@@ -31,11 +31,10 @@ test('touch rotation waits for horizontal intent and leaves vertical scroll to t
   assert.equal(horizontalIntent(20, -25), 'scroll')
 })
 
-test('phone product motion keeps the material face readable, including its final pose', () => {
-  for (let seconds = 0; seconds < 60; seconds += .1) {
-    const yaw = productYaw(seconds, .5, true)
-    assert.ok(yaw >= .44 && yaw <= .96)
+test('product rotation keeps its direction and speed through a full turn', () => {
+  assert.equal(productYaw(0, .5), .7)
+  for (const time of [1, 5, 10, 15, 20]) {
+    assert.ok(Math.abs(productYaw(time + 1, .5) - productYaw(time, .5) - .5) < .00001)
   }
-  assert.equal(productYaw(0, .5, true), .7)
-  assert.equal(productYaw(10, .5, false), 5.7)
+  assert.ok(productYaw(20, .5) - productYaw(0, .5) > Math.PI * 2)
 })

@@ -1,0 +1,74 @@
+[
+  {
+    "engine": "webkit",
+    "version": "27.2",
+    "width": 1440,
+    "path": "/",
+    "ready": true,
+    "changingPixels": true,
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "version": "27.2",
+    "width": 1440,
+    "path": "/textiles",
+    "ready": true,
+    "changingPixels": true,
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "version": "27.2",
+    "width": 390,
+    "path": "/",
+    "ready": true,
+    "changingPixels": true,
+    "errors": []
+  },
+  {
+    "engine": "webkit",
+    "version": "27.2",
+    "width": 390,
+    "path": "/textiles",
+    "ready": true,
+    "changingPixels": true,
+    "errors": []
+  },
+  {
+    "engine": "chromium",
+    "version": "157.0.8103.79",
+    "width": 1440,
+    "path": "/",
+    "ready": true,
+    "changingPixels": true,
+    "errors": []
+  },
+  {
+    "engine": "chromium",
+    "version": "157.0.8103.79",
+    "width": 1440,
+    "path": "/textiles",
+    "ready": true,
+    "changingPixels": true,
+    "errors": []
+  },
+  {
+    "engine": "chromium",
+    "version": "157.0.8103.79",
+    "width": 390,
+    "path": "/",
+    "ready": true,
+    "changingPixels": true,
+    "errors": []
+  },
+  {
+    "engine": "chromium",
+    "version": "157.0.8103.79",
+    "width": 390,
+    "path": "/textiles",
+    "ready": true,
+    "changingPixels": true,
+    "errors": []
+  }
+]

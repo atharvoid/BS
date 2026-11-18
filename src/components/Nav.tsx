@@ -1,13 +1,12 @@
 import React from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { BUSINESS } from '../content'
 import { Logo } from './Logo'
 import { useCompactLayout } from './useCompactLayout'
 
 const LINKS = [
-  { to: '/#products', label: 'Products', end: false },
-  { to: '/textiles', label: 'Textiles', end: false },
-  { to: '/enquiry', label: 'Enquire', end: false },
+  { to: '/#products', label: 'Products' },
+  { to: '/textiles', label: 'Textiles' },
 ]
 
 export function Nav() {
@@ -17,6 +16,16 @@ export function Nav() {
   const drawer = React.useRef<HTMLDivElement>(null)
   const { pathname, hash } = useLocation()
   const compact = useCompactLayout()
+  const current = (to: string): 'page' | 'location' | undefined => {
+    if (to === pathname) return 'page'
+    if (to === '/#products' && pathname === '/' &&
+      ['#products', '#category-directory', '#product-tour'].includes(hash)) return 'location'
+    return undefined
+  }
+  const closeMenu = () => {
+    setOpen(false)
+    toggle.current?.focus({ preventScroll: true })
+  }
 
   React.useEffect(() => setOpen(false), [pathname, hash])
   React.useEffect(() => {
@@ -42,7 +51,7 @@ export function Nav() {
     }
   }, [])
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (!open) return
     const previous = document.documentElement.style.overflow
     document.documentElement.style.overflow = 'hidden'
@@ -86,16 +95,16 @@ export function Nav() {
 
           <nav className="nav__links" aria-label="Primary">
             {LINKS.map((l) => (
-              <NavLink
+              <Link
                 key={l.to}
                 to={l.to}
-                end={l.end}
+                aria-current={current(l.to)}
                 data-cursor="menu"
                 data-cursor-size="compact"
-                className={({ isActive }) => `nav__link ${isActive ? 'is-active' : ''}`}
+                className="nav__link"
               >
                 {l.label}
-              </NavLink>
+              </Link>
             ))}
           </nav>
 
@@ -103,7 +112,7 @@ export function Nav() {
             <a className="nav__mail" href={`mailto:${BUSINESS.email}`}>
               {BUSINESS.email}
             </a>
-            <Link to="/enquiry" className="btn btn--small">
+            <Link to="/enquiry" className="btn btn--small" aria-current={current('/enquiry')}>
               Start an enquiry
               <Arrow />
             </Link>
@@ -126,23 +135,22 @@ export function Nav() {
       <div ref={drawer} id="nav-drawer" className={`drawer ${open ? 'drawer--open' : ''}`} data-tone="dark" hidden={!open}>
         <nav className="drawer__links" aria-label="Mobile">
           {LINKS.map((l, i) => (
-            <NavLink
+            <Link
               key={l.to}
               to={l.to}
-              end={l.end}
+              aria-current={current(l.to)}
               data-cursor="menu"
               data-cursor-size="row"
-              onClick={() => setOpen(false)}
+              onClick={closeMenu}
               style={{ transitionDelay: open ? `${80 + i * 55}ms` : '0ms' }}
-              className={({ isActive }) => `drawer__link ${isActive ? 'is-active' : ''}`}
+              className="drawer__link"
             >
-              <span className="drawer__num">{String(i + 1).padStart(2, '0')}</span>
               {l.label}
-            </NavLink>
+            </Link>
           ))}
         </nav>
         <div className="drawer__foot">
-          <Link to="/enquiry" className="btn btn--light drawer__cta">
+          <Link to="/enquiry" className="btn btn--light drawer__cta" aria-current={current('/enquiry')} onClick={closeMenu}>
             Start an enquiry
             <Arrow />
           </Link>

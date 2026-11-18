@@ -68,7 +68,7 @@ export function FabricBrief() {
               out; it can be settled in the reply.
             </p>
             <div className="brief__actions reveal">
-              <Link to="/enquiry?category=textiles" className="btn">
+              <Link to="/textiles#textile-enquiry" className="btn">
                 Start a textile enquiry
                 <Arrow />
               </Link>

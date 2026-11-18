@@ -34,9 +34,12 @@ for (const key of ['indigo', 'madder', 'cotton', 'saffron', 'verdigris']) {
     `public/swatches/${key}.webp`,
     out.toBuffer('image/webp', 85),
   )
+  const small = createCanvas(420, 420)
+  small.getContext('2d').drawImage(out, 0, 0, 420, 420)
+  await fs.writeFile(`public/swatches/${key}-small.webp`, small.toBuffer('image/webp', 85))
   texture.dispose()
   index++
 }
 console.log(
-  'Generated five high-resolution swatches from the scene weave generator.',
+  'Generated five swatches at 420px and 840px from the scene weave generator.',
 )

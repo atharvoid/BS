@@ -17,14 +17,15 @@ function Hero() {
 
   return (
     <section className="hero on-dark grain" ref={ref}>
-      <div className="hero__canvas" aria-hidden="false" onPointerDown={() => setEngaged(true)}>
+      <div className="hero__canvas" onPointerDown={() => setEngaged(true)}>
         <Stage
           className="hero__stage"
-          label="Interactive globe with illustrative trade routes from India. Drag to turn it."
+          label="Globe centred on India"
           z={7.4}
           fov={36}
           fallback={<picture><source media="(max-width:980px), (max-height:479px)" srcSet="/posters/globe-mobile-small.webp 500w, /posters/globe-mobile.webp 1000w" sizes="(max-width:540px) 100vw, 500px" /><img className="globe-poster" src="/posters/globe-desktop.webp" alt="" width={1280} height={800} fetchPriority="high" /></picture>}
           stableVisual
+          finiteMotion
           load={loadGlobe}
         />
         <p className={`drag-hint ${engaged ? 'is-done' : ''}`} aria-hidden="true">
@@ -33,6 +34,7 @@ function Hero() {
           </svg>
           Drag to turn
         </p>
+        <p className="hero__map-caption">Illustrative trade routes</p>
       </div>
 
       <div className="hero__inner shell">
@@ -45,8 +47,8 @@ function Hero() {
           </h1>
 
           <p className="hero__lede">
-            BS EXIMNEXUS is developing a sourcing business for overseas buyers, buyers in India
-            and Indian suppliers.
+            We’re building a sourcing business for overseas buyers, buyers in India and Indian
+            suppliers, starting with textiles and fabrics.
           </p>
 
           <div className="hero__actions">
@@ -80,10 +82,19 @@ export default function Overview() {
     <>
       <Hero />
       <ProductExplorer />
-      <section className="purpose" id="process"><div className="shell purpose__grid">
-        <header className="purpose__head"><p className="eyebrow">The conversation</p><h2 className="purpose__title">How sourcing enquiries <em className="display-italic">work</em>.</h2></header>
-        <div className="purpose__body"><p className="purpose__lead">Tell us what you need or supply, and where the goods are going.</p><p>The first discussion covers the product and any specifications you have. Availability, quantities and terms are agreed for each enquiry.</p></div>
-      </div></section>
+      <section className="purpose" id="process">
+        <div className="shell purpose__grid">
+          <h2 className="purpose__title">How sourcing enquiries <em className="display-italic">work</em>.</h2>
+          <div className="purpose__body">
+            <ol className="purpose__steps">
+              <li><strong>Share your requirement.</strong> Tell us what you need or supply, any specifications you have, and where the goods are going.</li>
+              <li><strong>We review the details.</strong> We’ll reply from our business inbox to discuss the product and any missing information.</li>
+              <li><strong>Discuss availability and terms.</strong> Quantities, samples and commercial terms depend on the enquiry.</li>
+            </ol>
+            <Link to="/enquiry" className="btn">Start an enquiry <Arrow /></Link>
+          </div>
+        </div>
+      </section>
     </>
   )
 }

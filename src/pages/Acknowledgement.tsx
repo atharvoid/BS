@@ -1,7 +1,8 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { readReceipt } from '../components/EnquiryForm'
-import { BUSINESS, ENQUIRY_FIELDS, getCategory } from '../content'
+import { ENQUIRY_FIELDS, getCategory } from '../content'
+import { enquiryContact } from '../components/enquiry-config'
 import { Arrow } from '../components/Nav'
 
 export default function Acknowledgement() {
@@ -17,8 +18,8 @@ export default function Acknowledgement() {
             <>
               <h1 className="ack__title">Enquiry <em className="display-italic">submitted.</em></h1>
               <div className="ack__notice">
-                Inbox delivery has not been confirmed. If you do not hear back, email{' '}
-                <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a>.
+                Your enquiry was submitted for review. If you do not hear back, email{' '}
+                <a href={`mailto:${enquiryContact}`}>{enquiryContact}</a>.
               </div>
               <dl className="ack__receipt">
                 <div><dt>Subject</dt><dd>{getCategory(receipt.subject).label}</dd></div>

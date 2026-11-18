@@ -1,22 +1,30 @@
-import { enquiryBrief } from './enquiry-brief'
 import { createReceiptStore } from './receipt-store'
+import { enquiryAccessKey, enquiryContact } from './enquiry-config'
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BUSINESS, ENQUIRY_FIELDS, getCategory, type CategoryId } from '../content'
 
-/* ==========================================================================
-   Enquiry logic.
-
-   The provider is Web3Forms, with hCaptcha optional. Both are configured from
-   environment variables, and the form refuses to pretend: if no access key is
-   present it shows the visitor an honest fallback instead of a fake success.
-   Account setup and real delivery still need to be verified against the live
-   inbox before this form is relied upon.
-   ========================================================================== */
-
 const ENDPOINT = 'https://api.web3forms.com/submit'
-const ACCESS_KEY = (import.meta.env.VITE_WEB3FORMS_KEY as string | undefined) ?? ''
-const HCAPTCHA_SITEKEY = (import.meta.env.VITE_HCAPTCHA_SITEKEY as string | undefined) ?? ''
+const UNCONFIRMED = 'We couldn’t confirm your submission. Check before sending it again.'
+const REJECTED = 'The enquiry service could not accept your request. Please try again later.'
+
+type SubmissionResponse = { success?: boolean; message?: unknown; body?: { message?: unknown } }
+
+function rejectionMessage(status: number, data: SubmissionResponse | null) {
+  if (status === 429) return 'Too many requests. Please wait before trying again.'
+  const message = [data?.message, data?.body?.message]
+    .filter((value): value is string => typeof value === 'string')
+    .join(' ')
+  const local = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname)
+  if (!local) return REJECTED
+
+  // Report known causes without exposing provider messages or echoed form data.
+  if (/captcha|turnstile/i.test(message))
+    return 'Web3Forms rejected the security check. Check the form’s required CAPTCHA setting in the dashboard.'
+  if (/access[_ -]?key|form id/i.test(message))
+    return 'The Web3Forms access key was rejected. Check the key and rebuild the preview.'
+  return `${REJECTED} (Web3Forms HTTP ${status})`
+}
 
 export type EnquirySubject = CategoryId
 
@@ -60,7 +68,6 @@ export function useEnquiryDraft() {
 }
 
 type Errors = Partial<Record<keyof EnquiryDraft, string>>
-type Status = 'idle' | 'sending' | 'sent' | 'error' | 'unconfigured'
 
 const STORE_KEY = 'bs.enquiry.receipt'
 
@@ -89,10 +96,9 @@ export function EnquiryForm() {
   const navigate = useNavigate()
   const { draft, setDraft, sending, setSending } = useEnquiryDraft()
   const [errors, setErrors] = React.useState<Errors>({})
-  const [status, setStatus] = React.useState<Status>('idle')
+  const [submitError, setSubmitError] = React.useState('')
   const request = React.useRef<AbortController | null>(null)
-  const [prepared, setPrepared] = React.useState<ReturnType<typeof enquiryBrief> | null>(null)
-  React.useEffect(() => setPrepared(null), [draft])
+  const [captchaError, setCaptchaError] = React.useState('')
   const form = React.useRef<HTMLFormElement>(null)
   const firstInvalid = React.useRef<string | null>(null)
 
@@ -111,7 +117,8 @@ export function EnquiryForm() {
 
   const validate = (d: EnquiryDraft): Errors => {
     const e: Errors = {}
-    if (!d.role) e.role = 'Choose the description that fits you best.'
+    if (!ENQUIRY_FIELDS.role.options.some(option => option.value === d.role))
+      e.role = 'Choose the description that fits you best.'
     if (d.requirement.trim().length < 12)
       e.requirement = 'A sentence or two is enough. Twelve characters minimum.'
     if (d.requirement.length > 2000) e.requirement = 'Please keep this under 2,000 characters.'
@@ -124,7 +131,8 @@ export function EnquiryForm() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (request.current || sending) return
+    if (!enquiryAccessKey || request.current || sending) return
+    setSubmitError('')
     const found = validate(draft)
     setErrors(found)
     if (Object.keys(found).length) {
@@ -136,53 +144,50 @@ export function EnquiryForm() {
       return
     }
 
-    if (!ACCESS_KEY || HCAPTCHA_SITEKEY) {
-      // No key configured: never show a false confirmation.
-      setPrepared(enquiryBrief({...draft, role:ROLE_LABEL[draft.role] ?? draft.role}, getCategory(draft.subject).label, BUSINESS.email))
-      setStatus('unconfigured')
-      return
-    }
-
     const snapshot = { ...draft }
     const category = getCategory(snapshot.subject)
     const controller = new AbortController()
     request.current = controller
     setSending(true)
-    setStatus('sending')
 
     const payload: Record<string, string> = {
-      access_key: ACCESS_KEY,
+      access_key: enquiryAccessKey,
       subject: `[${BUSINESS.name}] ${category.label} enquiry: ${ROLE_LABEL[snapshot.role] ?? snapshot.role}`,
-      from_name: snapshot.name,
+      from_name: BUSINESS.name,
       replyto: snapshot.email.trim(),
       'Visitor type': ROLE_LABEL[snapshot.role] ?? snapshot.role,
-      'Requirement or offer': snapshot.requirement,
-      'Destination or business location': snapshot.location,
-      Name: snapshot.name,
-      Email: snapshot.email.trim(),
+      message: snapshot.requirement.trim(),
+      'Destination or business location': snapshot.location.trim(),
+      name: snapshot.name.trim(),
+      email: snapshot.email.trim(),
       'Enquiry subject': category.label,
     }
-    // No empty/fabricated CAPTCHA token. If verification is configured but
-    // unavailable, the honest email route above is used instead.
 
     const timeout = window.setTimeout(() => controller.abort(), 20_000)
     try {
+      const body = new FormData()
+      for (const [field, value] of Object.entries(payload)) body.set(field, value)
       const res = await fetch(ENDPOINT, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(payload),
+        headers: { Accept: 'application/json' },
+        body,
         signal: controller.signal,
       })
-      const data = (await res.json().catch(() => ({}))) as { success?: boolean; message?: string }
-      if (!res.ok || data.success !== true) {
-        throw new Error(data.message || `The provider answered ${res.status}.`)
-      }
+      const data = await res.json().catch(() => null) as SubmissionResponse | null
       if (request.current !== controller) return
+      if (!res.ok || data?.success === false) {
+        setSubmitError(rejectionMessage(res.status, data))
+        return
+      }
+      if (data?.success !== true) {
+        setSubmitError(UNCONFIRMED)
+        return
+      }
       writeReceipt({ subject: snapshot.subject, role: snapshot.role, at: new Date().toISOString() })
-      setStatus('sent')
+      setDraft({ ...EMPTY, subject: snapshot.subject })
       navigate('/enquiry/acknowledgement')
     } catch {
-      if (request.current === controller) setStatus('error')
+      if (request.current === controller) setSubmitError(UNCONFIRMED)
     } finally {
       window.clearTimeout(timeout)
       if (request.current === controller) {
@@ -201,7 +206,7 @@ export function EnquiryForm() {
         </h2>
       </div>
 
-      {(!ACCESS_KEY || HCAPTCHA_SITEKEY) && <p className="notice">Online submission is not connected yet. You can prepare your brief here, then email <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a>.</p>}
+      {!enquiryAccessKey && <p className="notice">Online submission is unavailable. Email <a href={`mailto:${enquiryContact}`}>{enquiryContact}</a> to enquire.</p>}
       <fieldset disabled={sending} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
       {/* 1 — role */}
       <fieldset className="field field--group" data-field="role">
@@ -336,9 +341,9 @@ export function EnquiryForm() {
       </div>
 
       <div className="form__submit">
-        <button className="btn btn--submit" type="submit" disabled={status === 'sending'}>
-          {status === 'sending' ? 'Sending…' : (!ACCESS_KEY || HCAPTCHA_SITEKEY) ? 'Prepare email' : 'Send the enquiry'}
-          {status !== 'sending' && (
+        <button className="btn btn--submit" type="submit" disabled={sending || !enquiryAccessKey}>
+          {sending ? 'Sending…' : 'Send enquiry'}
+          {!sending && (
             <svg className="btn__arrow" viewBox="0 0 14 14" fill="none" aria-hidden="true">
               <path d="M2 12 12 2M5 2h7v7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" />
             </svg>
@@ -351,19 +356,11 @@ export function EnquiryForm() {
 
       </fieldset>
       <div aria-live="polite" className="form__status">
-        {status === 'error' && (
+        {submitError && (
           <p className="notice notice--error">
-            We couldn’t send your enquiry. Try again, or email{' '}
-            <a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a>.
+            {submitError}{' '}
+            <a href={`mailto:${enquiryContact}`}>Email us</a>
           </p>
-        )}
-        {status === 'unconfigured' && prepared && (
-          <div className="notice notice--warn prepared-brief">
-            <p>Your email brief is ready. It has not been sent.</p>
-            <label htmlFor="prepared-brief">{prepared?.copyRequired ? 'Copy this brief and paste it into your email.' : 'Your brief'}</label>
-            <textarea id="prepared-brief" readOnly value={prepared?.text ?? ''} onFocus={e => e.currentTarget.select()} />
-            <a className="btn" href={prepared?.href}>Open email app</a>
-          </div>
         )}
       </div>
     </form>
