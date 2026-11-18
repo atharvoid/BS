@@ -15,12 +15,16 @@ function makeHusk() {
   ]
   const sides = 8
   const positions: number[] = []
+  const uvs: number[] = []
   const faces: number[] = []
   for (const [height, width, depth, radial] of rings) {
     for (let side = 0; side < sides; side++) {
       const angle = 2 * Math.PI * side / sides
       const ridge = side === 0 ? 1.26 : 1
       positions.push(Math.sin(angle) * width, height * .52, radial + Math.cos(angle) * depth * ridge)
+      // Mirror at the dorsal keel and ventral crease so the closed mesh
+      // needn't split or stretch a seam across the husk.
+      uvs.push(Math.min(side, sides - side) / (sides / 2), height)
     }
   }
   for (let ring = 1; ring < rings.length; ring++) {
@@ -32,6 +36,7 @@ function makeHusk() {
   }
   const tip = positions.length / 3
   positions.push(0, .52, .327, 0, 0, .005)
+  uvs.push(.5, 1, .5, 0)
   const last = (rings.length - 1) * sides
   for (let side = 0; side < sides; side++) {
     const next = (side + 1) % sides
@@ -39,19 +44,20 @@ function makeHusk() {
   }
   const husk = new THREE.BufferGeometry()
   husk.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+  husk.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2))
   husk.setIndex(faces)
   husk.computeVertexNormals()
   // Colour in source-part coordinates, before the stagger and baked lean.
   const colours: number[] = []
-  const base = new THREE.Color('#C99B49')
-  const ridge = new THREE.Color('#DDB96F')
+  const base = new THREE.Color('#dab675')
+  const ridge = new THREE.Color('#edd198')
   const root = new THREE.Color('#9D783C')
   for (let i = 0; i < positions.length / 3; i++) {
     const ring = Math.floor(i / sides)
     const side = i % sides
     const colour = base.clone()
     if (ring < 2) colour.lerp(root, (2 - ring) / 6)
-    else if (side === 0 || side === 1 || side === 7) colour.lerp(ridge, Math.min(1 / 3, (ring - 1) / 12))
+    else if (side === 0 || side === 1 || side === 7) colour.lerp(ridge, Math.min(.65, (ring - 1) / 6))
     colours.push(colour.r, colour.g, colour.b)
   }
   husk.setAttribute('color', new THREE.Float32BufferAttribute(colours, 3))
@@ -61,7 +67,6 @@ function makeHusk() {
 function taperedStem(start: THREE.Vector3, end: THREE.Vector3, base: number, tip: number) {
   const direction = end.clone().sub(start)
   const geometry = new THREE.CylinderGeometry(tip, base, direction.length(), 8)
-  geometry.deleteAttribute('uv')
   const colour = new THREE.Color(base > .02 ? '#B79453' : '#CDA958')
   const colours = new Float32Array(geometry.getAttribute('position').count * 3)
   for (let i = 0; i < colours.length; i += 3) colours.set([colour.r, colour.g, colour.b], i)

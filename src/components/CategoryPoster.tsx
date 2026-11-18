@@ -1,6 +1,6 @@
 import type { CategoryMotif } from '../three/categoryObjects'
 import React from 'react'
-import { WHEAT_PRESENTATION, TEXTILE_PRESENTATION, WHEAT_VERSION, TEXTILE_VERSION, type PresentationStore } from '../three/category-presentation'
+import { CATEGORY_MATERIALS_VERSION, WHEAT_PRESENTATION, TEXTILE_PRESENTATION, WHEAT_VERSION, TEXTILE_VERSION, type PresentationStore } from '../three/category-presentation'
 
 /* ==========================================================================
    Stills of the six objects.
@@ -22,14 +22,14 @@ import { WHEAT_PRESENTATION, TEXTILE_PRESENTATION, WHEAT_VERSION, TEXTILE_VERSIO
 
 const STILLS: Record<CategoryMotif, string> = {
   textiles: `/posters/textiles-mobile.webp?v=${TEXTILE_VERSION}`,
-  handicrafts: '/posters/handicrafts-mobile.webp',
+  handicrafts: `/posters/handicrafts-mobile.webp?v=${CATEGORY_MATERIALS_VERSION}`,
   agriculture: `/posters/agriculture-mobile.webp?v=${WHEAT_VERSION}`,
-  industrial: '/posters/industrial-mobile.webp',
-  organic: '/posters/organic-mobile.webp',
-  general: '/posters/general-mobile.webp',
+  industrial: `/posters/industrial-mobile.webp?v=${CATEGORY_MATERIALS_VERSION}`,
+  organic: `/posters/organic-mobile.webp?v=${CATEGORY_MATERIALS_VERSION}`,
+  general: `/posters/general-mobile.webp?v=${CATEGORY_MATERIALS_VERSION}`,
 }
 
-type Props = { motif: CategoryMotif; className?: string; sizes?: string }
+type Props = { motif: CategoryMotif; className?: string; sizes?: string; eager?: boolean }
 
 /**
  * The still for one category.
@@ -40,33 +40,33 @@ type Props = { motif: CategoryMotif; className?: string; sizes?: string }
  * Width and height are declared so the row reserves the right space before the
  * image decodes — the tile must not grow under the pointer.
  */
-export function CategoryPoster({ motif, className, sizes }: Props) {
+export function CategoryPoster({ motif, className, sizes, eager }: Props) {
   const presentation = motif === 'agriculture' ? WHEAT_PRESENTATION : motif === 'textiles' ? TEXTILE_PRESENTATION : null
-  if (presentation) return <RetainedPoster motif={motif} presentation={presentation} className={className} sizes={sizes} />
-  return <PosterImage motif={motif} className={className} sizes={sizes} />
+  if (presentation) return <RetainedPoster motif={motif} presentation={presentation} className={className} sizes={sizes} eager={eager} />
+  return <PosterImage motif={motif} className={className} sizes={sizes} eager={eager} />
 }
 
-function RetainedPoster({ motif, presentation, className, sizes }: Props & { presentation: PresentationStore }) {
+function RetainedPoster({ motif, presentation, className, sizes, eager }: Props & { presentation: PresentationStore }) {
   const image = React.useRef<HTMLImageElement>(null)
   const pair = React.useSyncExternalStore(presentation.subscribe, presentation.get, () => null)
-  const [box, setBox] = React.useState({ height: 0, bounded: false })
+  const [height, setHeight] = React.useState(0)
   React.useLayoutEffect(() => {
     const el = image.current
     if (!el) return
-    const read = () => setBox({ height: el.getBoundingClientRect().height, bounded: !!el.closest('.mobile-products') })
+    const read = () => setHeight(el.getBoundingClientRect().height)
     read()
     const observer = new ResizeObserver(read)
     observer.observe(el)
     return () => observer.disconnect()
   }, [])
-  const retained = presentation.valid(pair, box.height, window.devicePixelRatio, box.bounded) ? pair.image : undefined
+  const retained = presentation.valid(pair, height, window.devicePixelRatio, false) ? pair.image : undefined
   // Fine wheat husks need the full source on high-DPR two-column cards;
   // low-DPR/static cards still select the small asset from the same srcset.
   const imageSizes = sizes ?? (motif === 'agriculture' ? '(max-width:980px) 90vw, 300px' : undefined)
-  return <PosterImage motif={motif} className={className} sizes={imageSizes} retained={retained} imageRef={image} />
+  return <PosterImage motif={motif} className={className} sizes={imageSizes} eager={eager} retained={retained} imageRef={image} />
 }
 
-function PosterImage({ motif, className, sizes, retained, imageRef }: Props & { retained?: string; imageRef?: React.Ref<HTMLImageElement> }) {
+function PosterImage({ motif, className, sizes, eager, retained, imageRef }: Props & { retained?: string; imageRef?: React.Ref<HTMLImageElement> }) {
   return (
     <img
       ref={imageRef}
@@ -77,10 +77,8 @@ function PosterImage({ motif, className, sizes, retained, imageRef }: Props & { 
       alt=""
       width={750}
       height={600}
-      /* Below the fold until the row is scrolled to; the live scene covers it
-         long before a visitor gets there. */
-      loading="lazy"
-      fetchPriority="low"
+      loading={eager ? 'eager' : 'lazy'}
+      fetchPriority={eager ? 'auto' : 'low'}
       decoding="async"
       draggable={false}
       aria-hidden="true"

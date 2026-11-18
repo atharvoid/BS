@@ -3,9 +3,7 @@ import * as THREE from 'three'
 /* ==========================================================================
    Textures for the six category objects.
 
-   Same rule as the rest of the site: nothing is downloaded. Every surface is
-   drawn into an offscreen canvas at runtime, so the models have real weave,
-   grain, glaze and fibre without shipping a single image.
+   The gallery bakes these authoring textures with scripts/build-category-maps.mjs.
 
    Each function returns a texture already configured for the material it is
    for (colour space, repeat, filtering), because getting that wrong is the
@@ -50,13 +48,15 @@ function rng(seed: number) {
  * irregular — a perfectly symmetric print reads as plastic.
  */
 export function makeBluePotteryTexture(size = 512) {
-  const { el, ctx } = canvas2d(size)
+  const { el, ctx } = canvas2d(size * 2, size)
+  ctx.scale(2, 1)
   const rand = rng(17)
 
-  const base = ctx.createLinearGradient(0, 0, size, size)
-  base.addColorStop(0, '#f2e9d6')
-  base.addColorStop(0.45, '#e8dcc4')
-  base.addColorStop(1, '#f4ecdb')
+  const base = ctx.createLinearGradient(0, 0, 0, size)
+  base.addColorStop(0, '#b3a18f')
+  base.addColorStop(0.16, '#f4ead6')
+  base.addColorStop(0.70, '#eee5d3')
+  base.addColorStop(1, '#c5b49b')
   ctx.fillStyle = base
   ctx.fillRect(0, 0, size, size)
 
@@ -126,6 +126,12 @@ export function makeBluePotteryTexture(size = 512) {
     ctx.moveTo(cx, size * 0.74)
     ctx.quadraticCurveTo(cx + size * 0.03, size * 0.7, cx + size * 0.015, size * 0.66)
     ctx.stroke()
+    for (const side of [-1, 1]) {
+      ctx.fillStyle = blue(.65 + rand() * .23)
+      ctx.beginPath()
+      ctx.ellipse(cx + side * size * .014, size * .712, size * .009, size * .022, side * .68, 0, Math.PI * 2)
+      ctx.fill()
+    }
   }
 
   /* glaze speckle and a few brush slips */
@@ -375,23 +381,25 @@ export function makeCottonTexture(size = 512) {
   }
 
   /* the individual fibres, as short faint curls */
-  for (let i = 0; i < 2200; i++) {
+  for (let i = 0; i < 1800; i++) {
     const x = rand() * size
     const y = rand() * size
-    const len = 5 + rand() * 22
-    ctx.strokeStyle = rand() > 0.55 ? 'rgba(255,255,255,0.5)' : 'rgba(150,140,120,0.13)'
-    ctx.lineWidth = 0.7 + rand() * 0.8
+    const len = size * (.018 + rand() * .062)
+    const angle = Math.sin(x / size * 9) * 1.2 + Math.cos(y / size * 11) * .9
+    ctx.strokeStyle = rand() > 0.42 ? 'rgba(255,255,255,.65)' : 'rgba(146,133,110,.25)'
+    ctx.lineWidth = .45 + rand() * .5
     ctx.beginPath()
     ctx.moveTo(x, y)
-    ctx.quadraticCurveTo(x + len * 0.5, y + (rand() - 0.5) * 10, x + len, y + (rand() - 0.5) * 4)
+    ctx.quadraticCurveTo(x + len * Math.cos(angle + .55) * .6, y + len * Math.sin(angle + .55) * .6,
+      x + len * Math.cos(angle), y + len * Math.sin(angle))
     ctx.stroke()
   }
 
   /* husk specks: a boll is never perfectly clean */
-  for (let i = 0; i < 90; i++) {
-    ctx.fillStyle = `rgba(96,72,44,${0.12 + rand() * 0.25})`
+  for (let i = 0; i < 45; i++) {
+    ctx.fillStyle = `rgba(120,102,78,${0.08 + rand() * 0.14})`
     ctx.beginPath()
-    ctx.ellipse(rand() * size, rand() * size, 1.4 + rand() * 2.4, 1 + rand() * 1.4, rand() * 3, 0, Math.PI * 2)
+    ctx.ellipse(rand() * size, rand() * size, .8 + rand() * 1.2, .6 + rand() * .6, rand() * 3, 0, Math.PI * 2)
     ctx.fill()
   }
   return finish(el)
@@ -401,31 +409,85 @@ export function makeCottonTexture(size = 512) {
 /* 5 · Copper (industrial)                                                    */
 /* -------------------------------------------------------------------------- */
 
-/** Drawn wire: a fine brushed grain along the coil, plus handling scuffs. */
-export function makeCopperRoughness(size = 512) {
+/** Linear surface data. Red is relief, green is roughness. Smooth waves
+ * survive minification; sparse speckle contributes only in close views. */
+export function makeCategorySurface(surface: 'glaze' | 'wheat' | 'copper' | 'cotton' | 'pine') {
+  const size = 128
   const { el, ctx } = canvas2d(size)
+  const image = ctx.createImageData(size, size)
   const rand = rng(61)
-  ctx.fillStyle = '#4a4a4a'
-  ctx.fillRect(0, 0, size, size)
-  for (let i = 0; i < 900; i++) {
-    const y = rand() * size
-    ctx.strokeStyle = `rgba(255,255,255,${0.04 + rand() * 0.12})`
-    ctx.lineWidth = 0.6 + rand() * 1.4
-    ctx.beginPath()
-    ctx.moveTo(0, y)
-    ctx.lineTo(size, y + (rand() - 0.5) * 3)
-    ctx.stroke()
+  const tau = Math.PI * 2
+
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+    const u = x / size * tau, v = y / size * tau
+    const fleck = surface === 'cotton' ? (rand() - .5) * 8 : 0
+    const clouds = Math.sin(3 * u + v) * Math.cos(5 * v - 2 * u)
+    let relief = 128, roughness = 128
+    switch (surface) {
+      case 'glaze':
+        relief += 21 * Math.sin(21 * v + .23 * Math.sin(3 * u)) + 7 * clouds + fleck
+        roughness = 70 + 13 * clouds + fleck
+        break
+      case 'wheat':
+        relief += 31 * Math.cos(12 * u + .45 * Math.sin(v)) + 15 * Math.cos(5 * u) + fleck
+        roughness = 216 + 17 * clouds + fleck
+        break
+      case 'copper':
+        relief += 21 * Math.cos(14 * v + .1 * Math.sin(u)) + 13 * Math.sin(9 * v) + fleck
+        roughness = 76 + 14 * Math.cos(8 * v) + 17 * clouds + fleck
+        break
+      case 'cotton':
+        relief += 36 * clouds + 19 * Math.sin(12 * u + 8 * v) * Math.sin(9 * v - 3 * u) + fleck
+        roughness = 229 + 18 * clouds + fleck
+        break
+      case 'pine':
+        relief += 32 * Math.sin(18 * u + 1.8 * Math.sin(v)) + 12 * Math.sin(37 * u + 1.6 * clouds) + fleck
+        roughness = 205 + 24 * clouds + fleck
+        break
+    }
+    const index = (y * size + x) * 4
+    image.data[index] = Math.round(relief / 2) * 2
+    image.data[index + 1] = Math.round(roughness)
+    image.data[index + 3] = 255
   }
-  for (let i = 0; i < 60; i++) {
-    ctx.strokeStyle = `rgba(0,0,0,${0.1 + rand() * 0.18})`
-    ctx.lineWidth = 1 + rand() * 2
-    ctx.beginPath()
-    const x = rand() * size
-    ctx.moveTo(x, rand() * size)
-    ctx.lineTo(x + (rand() - 0.5) * 60, rand() * size)
-    ctx.stroke()
+  ctx.putImageData(image, 0, 0)
+  return finish(el, 1, 1, false)
+}
+
+/** Low contact core with a broader penumbra, stored as a single alpha decal. */
+export function makeCategoryShadow() {
+  const { el, ctx } = canvas2d(128)
+  const shade = ctx.createRadialGradient(64, 64, 0, 64, 64, 64)
+  shade.addColorStop(0, 'rgba(18,13,19,.72)')
+  shade.addColorStop(.28, 'rgba(18,13,19,.52)')
+  shade.addColorStop(.58, 'rgba(18,13,19,.17)')
+  shade.addColorStop(.83, 'rgba(18,13,19,.035)')
+  shade.addColorStop(1, 'rgba(18,13,19,0)')
+  ctx.fillStyle = shade
+  ctx.fillRect(0, 0, 128, 128)
+  return finish(el)
+}
+
+/** The broad straw veins stay visible after the finest relief has mipmapped away. */
+export function makeHuskPigment() {
+  const size = 128
+  const { el, ctx } = canvas2d(size)
+  const image = ctx.createImageData(size, size)
+  const rand = rng(89)
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+    const u = x / size, v = y / size
+    const rib = Math.cos(Math.PI * 2 * (u * 4.5 + .12 * Math.sin(v * Math.PI * 2)))
+    const vein = Math.pow(.5 + .5 * rib, 5)
+    const chaff = 4 * Math.cos(Math.PI * 24 * u) + rand() * 4
+    const tip = (1 - v) ** 2
+    const i = (y * size + x) * 4
+    image.data[i] = 233 + 17 * vein + chaff + 3 * tip
+    image.data[i + 1] = 221 + 21 * vein + chaff + 6 * tip
+    image.data[i + 2] = 188 + 35 * vein + chaff + 11 * tip
+    image.data[i + 3] = 255
   }
-  return finish(el, 3, 1, false)
+  ctx.putImageData(image, 0, 0)
+  return finish(el)
 }
 
 /* -------------------------------------------------------------------------- */
@@ -455,16 +517,26 @@ export function makePlankTexture(size = 512) {
     ctx.fillStyle = g
     ctx.fillRect(x, 0, w, size)
 
-    /* grain */
-    for (let k = 0; k < 34; k++) {
+    const knotX = x + w * (.36 + .27 * rand()), knotY = size * (.27 + .46 * rand())
+    /* Growth rings bend around a knot, then straighten along the board. */
+    for (let k = 0; k < 60; k++) {
       const gx = x + rand() * w
-      ctx.strokeStyle = rand() > 0.5 ? 'rgba(126,96,58,0.26)' : 'rgba(246,230,204,0.3)'
-      ctx.lineWidth = 0.7 + rand() * 1.6
+      ctx.strokeStyle = rand() > 0.4 ? 'rgba(103,70,37,0.33)' : 'rgba(246,230,204,0.4)'
+      ctx.lineWidth = 0.6 + rand() * 1.4
       ctx.beginPath()
-      for (let y = 0; y <= size; y += 16) {
-        const xx = gx + Math.sin(y * 0.02 + k) * 2.2
+      for (let y = 0; y <= size; y += 8) {
+        const d = gx - knotX
+        const warp = Math.exp(-((d / 26) ** 2 + ((y - knotY) / 58) ** 2)) * Math.sign(d) * 13
+        const xx = gx + Math.sin(y * 0.02 + k) * 2.2 + warp
         y === 0 ? ctx.moveTo(xx, y) : ctx.lineTo(xx, y)
       }
+      ctx.stroke()
+    }
+    for (let ring = 1; ring < 5; ring++) {
+      ctx.strokeStyle = `rgba(89,61,37,${.44 - ring * .055})`
+      ctx.lineWidth = 1.2
+      ctx.beginPath()
+      ctx.ellipse(knotX, knotY, ring * 2.2, ring * 5, .16, 0, Math.PI * 2)
       ctx.stroke()
     }
 
@@ -514,7 +586,7 @@ export function makeStencilTexture(w = 512, h = 256) {
 
   ctx.font = `700 ${Math.round(h * 0.19)}px "Chivo Mono", ui-monospace, monospace`
   ctx.textAlign = 'left'
-  ctx.fillText('BS EXIMNEXUS', w * 0.05, h * 0.3)
+  ctx.fillText('BS EXIMNEXUS', w * 0.05, h * 0.3, w * .55)
 
   ctx.font = `600 ${Math.round(h * 0.12)}px "Chivo Mono", ui-monospace, monospace`
   ctx.fillText('MADE IN INDIA', w * 0.05, h * 0.52)

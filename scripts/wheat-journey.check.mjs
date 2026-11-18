@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { createCanvas, loadImage } from '@napi-rs/canvas'
+import { WHEAT_VERSION } from '../src/three/category-presentation.ts'
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright')
 const browser = await chromium.launch({
   ...(process.env.BROWSER_EXECUTABLE ? {executablePath:process.env.BROWSER_EXECUTABLE} : {}),
@@ -12,17 +13,18 @@ const out=process.env.EVIDENCE_DIR || '.poster-build/evidence'
 await mkdir(out,{recursive:true})
 const results=[]
 const errors=[], requests=[]
-async function pageAt(width,height,options={}) {
+async function pageAt(width,height,options={},galleryGate) {
   const page=await browser.newPage({viewport:{width,height},...options})
   page.on('pageerror',e=>errors.push(e.message))
   page.on('request',r=>requests.push(r.url()))
-  await page.goto(origin)
+  if (galleryGate) await page.route('**/Gallery-*.js', async route => { await galleryGate; await route.continue() })
+  await page.goto(width >= 981 && height >= 640 ? new URL('/#product-tour',origin).href : origin)
   await page.keyboard.press('Escape')
   return page
 }
 async function scroll(page,y) { await page.evaluate(y=>scrollTo({top:y,behavior:'instant'}),y); await page.waitForTimeout(300) }
 async function chapter(page,progress) {
-  const y=await page.locator('#products').evaluate((el,p)=>el.getBoundingClientRect().top+scrollY+(el.querySelector('.journey__runway').offsetHeight-innerHeight)*p/6,progress)
+  const y=await page.locator('#product-tour').evaluate((el,p)=>el.getBoundingClientRect().top+scrollY+(el.querySelector('.journey__runway').offsetHeight-innerHeight)*p/6,progress)
   await scroll(page,y)
 }
 async function freeze(page) {
@@ -32,21 +34,24 @@ async function freeze(page) {
 async function thaw(page) {
   await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>false});document.dispatchEvent(new Event('visibilitychange'))})
 }
-const yaw=page=>page.locator('[data-motif="agriculture"]').getAttribute('data-presented-yaw').then(Number)
+const yaw=page=>page.locator('[data-motif="agriculture"]').last().getAttribute('data-presented-yaw').then(Number)
 try {
  if(!process.env.PARITY_ONLY) {
- const desktop=await pageAt(1440,900)
+ const gate=Promise.withResolvers()
+ const desktop=await pageAt(1440,900,{},gate.promise)
  await chapter(desktop,2.3)
- await desktop.locator('#products[data-drawn="true"]').waitFor()
+ const canonical=desktop.locator('.journey__anchor[data-motif="agriculture"] img')
+ const desktopSrc=await canonical.evaluate(async img=>{await img.decode();return img.currentSrc})
+ gate.resolve()
+ assert.equal(new URL(desktopSrc).pathname,'/posters/agriculture-mobile.webp','large chapter selects the full canonical poster')
+ await desktop.locator('#product-tour[data-drawn="true"]').waitFor()
  await desktop.waitForTimeout(600)
  assert.equal(await desktop.locator('[data-chapter="2"]').evaluate(el=>el.inert),false)
- assert.equal(await desktop.locator('.gallery canvas').count(),1)
- const desktopSrc=await desktop.locator('.journey__anchor[data-motif="agriculture"] img').evaluate(el=>el.currentSrc)
- assert.ok(desktopSrc.includes('agriculture-mobile.webp?'),'large chapter must select the full poster')
+ assert.equal(await desktop.locator('.gallery--journey canvas').count(),1)
  await freeze(desktop)
  const before=await yaw(desktop)
  await desktop.screenshot({path:`${out}/desktop-chapter.png`})
- const canvas=desktop.locator('.gallery canvas')
+ const canvas=desktop.locator('.gallery--journey canvas')
  const frame=await canvas.screenshot()
  await desktop.waitForTimeout(200)
  assert.deepEqual(await canvas.screenshot(),frame,'visible frozen canvas keeps its pixels')
@@ -61,12 +66,12 @@ try {
  await desktop.reload()
  await desktop.keyboard.press('Escape')
   await chapter(desktop,6)
- await desktop.locator('#products[data-drawn="true"]').waitFor()
+ await desktop.locator('#product-tour[data-drawn="true"]').waitFor()
  const restored=await yaw(desktop)
  assert.ok(Math.abs(restored-dockYaw)<.2,`reload must resume its paired pose: ${dockYaw} -> ${restored}`)
  await chapter(desktop,2.3)
  assert.ok(await yaw(desktop)>=dockYaw,'reverse scrolling must retain phase')
- assert.equal(await desktop.locator('.journey__directory li a').count(),6)
+ assert.equal(await desktop.locator('.product-card').count(),6)
  const fit=await desktop.locator('.journey__anchor[data-motif="agriculture"]').evaluate(el=>{const r=el.getBoundingClientRect(),p=el.querySelector('img').getBoundingClientRect();return {slot:r.height,posterHeight:p.height,posterWidth:p.width}})
  assert.equal(fit.posterHeight,fit.slot)
  assert.ok(Math.abs(fit.posterWidth/fit.slot-1.25)<.001,'square anchor poster is fitted by height')
@@ -103,7 +108,7 @@ try {
  await phone.locator('.gallery[data-ready="true"]').waitFor()
  assert.ok(Math.abs(await yaw(phone)-reloadYaw)<.04,'phone reload resumes the paired still')
  await freeze(phone)
- const pair=await phone.evaluate(()=>JSON.parse(sessionStorage.getItem('bs:agriculture:golden-wheat-v1')))
+ const pair=await phone.evaluate(version=>JSON.parse(sessionStorage.getItem(`bs:agriculture:${version}`)),WHEAT_VERSION)
  assert.ok(pair?.image?.startsWith('data:image/png;base64,'),'lifecycle stores a matching still')
  const src=await stage.locator('img').evaluate(el=>el.currentSrc)
  assert.ok(src.startsWith('data:image/png'),'resume uses retained bitmap')
@@ -131,30 +136,33 @@ try {
   if(name==='no-webgl') await p.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return type.startsWith('webgl')?null:original.call(this,type,...args)}})
   await p.goto(origin)
   await p.keyboard.press('Escape')
-  const poster=p.locator(name==='no-webgl'?'.journey__directory-wheat':'.product-card__stage[data-motif="agriculture"] img')
+  const poster=p.locator('.product-card__stage[data-motif="agriculture"] img')
   await poster.scrollIntoViewIfNeeded()
   await poster.evaluate(el=>el.decode())
   const src=await poster.evaluate(el=>el.currentSrc)
-  assert.ok(src.includes('golden-wheat-v1'),'both agriculture sizes are versioned')
-  assert.equal(await p.locator(name==='no-webgl'?'.journey__directory li a':'.product-card').count(),6)
+  assert.ok(src.includes(WHEAT_VERSION),'both agriculture sizes are versioned')
+  assert.equal(await p.locator('.product-card').count(),6)
   assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true)
-  if(name==='reduced') assert.equal(await p.locator('.mobile-products__grid').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length),1)
+  if(name==='reduced') assert.equal(await p.locator('.product-directory__grid').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length),1)
   await p.screenshot({path:`${out}/${name}.png`})
   results.push({view:name,currentSrc:src})
   await p.close()
  }
  console.log('PASS reduced-motion single column / Save-Data / no WebGL')
  }
- // Spend the existing phone motion window on row one. A late wheat card
- // legitimately starts still, letting the real registry be compared to its poster.
+ // Freeze the first presented card frame to compare its canonical pose with its poster.
  const parity=await pageAt(390,844,{deviceScaleFactor:2,isMobile:true,hasTouch:true})
- const top=await parity.locator('#products').evaluate(el=>el.getBoundingClientRect().top+scrollY)
- await scroll(parity,top-220)
- await parity.locator('.gallery[data-ready="true"]').waitFor()
- await parity.waitForTimeout(5200)
+ await parity.evaluate(()=>{
+   const observer=new MutationObserver(()=>{
+     if(document.querySelector('.gallery--cards[data-ready="true"]')){
+       Object.defineProperty(document,'hidden',{configurable:true,get:()=>true})
+       document.dispatchEvent(new Event('visibilitychange'));observer.disconnect()
+     }
+   })
+   observer.observe(document,{subtree:true,attributes:true,attributeFilter:['data-ready']})
+ })
  const wheat=parity.locator('.product-card__stage[data-motif="agriculture"]')
  await wheat.scrollIntoViewIfNeeded()
- await parity.waitForTimeout(500)
  await parity.locator('.gallery[data-ready="true"]').waitFor()
  await parity.waitForFunction(()=>document.querySelector('[data-motif="agriculture"]').dataset.presentedYaw!==undefined)
  await freeze(parity)
@@ -162,11 +170,11 @@ try {
  const retainedMask=await wheat.locator('img').getAttribute('src')
  const live=await wheat.screenshot()
  await parity.addStyleTag({content:'.gallery--cards{visibility:hidden!important}.product-card__stage[data-motif="agriculture"] .poster{visibility:visible!important;opacity:1!important}'})
- await wheat.locator('img').evaluate(el=>{
-   el.src='/posters/agriculture-mobile.webp?v=golden-wheat-v1'
-   el.srcset='/posters/agriculture-mobile-small.webp?v=golden-wheat-v1 375w, /posters/agriculture-mobile.webp?v=golden-wheat-v1 750w'
+ await wheat.locator('img').evaluate((el,version)=>{
+   el.src=`/posters/agriculture-mobile.webp?v=${version}`
+   el.srcset=`/posters/agriculture-mobile-small.webp?v=${version} 375w, /posters/agriculture-mobile.webp?v=${version} 750w`
    return el.decode()
- })
+ },WHEAT_VERSION)
  const still=await wheat.screenshot()
  await writeFile(`${out}/card-live.png`,live)
  await writeFile(`${out}/card-poster.png`,still)

@@ -1,12 +1,12 @@
 import React from 'react'
 import * as THREE from 'three'
 import { Canvas, useThree } from '@react-three/fiber'
-import { Lights, Studio, getShadowTexture } from './objects'
+import { CategoryStudio, useCategoryMaps } from './CategoryStudio'
 import { CATEGORY_OBJECTS, type CategoryMotif } from './categoryObjects'
 import { frameModel, type Framing } from './framing'
 import { measuredDpr, useQuality, useSceneStill, watchPerformance, releasePerformance } from './performance'
 import { SceneFrames, useDrawFrame } from './FrameReporting'
-import { useRenderBudget, usePhoneMotion } from './render-budget'
+import { useRenderBudget } from './render-budget'
 import { useSceneSession } from './SceneSession'
 import { productYaw } from './render-policy'
 import { CategoryContinuity } from './CategoryContinuity'
@@ -35,7 +35,7 @@ import { WHEAT_PRESENTATION, TEXTILE_PRESENTATION } from './category-presentatio
    ========================================================================== */
 
 /** World units across one tile's letterbox. This is the height the single-tile
- *  perspective camera used to see at the object's origin (2 · 4.6 · tan 17°), so
+ *  perspective camera used to see at the object's origin (2 Â· 4.6 Â· tan 17Â°), so
  *  the objects keep exactly the size and framing they had when each tile owned a
  *  canvas. The view is this tall per letterbox, not per canvas: the canvas spans
  *  the whole row, and only the top band of each tile is the object's. */
@@ -45,13 +45,33 @@ const TILE_VIEW = 2.8
  *  the height of that letterbox (which is what sets the scale). */
 type Slot = { motif: CategoryMotif; x: number; y: number; height: number; width: number; visible: boolean; docked?: boolean }
 
+// Card posters and the gallery canvas are separately rasterized CSS boxes.
+// Snap both edges before centering the model so fractional grid positions
+// do not move fine strands by a device pixel when the canvas appears.
+function paintedRect(element: Element, card: boolean) {
+  const rect = element.getBoundingClientRect()
+  if (!card) return rect
+  const left = Math.round(rect.left), top = Math.round(rect.top)
+  const right = Math.round(rect.right), bottom = Math.round(rect.bottom)
+  return { left, top, bottom, width: right - left, height: bottom - top }
+}
+
+const CONTACT = {
+  textiles: [1.6, 1.28, .64],
+  handicrafts: [1.45, 1.45, .72],
+  agriculture: [1.3, 1.3, .51],
+  industrial: [1.45, 1.47, .72],
+  organic: [1.6, 1.17, .54],
+  general: [1.45, 1.26, .76],
+} as const
+
 /** Reads where each tile is, in canvas pixels. Scroll and resize both move
  *  them, so this is re-run whenever either could have happened. */
 function measure(wrapper: HTMLElement | null): Slot[] {
   if (!wrapper) return []
   const box = wrapper.getBoundingClientRect()
   /* The anchors live inside the tiles' own links, which are siblings of this
-     canvas rather than its children — so search from the row, not from here. */
+     canvas rather than its children â€” so search from the row, not from here. */
   const anchors = wrapper.parentElement?.querySelectorAll<HTMLElement>('[data-motif]')
   if (!anchors) return []
   return [...anchors].flatMap((el) => {
@@ -80,8 +100,9 @@ function measure(wrapper: HTMLElement | null): Slot[] {
   })
 }
 
-export function Exhibit({ motif, slot, pxPerUnit, paused, bounded = false }: { motif: CategoryMotif; slot: Slot; pxPerUnit: number; paused: boolean; bounded?: boolean }) {
+export function Exhibit({ motif, slot, pxPerUnit, paused, card = false }: { motif: CategoryMotif; slot: Slot; pxPerUnit: number; paused: boolean; card?: boolean }) {
   const { gl } = useThree()
+  const { contact } = useCategoryMaps()
   const outer = React.useRef<THREE.Group>(null)
   const spin = React.useRef<THREE.Group>(null)
   const anchor = React.useRef<HTMLElement | null>(null)
@@ -90,6 +111,7 @@ export function Exhibit({ motif, slot, pxPerUnit, paused, bounded = false }: { m
   const [framing, setFraming] = React.useState<Framing | null>(null)
   const entry = CATEGORY_OBJECTS[motif]
   const presentation = motif === 'agriculture' ? WHEAT_PRESENTATION : motif === 'textiles' ? TEXTILE_PRESENTATION : null
+  const [shadowWidth, shadowDepth, shadowOpacity] = CONTACT[motif]
 
   React.useLayoutEffect(() => {
     anchor.current = gl.domElement.closest('.gallery')?.parentElement?.querySelector<HTMLElement>(`[data-motif="${motif}"]`) ?? null
@@ -101,7 +123,7 @@ export function Exhibit({ motif, slot, pxPerUnit, paused, bounded = false }: { m
     g.scale.setScalar(1)
     g.position.set(0, 0, 0)
     g.updateMatrixWorld(true)
-    const next = frameModel(new THREE.Box3().setFromObject(g))
+    const next = frameModel(new THREE.Box3().setFromObject(g, true))
     if (next) setFraming(next)
   }, [])
 
@@ -110,8 +132,8 @@ export function Exhibit({ motif, slot, pxPerUnit, paused, bounded = false }: { m
     if (!host) return
     // Read the current letterbox at the draw boundary. A React scroll update
     // may still be pending; never present an earlier scroll position.
-    const box = gl.domElement.getBoundingClientRect()
-    const r = el?.getBoundingClientRect() ?? {left:box.left+slot.x-slot.width/2,top:box.top+slot.y-slot.height/2,width:slot.width,height:slot.height,bottom:box.top+slot.y+slot.height/2}
+    const box = paintedRect(gl.domElement, card)
+    const r = el ? paintedRect(el, card) : {left:box.left+slot.x-slot.width/2,top:box.top+slot.y-slot.height/2,width:slot.width,height:slot.height,bottom:box.top+slot.y+slot.height/2}
     const visible = r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight && (el ? el.dataset.active !== 'false' : slot.visible)
     host.visible = visible
     host.position.set((r.left + r.width / 2 - box.left - box.width / 2) / pxPerUnit,
@@ -120,7 +142,7 @@ export function Exhibit({ motif, slot, pxPerUnit, paused, bounded = false }: { m
     const g = spin.current
     if (!g || paused || !visible || presentation) return
     phase.current += delta
-    g.rotation.y = productYaw(phase.current, entry.speed, bounded)
+    g.rotation.y = productYaw(phase.current, entry.speed)
   }, () => {
     if (anchor.current && outer.current?.visible && spin.current) anchor.current.dataset.presentedYaw = String(spin.current.rotation.y)
   })
@@ -132,27 +154,27 @@ export function Exhibit({ motif, slot, pxPerUnit, paused, bounded = false }: { m
   return (
     <group ref={outer} visible={slot.visible}>
       <group name={`category-spin-${motif}`} ref={spin} rotation={[0.05, 0.7, 0]}>
-        {presentation && <CategoryContinuity motif={motif} presentation={presentation} spin={spin} slot={slot} paused={paused} bounded={bounded} speed={entry.speed} />}
+        {presentation && <CategoryContinuity motif={motif} presentation={presentation} spin={spin} slot={slot} paused={paused} speed={entry.speed} />}
         <group ref={body} scale={framing?.scale ?? 1} position={framing?.position ?? [0, 0, 0]}>
           {entry.model}
         </group>
-        {framing ? (
-          <mesh
-            rotation={[-Math.PI / 2, 0, 0]}
-            position={[0, framing.base + 0.015, 0]}
-            scale={framing.footprint * 1.7}
-          >
-            <planeGeometry args={[1, 1]} />
-            <meshBasicMaterial
-              map={getShadowTexture()}
-              transparent
-              opacity={0.4}
-              depthWrite={false}
-              toneMapped={false}
-            />
-          </mesh>
-        ) : null}
       </group>
+      {framing ? (
+        <mesh
+          rotation={[-Math.PI / 2 + .105, 0, 0]}
+          position={[0, framing.base, -.055]}
+          scale={[framing.footprint * shadowWidth, framing.footprint * shadowDepth, 1]}
+        >
+          <planeGeometry args={[1, 1]} />
+          <meshBasicMaterial
+            map={contact}
+            transparent
+            opacity={shadowOpacity}
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </mesh>
+      ) : null}
     </group>
   )
 }
@@ -164,12 +186,22 @@ export function Exhibit({ motif, slot, pxPerUnit, paused, bounded = false }: { m
  * `size / zoom` world units across. Synchronise the CSS surface once at each
  * draw boundary, before placing any exhibits, including during window resize.
  */
-function OrthoCamera({ pxPerUnit }: { pxPerUnit: number }) {
+function OrthoCamera({ pxPerUnit, journey }: { pxPerUnit: number; journey: boolean }) {
   const camera = useThree((s) => s.camera) as THREE.OrthographicCamera
   const set = useThree((s) => s.set)
   const gl = useThree(s => s.gl)
+  const invalidate = useThree(s => s.invalidate)
+  React.useEffect(() => {
+    if (!journey) return
+    const redraw = () => {
+      if (gl.domElement.closest('.sourcing--journey')?.getAttribute('data-begun') === 'true') invalidate()
+    }
+    // A stopped animation clock still needs to paint a changed scroll pose.
+    window.addEventListener('bs:journey-layout', redraw)
+    return () => window.removeEventListener('bs:journey-layout', redraw)
+  }, [gl, invalidate, journey])
   useDrawFrame(() => {
-    const box = gl.domElement.getBoundingClientRect()
+    const box = paintedRect(gl.domElement, !journey)
     camera.zoom = pxPerUnit
     camera.left = -box.width / 2; camera.right = box.width / 2
     camera.top = box.height / 2; camera.bottom = -box.height / 2
@@ -193,7 +225,7 @@ function OrthoCamera({ pxPerUnit }: { pxPerUnit: number }) {
  * Tells the row when there are real pixels to look at.
  *
  * The stills stay uncovered until this fires, so the switch from vector to 3D
- * only happens once something has actually been drawn — not when the canvas
+ * only happens once something has actually been drawn â€” not when the canvas
  * element appears. If the context is lost, the row is told again and the stills
  * come back, rather than leaving six blank letterboxes.
  */
@@ -272,7 +304,7 @@ export function Gallery({ onReady, onLost, onPreparing, journey = false, activeM
   const pxPerUnit = journey ? 100 : (slots[0]?.height ?? 152) / TILE_VIEW
 
   /* Same rule as the hero: one rung at a time, capped by a pixel budget, never
-     above the screen. The row is one canvas, so its area is the whole strip —
+     above the screen. The row is one canvas, so its area is the whole strip â€”
      which is exactly the case the budget exists for. */
   const [box, setBox] = React.useState({ w: 0, h: 0 })
   React.useLayoutEffect(() => {
@@ -284,7 +316,6 @@ export function Gallery({ onReady, onLost, onPreparing, journey = false, activeM
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
-  const settled = usePhoneMotion('products', prepared && visible && pageVisible && !adaptiveStill)
   // Keep the surface stable while objects travel. Moving/resizing a cropped
   // Canvas races its ResizeObserver, camera and model layout on every scroll.
   const desired = measuredDpr(quality, box.w, box.h)
@@ -292,9 +323,9 @@ export function Gallery({ onReady, onLost, onPreparing, journey = false, activeM
   // preferences/data saving are handled by the renderer-free parent boundary.
   const hoverMotion = journey && slots.some(slot => slot.visible && slot.docked && slot.motif === activeMotif)
   const canAnimate = !adaptiveStill || hoverMotion
-  const { dpr, permit } = useRenderBudget(host, desired, box.w, box.h, visible && pageVisible && canAnimate && !settled)
-  const hasMotion = !journey || slots.some(slot => slot.visible && (!slot.docked || slot.motif === activeMotif))
-  const animated = canAnimate && !session?.still && !settled && permit && hasMotion
+  const { dpr, permit } = useRenderBudget(host, desired, box.w, box.h, prepared && visible && pageVisible && canAnimate)
+  const hasMotion = slots.some(slot => slot.visible && (!journey || !slot.docked || slot.motif === activeMotif))
+  const animated = visible && pageVisible && canAnimate && !session?.still && permit && hasMotion
   React.useEffect(() => {
     if (!visible || !pageVisible || !animated) return
     watchPerformance()
@@ -347,20 +378,21 @@ export function Gallery({ onReady, onLost, onPreparing, journey = false, activeM
       <Canvas
         orthographic
         camera={{ position: [0, 0, 10], zoom: 1, near: 0.1, far: 60 }}
-        flat
         frameloop={!visible || !pageVisible ? 'never' : 'demand'}
         dpr={dpr}
-        gl={{ antialias: true, alpha: true, stencil: false, powerPreference: 'high-performance' }}
+        gl={{ antialias: true, alpha: true, stencil: false, powerPreference: 'high-performance', toneMapping: THREE.NeutralToneMapping }}
         style={{ pointerEvents: 'none' }}
         resize={{ scroll: false }}
       >
-        <Ready key={layoutKey} onReady={handleReady} onLost={onLost} modelsReady={models.length > 0} animated={animated && visible && pageVisible} />
-        <OrthoCamera pxPerUnit={pxPerUnit} />
-        <Studio />
-        <Lights intensity={1.05} />
-        {models.map((slot) => (
-          <Exhibit key={slot.motif} motif={slot.motif} slot={slot} pxPerUnit={pxPerUnit} paused={!prepared || !animated || (journey && !!slot.docked && slot.motif !== activeMotif)} bounded={!journey} />
-        ))}
+        <React.Suspense fallback={null}>
+          <CategoryStudio>
+            <Ready key={layoutKey} onReady={handleReady} onLost={onLost} modelsReady={models.length > 0} animated={animated && visible && pageVisible} />
+            <OrthoCamera pxPerUnit={pxPerUnit} journey={journey} />
+            {models.map((slot) => (
+              <Exhibit key={slot.motif} motif={slot.motif} slot={slot} pxPerUnit={pxPerUnit} card={!journey} paused={!prepared || !animated || (journey && !!slot.docked && slot.motif !== activeMotif)} />
+            ))}
+          </CategoryStudio>
+        </React.Suspense>
       </Canvas>
       </div>
     </div>

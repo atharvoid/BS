@@ -213,13 +213,9 @@ export const VASE_PROFILE: [number, number][] = [
   [0.19, 0.66],
 ]
 
-export function makeVaseBody(segments = 96) {
-  const geo = new THREE.LatheGeometry(
-    VASE_PROFILE.map(([x, y]) => new THREE.Vector2(x, y)),
-    segments,
-  )
-  geo.computeVertexNormals()
-  return geo
+export function makeVaseBody(segments = 72) {
+  const profile = new THREE.SplineCurve(VASE_PROFILE.map(([x, y]) => new THREE.Vector2(x, y)))
+  return new THREE.LatheGeometry(profile.getPoints(38), segments)
 }
 
 /* -------------------------------------------------------------------------- */
@@ -325,8 +321,8 @@ export function makeGrainHeap(radius = 0.17) {
  * leaves a coil at an angle, so the path climbs as it turns, wanders a little,
  * and the open end lifts off the top turn.
  */
-export function makeCopperCoil(turns = 15, radius = 0.4, height = 0.8, wire = 0.034) {
-  const count = turns * 28
+export function makeCopperCoil(turns = 13, radius = 0.4, height = 0.8, wire = 0.027) {
+  const count = turns * 24
   const points: THREE.Vector3[] = []
   for (let i = 0; i <= count; i++) {
     const t = i / count
@@ -341,7 +337,7 @@ export function makeCopperCoil(turns = 15, radius = 0.4, height = 0.8, wire = 0.
       ),
     )
   }
-  return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), count, wire, 9, false)
+  return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), count, wire, 10, false)
 }
 
 /* -------------------------------------------------------------------------- */
@@ -377,6 +373,7 @@ export function bollLobes(count = 5) {
 export function makeBollLobe(seed = 0, detail = 28) {
   const geo = new THREE.SphereGeometry(1, detail, Math.round(detail * 0.75))
   const pos = geo.attributes.position as THREE.BufferAttribute
+  const colours = new Float32Array(pos.count * 3)
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i)
     const y = pos.getY(i)
@@ -389,7 +386,11 @@ export function makeBollLobe(seed = 0, detail = 28) {
       0.05 * Math.cos(theta * 9 - seed * 2) * Math.sin(phi * 7 + seed) +
       0.03 * Math.sin(theta * 17 + phi * 11)
     pos.setXYZ(i, x * lump, y * lump, z * lump)
+    // The side facing the centre of the boll sits under the neighbouring locks.
+    const root = Math.pow(Math.max(0, -x), 1.6)
+    colours.set([1 - .28 * root, 1 - .32 * root, 1 - .38 * root], i * 3)
   }
+  geo.setAttribute('color', new THREE.BufferAttribute(colours, 3))
   geo.computeVertexNormals()
   return geo
 }

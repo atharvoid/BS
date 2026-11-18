@@ -21,7 +21,8 @@ export function createPresentationStore(motif:string,version:string) {
   }
 }
 export type PresentationStore=ReturnType<typeof createPresentationStore>
-export const WHEAT_VERSION='golden-wheat-v1'
-export const TEXTILE_VERSION='indigo-roll-v2'
+export const CATEGORY_MATERIALS_VERSION='studio-v1'
+export const WHEAT_VERSION=`golden-wheat-${CATEGORY_MATERIALS_VERSION}`
+export const TEXTILE_VERSION=`indigo-roll-${CATEGORY_MATERIALS_VERSION}`
 export const WHEAT_PRESENTATION=createPresentationStore('agriculture',WHEAT_VERSION)
 export const TEXTILE_PRESENTATION=createPresentationStore('textiles',TEXTILE_VERSION)
