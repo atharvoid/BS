@@ -11,6 +11,7 @@ export function Footer() {
           <nav aria-label="Footer"><ul className="footer__list">
             <li><Link to="/#products">Products</Link></li>
             <li><Link to="/textiles">Textiles</Link></li>
+            <li><Link to="/about">About</Link></li>
             <li><Link to="/enquiry">Enquire</Link></li><li><Link to="/privacy">Enquiry privacy</Link></li>
           </ul></nav>
         </div>

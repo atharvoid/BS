@@ -5,7 +5,7 @@
   --brand-name: #dabc72;
 }
 
-.brand-logo { display: block; width: auto; height: 60px; }
+.brand-logo { display: block; width: auto; height: 44px; }
 
 .brand-intro {
   position: fixed;
@@ -38,7 +38,7 @@
 
 .logo-drawing { display: block; width: 100%; height: 100%; }
 
-@media (max-width: 760px) { .brand-logo { height: 52px; } }
+@media (max-width: 760px) { .brand-logo { height: 38px; } }
 
 /* Reduced motion: no sequence at all, the page simply starts. */
 @media (prefers-reduced-motion: reduce) {

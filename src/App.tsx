@@ -24,6 +24,7 @@ import { EnquiryProvider } from './components/EnquiryForm'
  * is exactly what should be there. */
 import Overview from './pages/Overview'
 import Textiles from './pages/Textiles'
+import About from './pages/About'
 import Enquiry from './pages/Enquiry'
 import Acknowledgement from './pages/Acknowledgement'
 import Privacy from './pages/Privacy'
@@ -101,6 +102,7 @@ function PageMetadata() {
     const pages: Record<string, [string, string]> = {
       '/': ['BS EXIMNEXUS | Import and export sourcing in India', 'India-focused sourcing and trade coordination for buyers and suppliers.'],
       '/textiles': ['Textiles and fabrics | BS EXIMNEXUS', 'Explore fabric types and textile sourcing areas in India.'],
+      '/about': ['About the business | BS EXIMNEXUS', 'Sourcing coordination, business background, and trade operations in India.'],
       '/enquiry': ['Start an enquiry | BS EXIMNEXUS', 'Describe what you need or supply to start a sourcing enquiry.'],
       '/privacy': ['Enquiry privacy | BS EXIMNEXUS', 'How enquiry information is handled.'],
       '/enquiry/acknowledgement': ['Enquiry acknowledgement | BS EXIMNEXUS', 'Submission status for this browser session.'],
@@ -110,7 +112,7 @@ function PageMetadata() {
     document.querySelector('meta[name="description"]')?.setAttribute('content', description)
     document.querySelector('meta[property="og:title"]')?.setAttribute('content', title)
     document.querySelector('meta[property="og:description"]')?.setAttribute('content', description)
-    const publicPage = ['/', '/textiles', '/enquiry', '/privacy'].includes(pathname)
+    const publicPage = ['/', '/textiles', '/about', '/enquiry', '/privacy'].includes(pathname)
     const preview = /(^localhost$|^127\.|\.e2b\.app$)/.test(location.hostname)
     document.querySelector('meta[name="robots"]')?.setAttribute('content', publicPage && !preview ? 'index,follow' : 'noindex,follow')
     // Never publish an invented domain. An optional verified deployment URL
@@ -150,6 +152,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Overview />} />
           <Route path="/textiles" element={<Textiles />} />
+          <Route path="/about" element={<About />} />
           <Route path="/enquiry" element={<Enquiry />} />
           <Route path="/enquiry/acknowledgement" element={<Acknowledgement />} />
           <Route path="/privacy" element={<Privacy />} />

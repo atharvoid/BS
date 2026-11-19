@@ -4,8 +4,7 @@
    The globe should be found facing India. That is easy to state and easy to get
    wrong, because three things all move it:
 
-   - the opening covers the page for three seconds, and a drift that runs behind
-     the curtain means nobody ever sees the starting angle;
+   - the globe starts turning from India as the logo lifts;
    - a drag offsets the angle, and any momentum left on it would carry into the
      next look;
    - a still-frame device draws one image, so "the angle it mounts at" is the
@@ -14,24 +13,22 @@
    So the angle is a small state machine, kept out of the component and out of
    the render loop so it can be tested without a browser:
 
-     held    the opening is on screen: nothing advances
-     free     the opening has cleared: drift advances from the start angle
-     still   the device is holding a frame: nothing advances, nothing resets
+     held    the logo is drawing
+     free    drift advances from the start angle
+     still   the device is holding a frame
 
-   Clearing the opening — or replaying it and clearing it again — rewinds to
-   the India-facing angle rather than continuing from wherever the drift had
-   reached.
+   Every replay starts the drift from India.
    ========================================================================== */
 
 /** Radians per second of automatic drift. A full turn takes about 140 s. */
 export const SPIN_RATE = 0.045
 
 export type GlobeGate = {
-  /** Angle the globe rests at when the opening clears. */
+  /** Angle the globe rests at before the logo lifts. */
   readonly start: number
   /** Current angle. */
   angle(): number
-  /** True while the opening covers the page. */
+  /** True while the logo is drawing. */
   held(): boolean
   /** Accumulated drift since the last rewind. */
   drift(): number

@@ -5,8 +5,10 @@ import { CategoryPoster } from './CategoryPoster'
 import { webglAvailable } from '../three/webgl'
 import { useDeferred3D } from '../three/render-budget'
 import { Arrow } from './Nav'
+import { introActive, onIntroChange } from './intro-state'
 
-const Gallery = React.lazy(() => import('../three/Gallery').then(m => ({ default: m.Gallery })))
+const loadGallery = () => import('../three/Gallery')
+const Gallery = React.lazy(() => loadGallery().then(m => ({ default: m.Gallery })))
 
 export function ProductDirectory({ directEntry }: { directEntry: boolean }) {
   const host = React.useRef<HTMLDivElement>(null)
@@ -14,18 +16,25 @@ export function ProductDirectory({ directEntry }: { directEntry: boolean }) {
   const [drawn, setDrawn] = React.useState(false)
   const [failed, setFailed] = React.useState(false)
   const deferred = useDeferred3D()
+  const opening = React.useSyncExternalStore(onIntroChange, introActive, () => false)
   const ready = React.useCallback(() => setDrawn(true), [])
-  const preparing = React.useCallback(() => setDrawn(false), [])
   const lost = React.useCallback(() => { setFailed(true); setDrawn(false) }, [])
   const liveCards = !deferred && !failed && webglAvailable()
   React.useEffect(() => {
     const el = host.current
     if (!liveCards) { setDrawn(false); return }
     if (!el || mounted) return
-    const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) setMounted(true) }, { rootMargin: '0px' })
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return
+      observer.disconnect()
+      // Fetch the nearby models during the opening. Start GPU work once the
+      // globe has had the opening to itself.
+      if (introActive()) void loadGallery().then(m => m.preloadGalleryTextures()).catch(() => {})
+      else setMounted(true)
+    }, { rootMargin: '640px 0px' })
     observer.observe(el)
     return () => observer.disconnect()
-  }, [liveCards, mounted])
+  }, [liveCards, mounted, opening])
   return <section className="product-directory shell" id="products" aria-labelledby="category-directory" data-tone="light" data-text-reveal="off">
     <header className="product-directory__head">
       <h2 id="category-directory">What are you looking to <em className="display-italic">source?</em></h2>
@@ -43,7 +52,7 @@ export function ProductDirectory({ directEntry }: { directEntry: boolean }) {
           <span className="product-card__action" id={`product-action-${item.id}`}>{item.to ? 'Explore textiles' : 'Start an enquiry'} <Arrow /></span>
         </div>
       </Link>)}
-      {mounted && liveCards ? <GalleryBoundary onError={lost}><React.Suspense fallback={null}><Gallery onReady={ready} onLost={lost} onPreparing={preparing} /></React.Suspense></GalleryBoundary> : null}
+      {mounted && liveCards ? <GalleryBoundary onError={lost}><React.Suspense fallback={null}><Gallery onReady={ready} onLost={lost} /></React.Suspense></GalleryBoundary> : null}
     </div>
     <p className="product-directory__note">The images are illustrative. We check availability and discuss terms for each enquiry.</p>
   </section>

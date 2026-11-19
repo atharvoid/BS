@@ -8,6 +8,7 @@ import './styles/fonts.css'
 import './styles/tokens.css'
 import './styles/base.css'
 import './styles/site.css'
+import './styles/about.css'
 /* The product row's styles live here, not with the component that first needed
    them: they are the home page's, and a route-split import would have left the
    row unstyled until the textiles page happened to load. */

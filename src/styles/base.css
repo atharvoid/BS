@@ -159,16 +159,13 @@ input, textarea, select {
 }
 
 .eyebrow::before {
-  content: '';
-  width: 1.9rem;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.55;
-  flex: none;
+  content: none !important;
+  display: none !important;
 }
 
 .eyebrow--bare::before {
-  display: none;
+  content: none !important;
+  display: none !important;
 }
 
 .eyebrow--index {

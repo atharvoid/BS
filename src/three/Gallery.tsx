@@ -12,6 +12,8 @@ import { productYaw } from './render-policy'
 import { CategoryContinuity } from './CategoryContinuity'
 import { WHEAT_PRESENTATION, TEXTILE_PRESENTATION } from './category-presentation'
 
+export { preloadGalleryTextures } from './CategoryStudio'
+
 /* ==========================================================================
    One canvas, six objects.
 
@@ -35,7 +37,7 @@ import { WHEAT_PRESENTATION, TEXTILE_PRESENTATION } from './category-presentatio
    ========================================================================== */
 
 /** World units across one tile's letterbox. This is the height the single-tile
- *  perspective camera used to see at the object's origin (2 Â· 4.6 Â· tan 17Â°), so
+ *  perspective camera used to see at the object's origin, so
  *  the objects keep exactly the size and framing they had when each tile owned a
  *  canvas. The view is this tall per letterbox, not per canvas: the canvas spans
  *  the whole row, and only the top band of each tile is the object's. */
@@ -70,8 +72,7 @@ const CONTACT = {
 function measure(wrapper: HTMLElement | null): Slot[] {
   if (!wrapper) return []
   const box = wrapper.getBoundingClientRect()
-  /* The anchors live inside the tiles' own links, which are siblings of this
-     canvas rather than its children â€” so search from the row, not from here. */
+  // The row holds both the anchors and the canvas.
   const anchors = wrapper.parentElement?.querySelectorAll<HTMLElement>('[data-motif]')
   if (!anchors) return []
   return [...anchors].flatMap((el) => {
@@ -134,7 +135,10 @@ export function Exhibit({ motif, slot, pxPerUnit, paused, card = false }: { moti
     // may still be pending; never present an earlier scroll position.
     const box = paintedRect(gl.domElement, card)
     const r = el ? paintedRect(el, card) : {left:box.left+slot.x-slot.width/2,top:box.top+slot.y-slot.height/2,width:slot.width,height:slot.height,bottom:box.top+slot.y+slot.height/2}
-    const visible = r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight && (el ? el.dataset.active !== 'false' : slot.visible)
+    const onScreen = r.bottom > 0 && r.top < innerHeight
+    // Card pixels scroll with their tiles. Keep offscreen cards in the buffer so
+    // a fast scroll never brings an unpainted letterbox into view.
+    const visible = r.width > 0 && r.height > 0 && (card || (onScreen && (el ? el.dataset.active !== 'false' : slot.visible)))
     host.visible = visible
     host.position.set((r.left + r.width / 2 - box.left - box.width / 2) / pxPerUnit,
       (box.height / 2 - (r.top + r.height / 2 - box.top)) / pxPerUnit, 0)
@@ -152,9 +156,9 @@ export function Exhibit({ motif, slot, pxPerUnit, paused, card = false }: { moti
      is; the position is the offset of that letterbox's centre from the canvas
      centre. */
   return (
-    <group ref={outer} visible={slot.visible}>
+    <group ref={outer} name="category-exhibit" visible={slot.visible}>
       <group name={`category-spin-${motif}`} ref={spin} rotation={[0.05, 0.7, 0]}>
-        {presentation && <CategoryContinuity motif={motif} presentation={presentation} spin={spin} slot={slot} paused={paused} speed={entry.speed} />}
+        {presentation && <CategoryContinuity motif={motif} presentation={presentation} spin={spin} slot={slot} painted={card || slot.visible} paused={paused} speed={entry.speed} />}
         <group ref={body} scale={framing?.scale ?? 1} position={framing?.position ?? [0, 0, 0]}>
           {entry.model}
         </group>
@@ -190,16 +194,6 @@ function OrthoCamera({ pxPerUnit, journey }: { pxPerUnit: number; journey: boole
   const camera = useThree((s) => s.camera) as THREE.OrthographicCamera
   const set = useThree((s) => s.set)
   const gl = useThree(s => s.gl)
-  const invalidate = useThree(s => s.invalidate)
-  React.useEffect(() => {
-    if (!journey) return
-    const redraw = () => {
-      if (gl.domElement.closest('.sourcing--journey')?.getAttribute('data-begun') === 'true') invalidate()
-    }
-    // A stopped animation clock still needs to paint a changed scroll pose.
-    window.addEventListener('bs:journey-layout', redraw)
-    return () => window.removeEventListener('bs:journey-layout', redraw)
-  }, [gl, invalidate, journey])
   useDrawFrame(() => {
     const box = paintedRect(gl.domElement, !journey)
     camera.zoom = pxPerUnit
@@ -225,11 +219,9 @@ function OrthoCamera({ pxPerUnit, journey }: { pxPerUnit: number; journey: boole
  * Tells the row when there are real pixels to look at.
  *
  * The stills stay uncovered until this fires, so the switch from vector to 3D
- * only happens once something has actually been drawn â€” not when the canvas
- * element appears. If the context is lost, the row is told again and the stills
- * come back, rather than leaving six blank letterboxes.
+ * happens after the first rendered frames. A context loss restores the posters.
  */
-function Ready({ onReady, onLost, modelsReady, animated }: { onReady: () => void; onLost: () => void; modelsReady: boolean; animated: boolean }) {
+function Ready({ onReady, onLost, animated, journey }: { onReady: () => void; onLost: () => void; animated: boolean; journey: boolean }) {
   const gl = useThree((s) => s.gl)
   const invalidate = useThree((s) => s.invalidate)
   const scene = useThree((s) => s.scene)
@@ -237,20 +229,28 @@ function Ready({ onReady, onLost, modelsReady, animated }: { onReady: () => void
   const [compiled, setCompiled] = React.useState(false)
 
   React.useEffect(() => {
-    if (!modelsReady) return
     let cancelled = false
-    // Run after the studio environment and model framing have mounted. Compile
-    // the mounted material set before revealing it. Retain all six models so
-    // scrolling a new phone row into view never hides or recompiles the others.
-    const frame = requestAnimationFrame(() => {
-      gl.compileAsync(scene, camera).then(() => {
+    // Compile first, then submit every model once while the posters cover the
+    // canvas. The first render also prepares geometry buffers and textures.
+    const frame = requestAnimationFrame(async () => {
+      try {
+        await gl.compileAsync(scene, camera)
         if (cancelled) return
+        const hidden = scene.children.filter(object => object.name === 'category-exhibit' && !object.visible)
+        hidden.forEach(object => { object.visible = true })
+        try {
+          gl.render(scene, camera)
+        } finally {
+          hidden.forEach(object => { object.visible = false })
+        }
         setCompiled(true)
         invalidate()
-      }).catch(() => { if (!cancelled) onLost() })
+      } catch {
+        if (!cancelled) onLost()
+      }
     })
     return () => { cancelled = true; cancelAnimationFrame(frame) }
-  }, [gl, scene, camera, invalidate, modelsReady, onLost])
+  }, [gl, scene, camera, invalidate, onLost])
 
   React.useEffect(() => {
     const el = gl.domElement
@@ -258,45 +258,30 @@ function Ready({ onReady, onLost, modelsReady, animated }: { onReady: () => void
       setCompiled(false)
       onLost()
     }
-    const restored = () => {
-      setCompiled(false)
-    }
     el.addEventListener('webglcontextlost', lost)
-    el.addEventListener('webglcontextrestored', restored)
-    return () => {
-      el.removeEventListener('webglcontextlost', lost)
-      el.removeEventListener('webglcontextrestored', restored)
-    }
+    return () => el.removeEventListener('webglcontextlost', lost)
   }, [gl, onLost])
 
-  return <SceneFrames prepared={compiled} animated={animated} onReady={onReady} />
+  return <SceneFrames prepared={compiled} animated={animated} redrawOn={journey ? 'bs:journey-layout' : undefined} onReady={onReady} />
 }
 
-export function Gallery({ onReady, onLost, onPreparing, journey = false, activeMotif = null }: { onReady: () => void; onLost: () => void; onPreparing?: () => void; journey?: boolean; activeMotif?: CategoryMotif | null }) {
+export function Gallery({ onReady, onLost, journey = false, activeMotif = null }: { onReady: () => void; onLost: () => void; journey?: boolean; activeMotif?: CategoryMotif | null }) {
   const quality = useQuality()
   const [prepared, setPrepared] = React.useState(false)
   const handleReady = React.useCallback(() => { setPrepared(true); onReady() }, [onReady])
   const session = useSceneSession()
   const adaptiveStill = useSceneStill()
-  const [visible, setVisible] = React.useState(false)
+  const [tourVisible, setTourVisible] = React.useState(false)
   const [pageVisible, setPageVisible] = React.useState(!document.hidden)
   const host = React.useRef<HTMLDivElement>(null)
   const [slots, setSlots] = React.useState<Slot[]>([])
 
-
   // A mounted row must not keep drawing below the footer or in a hidden tab.
   React.useEffect(() => {
-    const el = host.current
-    if (!el) return
-    const observer = journey ? null : new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting))
-    observer?.observe(el)
     const update = () => setPageVisible(!document.hidden)
     document.addEventListener('visibilitychange', update)
-    return () => {
-      observer?.disconnect()
-      document.removeEventListener('visibilitychange', update)
-    }
-  }, [journey])
+    return () => document.removeEventListener('visibilitychange', update)
+  }, [])
 
   /* Every letterbox is the same height (the stylesheet gives them all one), so
      any slot sets the row's scale. Before the first measurement there is
@@ -304,8 +289,7 @@ export function Gallery({ onReady, onLost, onPreparing, journey = false, activeM
   const pxPerUnit = journey ? 100 : (slots[0]?.height ?? 152) / TILE_VIEW
 
   /* Same rule as the hero: one rung at a time, capped by a pixel budget, never
-     above the screen. The row is one canvas, so its area is the whole strip â€”
-     which is exactly the case the budget exists for. */
+     above the screen. This canvas covers the entire strip. */
   const [box, setBox] = React.useState({ w: 0, h: 0 })
   React.useLayoutEffect(() => {
     const el = host.current
@@ -323,17 +307,14 @@ export function Gallery({ onReady, onLost, onPreparing, journey = false, activeM
   // preferences/data saving are handled by the renderer-free parent boundary.
   const hoverMotion = journey && slots.some(slot => slot.visible && slot.docked && slot.motif === activeMotif)
   const canAnimate = !adaptiveStill || hoverMotion
-  const { dpr, permit } = useRenderBudget(host, desired, box.w, box.h, prepared && visible && pageVisible && canAnimate)
+  const { dpr, permit } = useRenderBudget(host, desired, box.w, box.h, pageVisible && canAnimate)
   const hasMotion = slots.some(slot => slot.visible && (!journey || !slot.docked || slot.motif === activeMotif))
-  const animated = visible && pageVisible && canAnimate && !session?.still && permit && hasMotion
+  const animated = (!journey || tourVisible) && pageVisible && canAnimate && !session?.still && permit && hasMotion
   React.useEffect(() => {
-    if (!visible || !pageVisible || !animated) return
+    if (!prepared || !animated) return
     watchPerformance()
     return () => releasePerformance()
-  }, [visible, pageVisible, animated])
-  const models = slots
-  const layoutKey = journey ? 'journey' : models.map(s => s.motif).join(',')
-  React.useLayoutEffect(() => { setPrepared(false); onPreparing?.() }, [layoutKey, onPreparing])
+  }, [prepared, animated])
 
   /* Where the tiles are. Re-measured on scroll, resize and layout changes, not
      every frame: the grid only moves when the visitor scrolls it. */
@@ -342,59 +323,63 @@ export function Gallery({ onReady, onLost, onPreparing, journey = false, activeM
     if (!el) return
     let raf = 0
     const run = () => {
-      raf = 0
-      if (journey) setVisible(el.closest('.sourcing--journey')?.getAttribute('data-begun') === 'true' && el.closest('.sourcing--journey')!.getBoundingClientRect().bottom > 0)
+      if (journey) {
+        setTourVisible(el.closest('.sourcing--journey')?.getAttribute('data-begun') === 'true')
+      }
       const next = measure(el)
-      setSlots((prev) => {
-        if (prev.length === next.length && prev.every((p, i) =>
-          p.motif === next[i].motif && Math.abs(p.x - next[i].x) < 0.1 && Math.abs(p.y - next[i].y) < 0.1 && Math.abs(p.height - next[i].height) < 0.1 && p.visible === next[i].visible && p.docked === next[i].docked && p.width === next[i].width)) return prev
-        return next
-      })
+      if (next.length > 0) {
+        setSlots((prev) => {
+          if (prev.length === next.length && prev.every((p, i) =>
+            p.motif === next[i].motif && Math.abs(p.x - next[i].x) < 0.1 && Math.abs(p.y - next[i].y) < 0.1 && Math.abs(p.height - next[i].height) < 0.1 && p.visible === next[i].visible && p.docked === next[i].docked && p.width === next[i].width)) return prev
+          return next
+        })
+      }
     }
     const queue = () => {
-      if (!raf) raf = requestAnimationFrame(run)
+      if (!raf) raf = requestAnimationFrame(() => {
+        raf = 0
+        run()
+      })
     }
     run()
     const io = new ResizeObserver(queue)
     io.observe(el)
-    /* Capture, not bubble: on a phone the row is a horizontal scroller, and a
-       scroll on an inner element does not reach window by bubbling. Without the
-       capture phase the objects stay where the strip used to be. */
-    if (!journey) window.addEventListener('scroll', queue, { passive: true, capture: true })
+    // Capture also picks up scrolls inside the product grid.
+    if (!journey) window.addEventListener('scroll', run, { passive: true, capture: true })
     window.addEventListener('resize', queue)
-    window.addEventListener('bs:journey-layout', run)
+    if (journey) window.addEventListener('bs:journey-layout', run)
     return () => {
       io.disconnect()
-      window.removeEventListener('scroll', queue, { capture: true } as EventListenerOptions)
+      window.removeEventListener('scroll', run, true)
       window.removeEventListener('resize', queue)
-      window.removeEventListener('bs:journey-layout', run)
+      if (journey) window.removeEventListener('bs:journey-layout', run)
       if (raf) cancelAnimationFrame(raf)
     }
-  }, [])
+  }, [journey])
 
   return (
     <div className={journey ? "gallery gallery--journey" : "gallery gallery--cards"} data-ready={prepared} data-motion={animated ? "running" : "frozen"} ref={host} aria-hidden="true">
-      <div style={{width:'100%',height:'100%',pointerEvents:'none'}}>
-      <Canvas
-        orthographic
-        camera={{ position: [0, 0, 10], zoom: 1, near: 0.1, far: 60 }}
-        frameloop={!visible || !pageVisible ? 'never' : 'demand'}
-        dpr={dpr}
-        gl={{ antialias: true, alpha: true, stencil: false, powerPreference: 'high-performance', toneMapping: THREE.NeutralToneMapping }}
-        style={{ pointerEvents: 'none' }}
-        resize={{ scroll: false }}
-      >
-        <React.Suspense fallback={null}>
-          <CategoryStudio>
-            <Ready key={layoutKey} onReady={handleReady} onLost={onLost} modelsReady={models.length > 0} animated={animated && visible && pageVisible} />
-            <OrthoCamera pxPerUnit={pxPerUnit} journey={journey} />
-            {models.map((slot) => (
-              <Exhibit key={slot.motif} motif={slot.motif} slot={slot} pxPerUnit={pxPerUnit} card={!journey} paused={!prepared || !animated || (journey && !!slot.docked && slot.motif !== activeMotif)} />
-            ))}
-          </CategoryStudio>
-        </React.Suspense>
-      </Canvas>
-      </div>
+      {slots.length > 0 && (
+        <Canvas
+          orthographic
+          camera={{ position: [0, 0, 10], zoom: 1, near: 0.1, far: 60 }}
+          frameloop={pageVisible ? 'demand' : 'never'}
+          dpr={dpr}
+          gl={{ antialias: true, alpha: true, stencil: false, powerPreference: 'high-performance', toneMapping: THREE.NeutralToneMapping }}
+          style={{ pointerEvents: 'none' }}
+          resize={{ scroll: false }}
+        >
+          <React.Suspense fallback={null}>
+            <CategoryStudio>
+              <Ready onReady={handleReady} onLost={onLost} animated={animated} journey={journey} />
+              <OrthoCamera pxPerUnit={pxPerUnit} journey={journey} />
+              {slots.map(slot => (
+                <Exhibit key={slot.motif} motif={slot.motif} slot={slot} pxPerUnit={pxPerUnit} card={!journey} paused={!animated || (journey && !!slot.docked && slot.motif !== activeMotif)} />
+              ))}
+            </CategoryStudio>
+          </React.Suspense>
+        </Canvas>
+      )}
     </div>
   )
 }

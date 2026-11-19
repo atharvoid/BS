@@ -8,50 +8,10 @@ import { RegionWeave } from '../components/RegionWeave'
 import { FabricBrief } from '../components/FabricBrief'
 import { EnquiryForm, useEnquiryDraft } from '../components/EnquiryForm'
 
-/* The cloth in the hero and the five woven swatches both need the weave
-   generator, which is the expensive part of this page. Loading them here keeps
-   the fabric list, the region notes and the enquiry form — the page's actual
-   content — independent of it. */
+/* The cloth in the hero needs the weave generator. Loading it here keeps
+   the region notes and enquiry form independent of it. */
 const loadHeroScene = () => import('../three/TextileHeroScene')
 
-
-function SwatchWall() {
-  const swatches = [
-    { key: 'indigo' as const, label: 'Indigo', note: 'Blue weave' },
-    { key: 'madder' as const, label: 'Madder', note: 'Red weave' },
-    { key: 'cotton' as const, label: 'Raw cotton', note: 'Natural colour' },
-    { key: 'saffron' as const, label: 'Saffron', note: 'Warm weave' },
-    { key: 'verdigris' as const, label: 'Verdigris', note: 'Green weave' },
-  ]
-
-  return (
-    <div className="wall" role="list">
-      {swatches.map((s, i) => (
-        <figure
-          key={s.key}
-          className="wall__item reveal"
-          role="listitem"
-          style={{ ['--reveal-delay' as string]: `${i * 80}ms` }}
-        >
-          <div className="wall__frame">
-            <img
-              src={`/swatches/${s.key}.webp`}
-              srcSet={`/swatches/${s.key}-small.webp 420w, /swatches/${s.key}.webp 840w`}
-              sizes="(max-width: 720px) 45vw, (max-width: 1180px) 30vw, 300px"
-              alt="" width={840} height={840} loading="lazy" decoding="async"
-            />
-          </div>
-          <figcaption>
-            <strong>{s.label}</strong>
-            <span>{s.note}</span>
-          </figcaption>
-        </figure>
-      ))}
-    </div>
-  )
-}
-
-/** A rendered swatch: the same procedural weave used in the 3D scenes, on a flat plane. */
 export default function Textiles() {
   useReveal([])
   const { setDraft } = useEnquiryDraft()
@@ -73,28 +33,18 @@ export default function Textiles() {
             load={loadHeroScene}
             finiteMotion
           />
-          <p className="drag-hint" aria-hidden="true">Drag to turn the cloth</p>
+          <p className="drag-hint" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M9 11V6.5a1.5 1.5 0 0 1 3 0V11m0-2.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v5.2A4.8 4.8 0 0 1 13.2 20h-1.1a4 4 0 0 1-3.2-1.6L5.4 13.7a1.6 1.6 0 0 1 2.4-2l1.2 1.3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Drag
+          </p>
         </div>
         <div className="shell page-hero__inner">
           <p className="eyebrow">Textiles &amp; fabrics</p>
           <h1 className="page-hero__title">Textiles and fabrics <em className="display-italic">from India</em>.</h1>
-          <p className="page-hero__lede">Explore fabric types and the regions where we’re beginning our sourcing work.</p>
+          <p className="page-hero__lede">Explore the regions where we’re beginning our sourcing work.</p>
           <Link to="/textiles#textile-enquiry" className="btn btn--light">Start a textile enquiry <Arrow /></Link>
-        </div>
-      </section>
-
-      <section className="textile-intro">
-        <div className="shell">
-          <div className="textile-intro__grid">
-            <h2 className="textile-intro__title reveal">Fabric types and swatches</h2>
-            <div className="textile-intro__body">
-              <p className="reveal"><strong>Fibre</strong> describes the material, such as cotton, silk or blends.</p>
-              <p className="reveal"><strong>Construction</strong> describes how it is made, such as woven or knitted.</p>
-              <p className="reveal"><strong>Finish</strong> describes treatments such as printing or dyeing.</p>
-            </div>
-          </div>
-          <SwatchWall />
-          <p className="wall__note reveal">These illustrations show colour and weave. Availability is checked for each enquiry.</p>
         </div>
       </section>
 

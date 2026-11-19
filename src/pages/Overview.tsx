@@ -25,16 +25,15 @@ function Hero() {
           fov={36}
           fallback={<picture><source media="(max-width:980px), (max-height:479px)" srcSet="/posters/globe-mobile-small.webp 500w, /posters/globe-mobile.webp 1000w" sizes="(max-width:540px) 100vw, 500px" /><img className="globe-poster" src="/posters/globe-desktop.webp" alt="" width={1280} height={800} fetchPriority="high" /></picture>}
           stableVisual
-          finiteMotion
+          continuous
           load={loadGlobe}
         />
         <p className={`drag-hint ${engaged ? 'is-done' : ''}`} aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M9 11V6.5a1.5 1.5 0 0 1 3 0V11m0-2.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v5.2A4.8 4.8 0 0 1 13.2 20h-1.1a4 4 0 0 1-3.2-1.6L5.4 13.7a1.6 1.6 0 0 1 2.4-2l1.2 1.3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          Drag to turn
+          Drag
         </p>
-        <p className="hero__map-caption">Illustrative trade routes</p>
       </div>
 
       <div className="hero__inner shell">

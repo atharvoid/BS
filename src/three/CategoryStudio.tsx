@@ -25,6 +25,10 @@ const sources = Object.values(urls)
 type Maps = Record<keyof typeof urls, THREE.Texture>
 const CategoryMaps = React.createContext<Maps | null>(null)
 
+export function preloadGalleryTextures() {
+  useLoader.preload(THREE.TextureLoader, sources)
+}
+
 export function useCategoryMaps() {
   const maps = React.useContext(CategoryMaps)
   if (!maps) throw new Error('Category models require the category studio')

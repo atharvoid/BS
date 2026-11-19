@@ -60,8 +60,8 @@ export function TextTransitions() {
         }
       }
     }
-    const clearIntro = onIntroChange(active => {
-      if (!active) for (const el of pending) {
+    const clearIntro = onIntroChange(() => {
+      if (!introActive()) for (const el of pending) {
         const r = el.getBoundingClientRect()
         if (r.top < innerHeight - 18 && r.bottom > 0) show(el)
       }

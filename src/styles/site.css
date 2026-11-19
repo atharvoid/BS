@@ -578,16 +578,16 @@
 
 .drag-hint {
   position: absolute;
-  right: clamp(1.2rem, 4vw, 3rem);
-  bottom: 6.4rem;
+  right: clamp(1.2rem, 3.5vw, 2.5rem);
+  bottom: clamp(1.5rem, 3.5vw, 2.5rem);
   z-index: 3;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0.85rem 0.5rem 0.7rem;
+  padding: 0.45rem 0.8rem 0.45rem 0.65rem;
   border: 1px solid rgba(242, 235, 221, 0.18);
   border-radius: 100px;
-  background: rgba(18, 16, 13, 0.4);
+  background: rgba(18, 16, 13, 0.45);
   backdrop-filter: blur(8px);
   font-family: var(--f-mono);
   font-size: var(--fs-meta);
@@ -1975,9 +1975,8 @@
 }
 
 .enquiry-hero__facts li::before {
-  content: '—';
-  margin-right: 0.5em;
-  opacity: 0.6;
+  content: none;
+  display: none;
 }
 
 .enquiry-body { padding-block: clamp(2.4rem, 5vw, 5rem); background: var(--cotton); }

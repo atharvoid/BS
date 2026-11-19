@@ -2,27 +2,15 @@ import React from 'react'
 import { useLocation, useNavigationType } from 'react-router-dom'
 import { COMPACT_QUERY } from '../three/render-policy'
 import { Logo } from './Logo'
-
-/* ==========================================================================
-   The opening.
-
-   Three seconds, in four beats:
-
-   0.00 – 1.30  the BS and the ship draw themselves, then fill
-   1.30 – 2.55  the mark lifts into the header
-   2.55 – 3.00  the curtain clears
-
-   There is no skip control. The sequence is short, it is interrupted by
-   scrolling, a click, Escape or Tab, and it is skipped entirely for reduced
-   motion, so a control would only be one more thing on the screen.
-   ========================================================================== */
+import { setIntroPhase } from './intro-state'
 
 const DRAW = 1250
 const FILL_AT = 1000
 const FLY_AT = 1300
 const FLY = 1200
-const CLEAR_AT = 2550
-const END = 3000
+const REVEAL_AT = 2050
+const REVEAL = 650
+const MAX_CANVAS_WAIT = 700
 
 export function LogoIntro() {
   const { pathname, hash, key } = useLocation()
@@ -47,7 +35,6 @@ export function LogoIntro() {
     const removeListeners: (() => void)[] = []
 
     const finish = () => {
-      document.documentElement.removeAttribute('data-intro-active')
       timers.splice(0).forEach(clearTimeout)
       animations.splice(0).forEach((animation) => animation.cancel())
       removeListeners.splice(0).forEach((remove) => remove())
@@ -56,13 +43,46 @@ export function LogoIntro() {
       intro.setAttribute('aria-hidden', 'true')
       intro.dataset.state = 'idle'
       art.style.transform = ''
+      setIntroPhase('idle')
     }
     const listen = (target: EventTarget, type: string, handler: EventListener, options?: AddEventListenerOptions | boolean) => {
       target.addEventListener(type, handler, options)
       removeListeners.push(() => target.removeEventListener(type, handler, options))
     }
     const animate = (target: Element, frames: Keyframe[], options: KeyframeAnimationOptions) => {
-      animations.push(target.animate(frames, options))
+      const animation = target.animate(frames, options)
+      animations.push(animation)
+      return animation
+    }
+    const reveal = () => {
+      const fade = animate(surface, [{ opacity: 1 }, { opacity: 0 }], {
+        duration: REVEAL,
+        easing: 'cubic-bezier(.4,0,.2,1)',
+        fill: 'forwards',
+      })
+      listen(fade, 'finish', finish, { once: true })
+    }
+    const revealWhenDrawn = () => {
+      const stage = document.querySelector('.hero__stage[data-webgl="true"]')
+      if (!stage || matchMedia(COMPACT_QUERY).matches || stage.querySelector('[data-scene-ready="true"]')) {
+        reveal()
+        return
+      }
+      // Slow startup gets a short grace period. The poster covers longer delays.
+      const observer = new MutationObserver(() => {
+        if (stage.querySelector('[data-scene-ready="true"]')) clear()
+      })
+      const deadline = setTimeout(() => clear(), MAX_CANVAS_WAIT)
+      const stopWaiting = () => {
+        observer.disconnect()
+        clearTimeout(deadline)
+      }
+      const clear = () => {
+        stopWaiting()
+        reveal()
+      }
+      observer.observe(stage, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-scene-ready'] })
+      removeListeners.push(stopWaiting)
     }
 
     const play = () => {
@@ -73,10 +93,10 @@ export function LogoIntro() {
       intro.style.setProperty('--intro-top', `${box.top}px`)
       intro.style.setProperty('--intro-width', `${box.width}px`)
       intro.style.setProperty('--intro-height', `${box.height}px`)
-      document.documentElement.dataset.introActive = 'true'
       intro.hidden = false
       intro.setAttribute('aria-hidden', matchMedia(COMPACT_QUERY).matches ? 'true' : 'false')
       intro.dataset.state = 'drawing'
+      setIntroPhase('drawing')
       const origin = art.getBoundingClientRect()
       try {
         for (const path of paths) {
@@ -109,19 +129,14 @@ export function LogoIntro() {
         timers.push(
           setTimeout(() => {
             intro.dataset.state = 'settling'
+            setIntroPhase('settling')
             const destination = headerLogo.getBoundingClientRect()
             animate(art, [
               { transform: 'translate(0,0) scale(1)' },
               { transform: `translate(${destination.left - origin.left}px, ${destination.top - origin.top}px) scale(${destination.width / origin.width})` },
             ], { duration: FLY, easing: 'cubic-bezier(.38,.62,.16,1)', fill: 'forwards' })
-            animate(surface, [{ opacity: 1 }, { opacity: 1 }, { opacity: 0 }], {
-              duration: CLEAR_AT - FLY_AT,
-              easing: 'cubic-bezier(.4,0,.2,1)',
-              fill: 'forwards',
-            })
           }, FLY_AT),
-          setTimeout(() => { intro.dataset.state = 'clearing' }, CLEAR_AT),
-          setTimeout(finish, END),
+          setTimeout(revealWhenDrawn, REVEAL_AT),
         )
         listen(window, 'wheel', finish, { passive: true })
         listen(window, 'touchstart', finish, { passive: true })

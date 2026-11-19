@@ -16,6 +16,9 @@ export const BUSINESS = {
   email: 'bsexim.nexus@gmail.com',
   descriptor: 'Sourcing & trade coordination, India',
   status: 'Developing business',
+  owner: 'Bhupendra Sain',
+  ownerRole: 'Founder',
+  location: 'India',
 } as const
 
 export const CATEGORIES = [
@@ -183,3 +186,47 @@ export const CATEGORY_JOURNEY = CATEGORIES.map(category => ({
   ...category,
   ...CATEGORY_ARTWORK[category.id],
 }))
+
+export const ABOUT_BUSINESS = {
+  eyebrow: 'Desk coordinates',
+  title: 'Trade coordination and export sourcing in India.',
+  lede: 'BS EXIMNEXUS is an export sourcing and trade coordination desk based in India, founded by Bhupendra Sain.',
+} as const
+
+export const ABOUT_OWNER = {
+  name: 'Bhupendra Sain',
+  title: 'Founder, BS EXIMNEXUS',
+  summary: [
+    'Bhupendra Sain coordinates export sourcing from India. He works directly with overseas buyers, buyers in India, and production mills.',
+    'His work includes reviewing technical specifications, checking fabric swatches and production samples, agreeing on commercial terms in writing, and tracking orders through dispatch.',
+    'All enquiries are handled directly. Questions on specifications, samples, or order status receive written replies from the business mailbox.',
+  ],
+} as const
+
+export const ABOUT_DESK_FACTS = [
+  { label: 'Business name', value: 'BS EXIMNEXUS' },
+  { label: 'Founder', value: 'Bhupendra Sain' },
+  { label: 'Operating base', value: 'India' },
+  { label: 'Lead category', value: 'Textiles and fabrics' },
+  { label: 'Secondary scope', value: 'Handicrafts, agriculture, industrial materials' },
+  { label: 'Direct email', value: 'bsexim.nexus@gmail.com' },
+  { label: 'Trade terms', value: 'Agreed in writing per enquiry' },
+] as const
+
+export const ABOUT_STANDARDS = [
+  {
+    num: '01',
+    title: 'Specification review',
+    body: 'Each enquiry starts with exact specifications: material composition, yarn count, weight in GSM, width, and quantity.',
+  },
+  {
+    num: '02',
+    title: 'Sample verification',
+    body: 'Physical swatches or lab dips are checked against buyer requirements before bulk production starts.',
+  },
+  {
+    num: '03',
+    title: 'Written terms',
+    body: 'Prices, minimum quantities, packaging specifications, and delivery terms are confirmed in writing before shipment.',
+  },
+] as const

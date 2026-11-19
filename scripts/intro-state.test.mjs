@@ -1,34 +1,25 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { introActive, isGlobeHeld, onIntroChange, setIntroPhase } from '../src/components/intro-state.ts'
 
-test('a late intro subscriber is notified when the already-active intro clears', async () => {
+test('the logo lift releases the globe while the opening is still active', () => {
   const oldDocument = globalThis.document
-  const oldObserver = globalThis.MutationObserver
-  let notify
-  globalThis.document = { documentElement: { dataset: { introActive: 'true' } } }
-  globalThis.MutationObserver = class {
-    constructor(callback) { notify = callback }
-    observe() {}
-  }
+  globalThis.document = { documentElement: { dataset: {} } }
   try {
-    const { onIntroChange, introActive } = await import('../src/components/intro-state.ts')
+    setIntroPhase('drawing')
+    assert.equal(isGlobeHeld(), true, 'a scene mounted late still starts facing India')
     const changes = []
-    const off = onIntroChange(active => changes.push(active))
-    assert.equal(introActive(), true)
-    delete document.documentElement.dataset.introActive
-    notify()
-    assert.deepEqual(changes, [false], 'clearing must unblock deferred scenes')
-    document.documentElement.dataset.introActive = 'true'
-    notify()
-    delete document.documentElement.dataset.introActive
-    notify()
-    assert.deepEqual(changes, [false, true, false], 'logo replay has both edges')
-    off()
-    document.documentElement.dataset.introActive = 'true'
-    notify()
-    assert.equal(changes.length, 3)
+    const unsubscribe = onIntroChange(() => changes.push([introActive(), isGlobeHeld()]))
+    setIntroPhase('settling')
+    assert.equal(document.documentElement.dataset.introActive, 'true', 'the header logo stays hidden during the lift')
+    setIntroPhase('idle')
+    assert.equal(document.documentElement.dataset.introActive, undefined)
+    setIntroPhase('drawing')
+    setIntroPhase('idle')
+    unsubscribe()
+    assert.deepEqual(changes, [[true, false], [false, false], [true, true], [false, false]])
   } finally {
+    setIntroPhase('idle')
     globalThis.document = oldDocument
-    globalThis.MutationObserver = oldObserver
   }
 })

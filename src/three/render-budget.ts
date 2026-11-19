@@ -49,7 +49,10 @@ export function useRenderBudget(host: React.RefObject<HTMLElement | null>, desir
     const el = host.current
     if (!compact || !el || !eligible) return
     const observer = new IntersectionObserver(([entry]) => {
-      owners.set(id, { id, score: entry.intersectionRatio })
+      // Compare the screen area each stage occupies. A tall card grid can fill
+      // more of the viewport than the globe even when its own ratio is lower.
+      const { width, height } = entry.intersectionRect
+      owners.set(id, { id, score: width * height })
       publish()
     }, { threshold: [0, .1, .25, .5, .75, 1] })
     observer.observe(el)

@@ -37,36 +37,41 @@ function DesktopProductTour() {
   const [hovered, setHovered] = React.useState<CategoryMotif | null>(null)
   const [focused, setFocused] = React.useState<CategoryMotif | null>(null)
   const ready = React.useCallback(() => setDrawn(true), [])
-  const preparing = React.useCallback(() => setDrawn(false), [])
-  const lost = React.useCallback(() => setFailed(true), [])
+  const lost = React.useCallback(() => { setDrawn(false); setFailed(true) }, [])
 
   React.useEffect(() => {
     const el = root.current
-    if (!el || failed) return
-    const observer = new IntersectionObserver(([entry]) => setNear(entry.isIntersecting), { rootMargin: '320px 0px' })
+    if (!el) return
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setNear(true)
+        observer.disconnect()
+      }
+    }, { rootMargin: '600px 0px' })
     observer.observe(el)
     return () => observer.disconnect()
-  }, [failed])
+  }, [])
 
   React.useLayoutEffect(() => {
     const el = root.current
-    if (!el || failed) return
+    if (!el) return
     const runway = el.querySelector<HTMLElement>('.journey__runway')!
-    let raf = 0
+    const visuals = el.querySelector<HTMLElement>('.journey__visuals')!
+    const shelf = el.querySelector<HTMLElement>('.journey__shelf')!
+    let previousLayout = ''
     const run = () => {
-      raf = 0
       const r = el.getBoundingClientRect()
-      // WebKit's mobile layout viewport can include the scrollbar gutter.
-      // Use the actual fixed surface shared by the artwork and shelf.
-      const h = window.innerHeight, w = el.querySelector<HTMLElement>('.journey__visuals')!.clientWidth
-      const progress = clamp01(-r.top / Math.max(1, runway.offsetHeight - h)) * CATEGORY_COUNT
+      const h = window.innerHeight, w = visuals.clientWidth
       const begun = r.top <= 90 && r.bottom >= h - 1
+      const progress = clamp01(-r.top / Math.max(1, runway.offsetHeight - h)) * CATEGORY_COUNT
+      const shelfHeight = shelf.offsetHeight
+      const layout = `${begun}:${progress}:${w}:${h}:${shelfHeight}`
+      if (layout === previousLayout) return
+      previousLayout = layout
       el.dataset.begun = String(begun)
       el.style.setProperty('--journey-progress', String(progress / CATEGORY_COUNT))
       el.style.setProperty('--journey-complete', String(ease((progress - 5.9) / 0.1)))
       el.querySelector<HTMLElement>('.journey__complete')!.inert = !begun || progress < 5.99
-      const shelf = el.querySelector<HTMLElement>('.journey__shelf')!
-      const shelfHeight = shelf.getBoundingClientRect().height
       shelf.inert = !begun
       el.querySelectorAll<HTMLElement>('[data-journey-index]').forEach(anchor => {
         const i = Number(anchor.dataset.journeyIndex)
@@ -74,7 +79,7 @@ function DesktopProductTour() {
         anchor.style.width = `${pose.height}px`
         anchor.style.height = `${pose.height}px`
         anchor.style.transform = `translate3d(${pose.x - pose.height / 2}px,${pose.y - pose.height / 2}px,0)`
-        anchor.dataset.active = String(begun && pose.visible)
+        anchor.dataset.active = String(pose.visible)
         anchor.dataset.docked = String(pose.docked >= .999)
         const chapter = el.querySelector<HTMLElement>(`[data-chapter="${i}"]`)!
         chapter.style.opacity = String(pose.title)
@@ -87,28 +92,24 @@ function DesktopProductTour() {
         const box = el.querySelector<HTMLElement>(`[data-dock="${i}"]`)!
         box.dataset.filled = String(pose.docked > 0.5)
       })
-      // One layout read/write batch per scroll frame. The renderer listens after
-      // these anchors move; no duplicated models or cross-faded screenshots.
+      // Native scroll events run before animation frames. Submit the pose now
+      // so the WebGL draw and the shelf can reach the same paint.
       window.dispatchEvent(new Event('bs:journey-layout'))
     }
-    const queue = () => { if (!raf) raf = requestAnimationFrame(run) }
     run()
-    const resize = new ResizeObserver(queue)
+    const resize = new ResizeObserver(run)
     resize.observe(el)
-    window.addEventListener('scroll', queue, { passive: true })
-    window.addEventListener('resize', queue)
+    window.addEventListener('scroll', run, { passive: true })
+    window.addEventListener('resize', run)
     return () => {
       resize.disconnect()
-      window.removeEventListener('scroll', queue)
-      window.removeEventListener('resize', queue)
-      cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', run)
+      window.removeEventListener('resize', run)
     }
-  }, [failed])
-
-  if (failed) return null
+  }, [])
 
   return (
-    <section className="sourcing sourcing--journey" id="product-tour" ref={root} data-tone="light" data-drawn={near && drawn} aria-labelledby="journey-title">
+    <section className="sourcing sourcing--journey" id="product-tour" ref={root} data-tone="light" data-drawn={drawn} aria-labelledby="journey-title">
       <div className="journey__runway"><div className="journey__sticky" data-text-reveal="off">
         <header className="journey__header shell">
           <h2 id="journey-title">3D product tour</h2>
@@ -130,7 +131,7 @@ function DesktopProductTour() {
         {TILES.map((tile, i) => <div className="journey__anchor" key={tile.id} data-motif={tile.motif} data-journey-index={i}>
           {near && <CategoryPoster motif={tile.motif} sizes="76vh" />}
         </div>)}
-        {near && <JourneyBoundary onError={lost}><React.Suspense fallback={null}><Gallery onReady={ready} onLost={lost} onPreparing={preparing} activeMotif={hovered ?? focused} journey /></React.Suspense></JourneyBoundary>}
+        {near && !failed && <JourneyBoundary onError={lost}><React.Suspense fallback={null}><Gallery onReady={ready} onLost={lost} activeMotif={hovered ?? focused} journey /></React.Suspense></JourneyBoundary>}
       </div>
       <nav className="journey__shelf" data-text-reveal="off" aria-label="Product category shortcuts">
         {TILES.map((tile, i) => <Link className="journey__box" key={tile.id} data-dock={i} to={hrefFor(tile)} aria-label={tile.label}

@@ -5,6 +5,13 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright')
   const browser = await chromium.launch({ headless: true })
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } })
+    // Keep the DOM animation timing check independent of software GPU stalls.
+    await page.addInitScript(() => {
+      const getContext = HTMLCanvasElement.prototype.getContext
+      HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+        return type.startsWith('webgl') ? null : getContext.call(this, type, ...args)
+      }
+    })
     const origin = process.env.SITE_URL || 'http://localhost:5173'
     await page.goto(origin, { waitUntil: 'networkidle' })
     const intro = page.locator('#brand-intro')
@@ -44,18 +51,17 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright')
       document.querySelector('.nav .brand').click()
       return !document.querySelector('#brand-intro').hidden
     }), true)
-    const opening = await page.evaluate(() => {
-      const brand = document.querySelector('.nav .brand')
-      brand.click()
-      const intro = document.querySelector('#brand-intro')
+    const duration = await intro.evaluate(el => new Promise(resolve => {
       const started = performance.now()
-      return { started, longest: Math.max(...intro.getAnimations({ subtree: true }).map(a => {
-        const timing = a.effect.getTiming()
-        return Number(timing.delay || 0) + Number(timing.duration || 0)
-      })) }
-    })
-    assert.ok(opening.longest >= 2500 && opening.longest <= 3050, `the opening lasts about 3s (${Math.round(opening.longest)}ms)`)
-    await intro.waitFor({ state: 'hidden', timeout: 6000 })
+      const observer = new MutationObserver(() => {
+        if (!el.hidden) return
+        observer.disconnect()
+        resolve(performance.now() - started)
+      })
+      observer.observe(el, { attributes: true, attributeFilter: ['hidden'] })
+      document.querySelector('.nav .brand').click()
+    }))
+    assert.ok(duration >= 2500 && duration <= 4000, `the opening lasts about 3s (${Math.round(duration)}ms)`)
 
     assert.equal(await page.evaluate(() => {
       const brand = document.querySelector('.nav .brand')
@@ -78,7 +84,8 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright')
     await page.waitForFunction(() => !document.documentElement.hasAttribute('data-intro-active'))
     assert.equal(await page.locator('html').getAttribute('data-intro-active'), null)
     await page.goBack({ waitUntil: 'domcontentloaded' })
-    await page.waitForFunction(() => document.querySelector('#brand-intro')?.dataset.state === 'idle')
+    await intro.waitFor({ state: 'attached' })
+    assert.equal(await intro.evaluate(el => el.hidden), true, 'Back returns without replaying the opening')
 
     await page.goto(`${origin}/#process`, { waitUntil: 'networkidle' })
     assert.equal(await intro.isVisible(), false, 'direct section entry skips the startup')

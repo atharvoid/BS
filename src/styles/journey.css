@@ -25,12 +25,21 @@
 .journey__detail .tlink svg, .journey__complete .tlink svg { width: 14px; height: 14px; }
 .journey__visuals { position: fixed; inset: 0; z-index: 22; pointer-events: none; }
 .journey__anchor { position: absolute; left: 0; top: 0; pointer-events: none; visibility: hidden; }
+.sourcing--journey[data-begun='true'] .journey__anchor[data-active='true'] { visibility: visible; }
 /* A square live slot is framed by height. Clip the spare 5:4 poster margin. */
 .journey__anchor:has(.poster) { overflow: hidden; }
-.journey__anchor .poster { position: absolute; height: 100%; width: 125%; max-width: none; left: -12.5%; object-fit: fill; }
-.sourcing--journey:not([data-drawn='true']) .journey__anchor:has(.poster)[data-active='true'] { visibility: visible; }
-.gallery--journey { position: absolute; inset: 0; opacity: 0; transition: opacity 320ms ease-out; }
-.sourcing--journey[data-drawn='true'][data-begun='true'] .gallery--journey { opacity: 1; }
+.journey__anchor .poster {
+  position: absolute;
+  height: 100%;
+  width: 125%;
+  max-width: none;
+  left: -12.5%;
+  object-fit: fill;
+}
+.sourcing--journey[data-drawn='true'] .journey__anchor .poster {
+  visibility: hidden;
+}
+.sourcing--journey[data-drawn='false'] .gallery--journey { visibility: hidden; }
 .journey__shelf {
   position: fixed;
   inset: auto 0 0;

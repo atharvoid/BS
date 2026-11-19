@@ -27,25 +27,42 @@ export function useDrawFrame(before: DrawListener['before'], after: DrawListener
 }
 
 /** Own the actual draw, so sampled frames are rendered frames, including 30Hz. */
-export function SceneFrames({ prepared = true, animated, onReady }: {prepared?: boolean; animated: boolean; onReady?: () => void}) {
+export function SceneFrames({ prepared = true, animated, redrawOn, onReady }: {
+  prepared?: boolean
+  animated: boolean
+  redrawOn?: string
+  onReady?: () => void
+}) {
   const { gl, scene, camera, invalidate } = useThree()
   const quality = useQuality()
   const last = React.useRef(0)
   const frames = React.useRef(0)
   const pending = React.useRef(0)
+  const layoutChanged = React.useRef(false)
   const ready = React.useRef(onReady)
   ready.current = onReady
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     last.current = 0
     if (prepared) invalidate()
   }, [animated, prepared, quality, invalidate])
   React.useEffect(() => () => cancelAnimationFrame(pending.current), [])
+  React.useLayoutEffect(() => {
+    if (!redrawOn) return
+    const redraw = () => {
+      layoutChanged.current = true
+      invalidate()
+    }
+    window.addEventListener(redrawOn, redraw)
+    return () => window.removeEventListener(redrawOn, redraw)
+  }, [redrawOn, invalidate])
   useFrame(() => {
     if (!prepared) return
     const now = performance.now()
     const target = quality === 'high' ? 60 : 30
-    if (animated && last.current && now - last.current < 1000 / target - 2) { invalidate(); return }
-    const delta = animated && last.current ? Math.min((now - last.current) / 1000, 1 / 30) : 0
+    if (!layoutChanged.current && animated && last.current && now - last.current < 1000 / target - 2) { invalidate(); return }
+    layoutChanged.current = false
+    // Give the first animated draw one tick without counting time spent paused.
+    const delta = animated ? (last.current ? Math.min((now - last.current) / 1000, 1 / 30) : 1 / target) : 0
     drawSceneFrame(gl, scene, camera, delta)
     if (animated && last.current) {
       reportFrame(now - last.current, target)

@@ -2,7 +2,7 @@ import { useMotionWindow, useDeferred3D } from './render-budget'
 import { useCompactLayout } from '../components/useCompactLayout'
 import { webglAvailable } from './webgl'
 import React from 'react'
-import { introActive, onIntroChange } from '../components/intro-state'
+import { introActive, isGlobeHeld, onIntroChange } from '../components/intro-state'
 import { SceneContext } from './SceneSession'
 import { releasePerformance, useSceneStill, watchPerformance } from './performance'
 
@@ -25,7 +25,8 @@ import { releasePerformance, useSceneStill, watchPerformance } from './performan
    an on-demand frame without removing the scene.
    ========================================================================== */
 
-const StageCanvas = React.lazy(() => import('./StageCanvas'))
+const loadStageCanvas = () => import('./StageCanvas')
+const StageCanvas = React.lazy(loadStageCanvas)
 
 type StageProps = {
   /** The scene. Omitted when `load` is given instead. */
@@ -40,6 +41,7 @@ type StageProps = {
   /** Keep the exact scene/buffer across offscreen visits; pause rather than rebuild. */
   stableVisual?: boolean
   finiteMotion?: boolean
+  continuous?: boolean
 }
 
 /** How long a canvas may sit off screen before it is released. Browsers cap the
@@ -83,22 +85,15 @@ class Boundary extends React.Component<
  */
 export function StageScene({ children }: { children: React.ReactNode }) {
   const live = React.useContext(LiveContext)
-  const [opening, setOpening] = React.useState(introActive)
-  React.useEffect(() => {
-    const unsubscribe = onIntroChange(setOpening)
-    setOpening(introActive())
-    return unsubscribe
-  }, [])
   if (!live) return null
   return (
     <React.Suspense fallback={null}>
       <StageCanvas
         visible={live.visible}
-        still={live.still || opening}
+        still={live.still}
         z={live.z}
         fov={live.fov}
         onContextLost={live.onContextLost}
-        stableVisual={live.stableVisual}
         onReady={live.onReady}
       >
         {children}
@@ -114,7 +109,6 @@ type Live = {
   fov: number
   /** Told when the GPU drops the context, so the stage can rebuild. */
   onContextLost: () => void
-  stableVisual: boolean
   onReady: () => void
 }
 
@@ -135,7 +129,7 @@ function LoadedScene({ load }: { load: LiveLoader }) {
   const [Scene, setScene] = React.useState<React.ComponentType | null>(null)
   React.useEffect(() => {
     let alive = true
-    load().then((mod) => {
+    Promise.all([load(), loadStageCanvas()]).then(([mod]) => {
       if (alive) setScene(() => mod.default)
     }).catch(() => {
       /* A scene that cannot load leaves its fallback in place; the stage is
@@ -160,6 +154,7 @@ export function Stage({
   load,
   stableVisual = false,
   finiteMotion = false,
+  continuous = false,
 }: StageProps & { load?: LiveLoader }) {
   const host = React.useRef<HTMLDivElement>(null)
   const [near, setNear] = React.useState(false)
@@ -170,12 +165,14 @@ export function Stage({
   const [mounted, setMounted] = React.useState(false)
   const [pageVisible, setPageVisible] = React.useState(!document.hidden)
   const compact = useCompactLayout()
-  const opening = React.useSyncExternalStore(onIntroChange, introActive, () => false)
+  const openingHold = React.useSyncExternalStore(onIntroChange, continuous ? isGlobeHeld : introActive, () => false)
   const [drawn, setDrawn] = React.useState(false)
   const onReady = React.useCallback(() => setDrawn(true), [])
   const onError = React.useCallback(() => setDrawn(false), [])
-  const settled = useMotionWindow(label, drawn && visible && pageVisible, compact || finiteMotion)
-  const still = useSceneStill() || settled || opening
+  const timedMotion = !continuous && (compact || finiteMotion)
+  const settled = useMotionWindow(label, drawn && visible && pageVisible, timedMotion)
+  const adaptiveStill = useSceneStill()
+  const still = openingHold || (!continuous && (adaptiveStill || settled))
   const id = React.useId()
   const invalidate = React.useRef<() => void>(() => {})
   const session = React.useMemo(() => ({ id, still, invalidate }), [id, still])
@@ -312,7 +309,7 @@ export function Stage({
         {ok ? (
           near && mounted ? (
             <Boundary onError={onError}>
-              <LiveContext.Provider value={{ visible: visible && pageVisible, still, z, fov, onContextLost, stableVisual, onReady }}>
+              <LiveContext.Provider value={{ visible: visible && pageVisible, still, z, fov, onContextLost, onReady }}>
                 <React.Suspense fallback={null} key={remount}>
                   {load ? <LazyScene load={load} /> : children}
                 </React.Suspense>

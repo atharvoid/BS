@@ -25,10 +25,27 @@ const RING = 18
  *  twice. A page with neither is treated as light, which most of this site is.
  */
 function toneAt(hit: Element | null): 'dark' | 'light' {
-  const el = hit?.closest('[data-tone], .on-dark') as HTMLElement | null
-  if (!el) return 'light'
-  if (el.dataset.tone) return el.dataset.tone === 'dark' ? 'dark' : 'light'
-  return el.classList.contains('on-dark') ? 'dark' : 'light'
+  let curr: Element | null = hit
+  while (curr && curr !== document.documentElement) {
+    const el = curr as HTMLElement
+    if (el.dataset?.tone) return el.dataset.tone === 'dark' ? 'dark' : 'light'
+    if (el.classList.contains('on-dark') || el.classList.contains('on-indigo') || el.classList.contains('nav--lifted')) {
+      return 'dark'
+    }
+    const bg = getComputedStyle(el).backgroundColor
+    if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+      const match = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
+      if (match) {
+        const r = Number(match[1])
+        const g = Number(match[2])
+        const b = Number(match[3])
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+        return luminance < 0.5 ? 'dark' : 'light'
+      }
+    }
+    curr = curr.parentElement
+  }
+  return 'light'
 }
 
 /**
@@ -109,8 +126,7 @@ export function Cursor() {
     const tick = (time: number) => {
       raf = 0
       try {
-        if (!mouseActive || !fine.matches || reduced.matches || forced.matches || document.hidden ||
-            root.dataset.introActive === 'true' || !document.hasFocus()) {
+        if (!mouseActive || !fine.matches || reduced.matches || forced.matches || document.hidden) {
           conceal()
           return
         }
@@ -185,7 +201,7 @@ export function Cursor() {
 
         /* The disc tracks the pointer closely enough to feel attached to it:
            a short follow, not a lag. */
-        const follow = mode === 'scene' || mode === 'dragging' ? 42 : 70
+        const follow = mode === 'scene' || mode === 'dragging' ? 24 : 16
         const elapsed = previousTime ? Math.min(50, time - previousTime) : 16
         previousTime = time
         const amount = 1 - Math.exp(-elapsed / follow)
@@ -219,6 +235,7 @@ export function Cursor() {
       x = event.clientX
       y = event.clientY
       mouseActive = true
+      root.classList.add('has-custom-cursor')
       wake()
     }
     const updateScene = (event: Event) => {
@@ -260,6 +277,7 @@ export function Cursor() {
     }
     const stop = () => { mouseActive = false; scene = null; nearId = null; conceal() }
     const keyboard = () => stop()
+    const onBlur = () => { if (document.hidden) stop() }
     const preferences = () => {
       if (!fine.matches || reduced.matches || forced.matches) stop()
       else invalidate()
@@ -274,7 +292,7 @@ export function Cursor() {
     window.addEventListener('pointerdown', move, { passive: true })
     window.addEventListener('click', logoClick)
     window.addEventListener('bs:scene-pointer', updateScene)
-    window.addEventListener('blur', stop)
+    window.addEventListener('blur', onBlur)
     window.addEventListener('resize', invalidate)
     window.addEventListener('scroll', invalidate, { passive: true })
     document.addEventListener('pointerleave', stop)

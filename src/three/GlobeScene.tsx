@@ -1,6 +1,6 @@
 import { globeYaw, globeUserYaw } from './globe-pose'
 import { useSceneDrag } from './useSceneDrag'
-import { introActive, onIntroChange } from '../components/intro-state'
+import { onIntroChange, isGlobeHeld } from '../components/intro-state'
 import { createGlobeGate } from './globe-gate'
 import { useSceneSession } from './SceneSession'
 import React from 'react'
@@ -602,12 +602,9 @@ export function Globe() {
      state rather than the JSX rotation, because the per-frame loop owns the
      rotation and would overwrite a prop immediately. */
   const startY = React.useMemo(() => {
-    // Aim the requested longitude at the camera by asking where it actually
-    // lands, rather than assuming a sign. Robust to any convention change.
+    // Aim India (78°E, 20°N) directly at the camera.
     const v = llToVec(78, 20, 1)
-    // Turn a little past due-east so the origin sits left of the disc's centre,
-    // away from the copy, with the routes fanning into open space.
-    return -Math.atan2(v.x, v.z) - 0.16
+    return -Math.atan2(v.x, v.z)
   }, [])
   React.useMemo(() => {
     drag.current.y = startY
@@ -615,15 +612,7 @@ export function Globe() {
     return null
   }, [drag, startY])
 
-  /* The globe is held on India until the opening clears.
-   *
-   * A drift that starts the moment the canvas mounts keeps running behind the
-   * three-second curtain, so the visitor's first honest look is of whatever
-   * longitude three seconds of spin has produced. The gate holds the angle
-   * while the intro is up, rewinds to India when it clears, and rewinds again
-   * if the logo replays the intro. The rules live in globe-gate.ts, where they
-   * are tested without a browser.
-   */
+  // Start at India and release the drift as the logo lifts into the header.
   const gate = React.useMemo(() => createGlobeGate(startY), [startY])
 
   React.useEffect(() => {
@@ -639,13 +628,16 @@ export function Globe() {
     }
     /* A fresh page load always starts facing India, whatever the intro is doing
        at this instant, and whatever angle any earlier mount left behind. */
-    gate.intro(introActive())
+    gate.intro(isGlobeHeld())
     rewind()
-    return onIntroChange((active) => {
-      gate.intro(active)
-      if (!active) rewind()
+    return onIntroChange(() => {
+      const held = isGlobeHeld()
+      if (held === gate.held()) return
+      gate.intro(held)
+      if (held) rewind()
+      session?.invalidate.current()
     })
-  }, [drag, gate, startY, uniforms])
+  }, [drag, gate, session?.invalidate, startY, uniforms])
 
   useFrame((_, delta) => {
     const d = Math.min(delta, 1 / 30)
@@ -745,7 +737,7 @@ function Frame({ children, compact = false }: { children: React.ReactNode; compa
 
   if (stacked) {
     /* Centred under the text: most of the stage width, most of its height. */
-    radius = Math.min(viewport.height * 0.46, viewport.width * 0.42)
+    radius = Math.min(viewport.height * 0.50, viewport.width * 0.46)
     x = 0
   } else {
     /* The copy column, in world units. The heading is capped at 46rem and the
@@ -753,17 +745,17 @@ function Frame({ children, compact = false }: { children: React.ReactNode; compa
     const copyPx = Math.min(COPY_MAX_PX, size.width * 0.5) + 32
     const copyWorld = (copyPx / size.width) * viewport.width
     radius = Math.min(
-      viewport.height * 0.36,
-      viewport.width * 0.34,
-      /* keep the left edge clear of the copy at 1.8 radii from the right edge */
-      Math.max(0, (viewport.width - copyWorld) / 1.8),
+      viewport.height * 0.38,
+      viewport.width * 0.36,
+      /* keep the left edge clear of the copy at 1.7 radii from the right edge */
+      Math.max(0, (viewport.width - copyWorld) / 1.7),
     )
-    radius = Math.max(radius, viewport.height * 0.14)
-    x = viewport.width * 0.5 - radius * 0.8
+    radius = Math.max(radius, viewport.height * 0.16)
+    x = viewport.width * 0.5 - radius * 0.78
   }
 
   return (
-    <group scale={Math.max(0.4, radius)} position={[x, stacked ? 0 : 0.02, 0]}>
+    <group scale={Math.max(0.4, radius)} position={[x, stacked ? 0 : -0.07, 0]}>
       {children}
     </group>
   )

@@ -1,0 +1,284 @@
+/* ==========================================================================
+   About Page Styles
+   Editorial trade-house styling matching BS EXIMNEXUS visual identity.
+   No extra buzzwords, clean typography, responsive layout.
+   ========================================================================== */
+
+.about-page {
+  background: var(--cotton);
+  color: var(--fg);
+}
+
+/* Remove decorative line pseudo-elements */
+.about-page .eyebrow::before,
+body:has(.about-page) .footer .eyebrow::before {
+  display: none !important;
+}
+
+/* Hero */
+.about-hero {
+  position: relative;
+  padding-block: clamp(7.5rem, 12vw, 11rem) clamp(3.5rem, 6vw, 5.5rem);
+  overflow: hidden;
+  background:
+    radial-gradient(110% 80% at 82% 6%, #28231c 0%, transparent 58%),
+    var(--ink);
+}
+
+.about-hero__inner {
+  position: relative;
+  z-index: 2;
+  max-width: 64rem;
+}
+
+.about-hero__title {
+  margin-top: 1.1rem;
+  font-size: clamp(2.4rem, 5.4vw, 4.8rem);
+  font-weight: 350;
+  letter-spacing: -0.032em;
+  line-height: 0.98;
+  max-width: 24ch;
+  color: var(--cotton-lit);
+}
+
+.about-hero__lede {
+  margin-top: 1.4rem;
+  font-family: var(--f-serif);
+  font-size: var(--fs-lead);
+  font-weight: 300;
+  line-height: 1.5;
+  color: #cdc2ae;
+  max-width: 46ch;
+}
+
+/* Desk Coordinates & Direct Contact Section (At start) */
+.about-desk-section {
+  padding-block: clamp(4rem, 8vw, 6.5rem);
+  background: var(--cotton-lit);
+  border-bottom: 1px solid var(--rule);
+}
+
+.about-desk-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: clamp(2.5rem, 6vw, 5rem);
+  align-items: start;
+}
+
+/* Desk Coordinates Card */
+.about-desk-card {
+  background: var(--cotton);
+  border: 1px solid var(--rule);
+  box-shadow: 0 1px 0 rgba(26, 22, 17, 0.04), 0 20px 40px -30px rgba(26, 22, 17, 0.08);
+}
+
+.about-desk-card__head {
+  padding: 1rem 1.4rem;
+  border-bottom: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: 38% 1fr;
+  align-items: center;
+  font-family: var(--f-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-mute);
+  background: var(--cotton-deep);
+}
+
+.about-desk-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.about-desk-row {
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.about-desk-row:last-child {
+  border-bottom: none;
+}
+
+.about-desk-key {
+  padding: 1rem 1.4rem;
+  font-family: var(--f-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.04em;
+  color: var(--fg-mute);
+  width: 38%;
+  vertical-align: top;
+  text-align: left;
+}
+
+.about-desk-val {
+  padding: 1rem 1.4rem;
+  font-family: var(--f-serif);
+  font-size: var(--fs-body);
+  color: var(--fg);
+  line-height: 1.45;
+}
+
+.about-desk-val a {
+  color: var(--accent);
+  text-decoration: none;
+  font-family: var(--f-mono);
+  font-size: var(--fs-meta);
+}
+
+.about-desk-val a:hover {
+  text-decoration: underline;
+}
+
+/* Founder Profile Card */
+.about-founder-card {
+  background: var(--cotton);
+  border: 1px solid var(--rule);
+  padding: clamp(1.8rem, 3.5vw, 2.8rem);
+  box-shadow: 0 1px 0 rgba(26, 22, 17, 0.04), 0 20px 40px -30px rgba(26, 22, 17, 0.08);
+}
+
+.about-founder-card__badge {
+  display: inline-block;
+  font-family: var(--f-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--madder);
+  padding: 0.28rem 0.65rem;
+  background: rgba(156, 58, 45, 0.07);
+  border: 1px solid rgba(156, 58, 45, 0.18);
+  margin-bottom: 1.2rem;
+}
+
+.about-founder-card__name {
+  font-family: var(--f-display);
+  font-size: clamp(2rem, 3.8vw, 3rem);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  color: var(--fg);
+}
+
+.about-founder-card__role {
+  font-family: var(--f-mono);
+  font-size: var(--fs-small);
+  letter-spacing: 0.04em;
+  color: var(--fg-mute);
+  margin-top: 0.4rem;
+  margin-bottom: 1.6rem;
+}
+
+.about-founder-card__bio p {
+  font-family: var(--f-serif);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  color: var(--fg-soft);
+}
+
+.about-founder-card__bio p + p {
+  margin-top: 1rem;
+}
+
+/* Section: Working Method / Process */
+.about-process {
+  padding-block: clamp(4rem, 8vw, 6.5rem);
+  background: var(--cotton-deep);
+  border-bottom: 1px solid var(--rule);
+}
+
+.about-process__head {
+  max-width: 46rem;
+  margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
+}
+
+.about-process__title {
+  font-size: var(--fs-h2);
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  margin-top: 0.8rem;
+}
+
+.about-process__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1.4rem, 3vw, 2.2rem);
+}
+
+.about-process-card {
+  background: var(--cotton-lit);
+  border: 1px solid var(--rule);
+  padding: clamp(1.6rem, 2.5vw, 2rem);
+}
+
+.about-process-card__num {
+  font-family: var(--f-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.12em;
+  color: var(--madder);
+  display: block;
+  margin-bottom: 0.8rem;
+}
+
+.about-process-card__title {
+  font-family: var(--f-display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: var(--fg);
+  margin-bottom: 0.75rem;
+}
+
+.about-process-card__body {
+  font-family: var(--f-serif);
+  font-size: var(--fs-body);
+  color: var(--fg-soft);
+  line-height: 1.55;
+}
+
+/* Call to action (Enquiry at bottom) */
+.about-cta {
+  padding-block: clamp(4.5rem, 9vw, 8rem);
+  background: var(--ink);
+  color: var(--cotton);
+  position: relative;
+  overflow: hidden;
+}
+
+.about-cta__inner {
+  max-width: 48rem;
+  text-align: left;
+}
+
+.about-cta__title {
+  font-size: clamp(2.2rem, 4.4vw, 3.8rem);
+  font-weight: 350;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--cotton-lit);
+  margin-top: 0.8rem;
+  margin-bottom: 1.2rem;
+}
+
+.about-cta__lede {
+  font-family: var(--f-serif);
+  font-size: var(--fs-lead);
+  color: #cdc2ae;
+  line-height: 1.55;
+  margin-bottom: 2.2rem;
+  max-width: 42ch;
+}
+
+.about-cta__actions {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  flex-wrap: wrap;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .about-desk-grid,
+  .about-process__grid {
+    grid-template-columns: 1fr;
+  }
+}

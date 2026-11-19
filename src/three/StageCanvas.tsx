@@ -53,7 +53,6 @@ export default function StageCanvas({
   z,
   fov,
   onContextLost,
-  stableVisual = false,
   onReady,
 }: {
   children: React.ReactNode
@@ -62,7 +61,6 @@ export default function StageCanvas({
   z: number
   fov: number
   onContextLost?: () => void
-  stableVisual?: boolean
   onReady?: () => void
 }) {
   const quality = useQuality()
@@ -87,7 +85,7 @@ export default function StageCanvas({
 
 
   return (
-    <div ref={host} data-scene-ready={ready} data-motion={still || !permit ? "frozen" : "running"} style={{ width: '100%', height: '100%', opacity: !stableVisual || ready ? 1 : 0, transition: stableVisual ? 'opacity 320ms ease-out' : undefined }}>
+    <div ref={host} data-scene-ready={ready} data-motion={!visible || still || !permit ? "frozen" : "running"} style={{ width: '100%', height: '100%', visibility: ready ? 'visible' : 'hidden' }}>
     <Canvas
       /* No tone mapping pass: the globe palette is authored in display space,
          and ACES would wash the ocean out to grey. */

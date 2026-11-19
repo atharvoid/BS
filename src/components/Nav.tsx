@@ -7,6 +7,7 @@ import { useCompactLayout } from './useCompactLayout'
 const LINKS = [
   { to: '/#products', label: 'Products' },
   { to: '/textiles', label: 'Textiles' },
+  { to: '/about', label: 'About' },
 ]
 
 export function Nav() {
@@ -109,9 +110,6 @@ export function Nav() {
           </nav>
 
           <div className="nav__actions">
-            <a className="nav__mail" href={`mailto:${BUSINESS.email}`}>
-              {BUSINESS.email}
-            </a>
             <Link to="/enquiry" className="btn btn--small" aria-current={current('/enquiry')}>
               Start an enquiry
               <Arrow />

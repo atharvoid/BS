@@ -7,15 +7,13 @@ import type { PresentationStore } from './category-presentation'
 
 type Slot = { x: number; y: number; height: number; visible: boolean }
 /** Retain the presented pose and its still for one versioned category asset. */
-export function CategoryContinuity({ motif, presentation, spin, slot, paused, speed }: {
-  motif: string; presentation: PresentationStore; spin: React.RefObject<THREE.Group | null>; slot: Slot; paused: boolean; speed: number
+export function CategoryContinuity({ motif, presentation, spin, slot, painted, paused, speed }: {
+  motif: string; presentation: PresentationStore; spin: React.RefObject<THREE.Group | null>; slot: Slot; painted: boolean; paused: boolean; speed: number
 }) {
-  const { gl, scene, camera, invalidate } = useThree()
+  const { gl, scene, camera } = useThree()
   const phase = React.useRef(0)
   const presented = React.useRef<{ phase: number; slot: Slot; width: number; height: number } | null>(null)
   const advanced = React.useRef(false)
-  const capturePending = React.useRef(true)
-  const capture = React.useRef(() => {})
   const anchor = React.useRef<HTMLElement | null>(null)
   React.useLayoutEffect(() => {
     const gallery = gl.domElement.closest('.gallery')
@@ -24,7 +22,7 @@ export function CategoryContinuity({ motif, presentation, spin, slot, paused, sp
   }, [gl, spin, speed, motif])
   useDrawFrame(delta => {
     const group = spin.current
-    if (!group || !slot.visible) return
+    if (!group || !painted) return
     if (!advanced.current) {
       const pair = presentation.get()
       phase.current = presentation.valid(pair, slot.height, window.devicePixelRatio, false) ? pair.phase : 0
@@ -32,11 +30,10 @@ export function CategoryContinuity({ motif, presentation, spin, slot, paused, sp
     if (!paused && advanced.current) phase.current += delta
     group.rotation.y = productYaw(phase.current, speed)
   }, () => {
-    if (!spin.current?.parent?.visible || !anchor.current) return
+    if (!painted || !spin.current?.parent?.visible || !anchor.current) return
     advanced.current = true
     const r = anchor.current.getBoundingClientRect(), box = gl.domElement.getBoundingClientRect()
     presented.current = { phase: phase.current, slot: {x:r.left+r.width/2-box.left,y:r.top+r.height/2-box.top,height:r.height,visible:true}, width:box.width, height:box.height }
-    if (capturePending.current) { capturePending.current = false; capture.current() }
   })
 
   const snapshot = React.useCallback(() => {
@@ -44,8 +41,7 @@ export function CategoryContinuity({ motif, presentation, spin, slot, paused, sp
     const box = gl.domElement.getBoundingClientRect()
     if (!last || gl.getContext().isContextLost() || last.width !== box.width || last.height !== box.height) return
     try {
-      // Called immediately after a real draw. Never restore an earlier outer
-      // position: doing so briefly painted a past chapter over the current one.
+      // The lifecycle handler refreshes the buffer immediately before capture.
       const ratio = gl.domElement.width / box.width
       const h = last.slot.height, w = h * 1.25
       // Keep native backing resolution. An oversized pair falls back together
@@ -60,20 +56,13 @@ export function CategoryContinuity({ motif, presentation, spin, slot, paused, sp
       presentation.retain({ version: presentation.version, phase: last.phase, bounded: false, image: crop.toDataURL('image/png'), height: h, dpr: window.devicePixelRatio })
     } catch { /* Context/readback failures leave the canonical pair usable. */ }
   }, [gl, presentation])
-  capture.current = snapshot
-  React.useLayoutEffect(() => {
-    if (paused || !slot.visible) { capturePending.current = true; invalidate() }
-  }, [paused, slot.visible, invalidate])
   const save = React.useCallback(() => {
     if (presented.current && !gl.getContext().isContextLost()) {
-      capturePending.current = true
       drawSceneFrame(gl, scene, camera)
+      snapshot()
     }
     presentation.persist()
-  }, [gl, scene, camera, presentation])
-  const saveLatest = React.useRef(save)
-  saveLatest.current = save
-  React.useLayoutEffect(() => () => saveLatest.current(), [])
+  }, [gl, scene, camera, presentation, snapshot])
   React.useEffect(() => {
     const hidden = () => { if (document.hidden) save() }
     window.addEventListener('pagehide', save)

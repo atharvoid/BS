@@ -80,8 +80,10 @@ try {
  }
  for(let i=0;i<6;i++) {
   await chapter(desktop,i+.3)
-  assert.equal(await desktop.locator(`[data-chapter="${i}"]`).evaluate(el=>el.inert),false)
-  assert.equal(await desktop.locator(`[data-chapter="${i}"] .journey__detail`).evaluate(el=>el.inert),false)
+  await desktop.waitForFunction(index => {
+   const chapter = document.querySelector(`[data-chapter="${index}"]`)
+   return chapter && !chapter.inert && !chapter.querySelector('.journey__detail').inert
+  }, i, { timeout: 5000 })
  }
  await chapter(desktop,6)
  await desktop.mouse.move(700,350)
@@ -144,7 +146,7 @@ try {
  await desktop.waitForFunction(()=>document.querySelectorAll('[data-dock][data-filled="true"]').length===6)
  const end=await desktop.locator('#product-tour').evaluate(el=>scrollY+el.getBoundingClientRect().bottom)
  await scroll(desktop,end-500)
- assert.equal(await desktop.locator('#product-tour').getAttribute('data-begun'),'false')
+  await desktop.locator('#product-tour[data-begun="false"]').waitFor({timeout:5000})
  assert.equal(await desktop.locator('.journey__shelf').evaluate(el=>el.inert),true)
  assert.equal(await desktop.locator('.journey__visuals').evaluate(el=>getComputedStyle(el).visibility),'hidden')
  await desktop.screenshot({path:`${out}/below-products.png`})

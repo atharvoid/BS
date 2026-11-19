@@ -349,9 +349,6 @@ export function EnquiryForm() {
             </svg>
           )}
         </button>
-        <p className="form__note">
-          No attachments. No passwords, payment details or sensitive personal documents, please.
-        </p>
       </div>
 
       </fieldset>
