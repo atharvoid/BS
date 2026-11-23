@@ -54,6 +54,7 @@ export function SwatchBook() {
                     <span className="strip__num">{String(i + 1).padStart(2, '0')}</span>
                     <span className="strip__label">{item.label}</span>
                     <span className="strip__dye">{dye.name}</span>
+                    <span className="strip__marker" aria-hidden="true" />
                   </button>
                 </h3>
                 <div

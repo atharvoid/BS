@@ -8,7 +8,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { GlobeScene } from '../three/GlobeScene'
 import { Exhibit } from '../three/Gallery'
 import { CategoryStudio } from '../three/CategoryStudio'
-import { ClothPanel, Ground, Lights, Studio } from '../three/objects'
+import { ClothPanel, Lights, Studio } from '../three/objects'
 import { SceneContext } from '../three/SceneSession'
 import { CommoditySamples } from '../three/SourcingSamples'
 import { CATEGORY_OBJECTS } from '../three/categoryObjects'
@@ -128,7 +128,7 @@ export default function PosterCapture() {
           ) : (
             <>
               <Studio />
-              {globe ? <GlobeScene compact={width/height < 1.5} /> : <><Lights intensity={1.02}/><Ground y={-1.35} scale={4} opacity={.4}/><group scale={.82}><ClothPanel palette="indigo" width={2.15} height={2.7} folds={3.4} seed={3.8} threads={16}/></group></>}
+              {globe ? <GlobeScene compact={width/height < 1.5} /> : <><Lights intensity={1.02}/><group scale={.82}><ClothPanel palette="indigo" width={2.15} height={2.7} folds={3.4} seed={3.8} threads={16}/></group></>}
               <InspectModel motif={motif} params={params}/>
               <CaptureReady ready={complete}/>
             </>

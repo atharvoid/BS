@@ -524,3 +524,48 @@
 /* Focus inside a dyed strip uses the strip's own text colour, which is
    already contrast-checked against that dye. */
 .strip :focus-visible { outline-color: var(--strip-fg); }
+
+/* ---- Strip marker: a plus that turns into a minus when the strip is open -- */
+.strip__toggle { position: relative; }
+.strip__marker {
+  position: absolute;
+  top: clamp(0.9rem, 1.4vw, 1.25rem);
+  right: clamp(0.9rem, 1.4vw, 1.25rem);
+  width: 12px;
+  height: 12px;
+}
+.strip__marker::before,
+.strip__marker::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 12px;
+  height: 2px;
+  background: currentColor;
+  transition: transform 300ms var(--ease-out);
+}
+.strip__marker::after { transform: rotate(90deg); }
+.strip[data-open='true'] .strip__marker::after { transform: rotate(0deg); }
+.strip__num { padding-right: 1.5rem; }
+
+@media (max-width: 760px) {
+  .strip__marker { top: 50%; margin-top: -6px; right: calc(7% + 0.9rem); }
+  .strip[data-open='true'] .strip__marker { right: 1rem; top: 1.45rem; margin-top: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .strip__marker::after { transition: none; } }
+
+/* ---- Enquiry: the last mono-uppercase labels move to the sans ----------- */
+.enquiry-hero__aside-label,
+.field__req {
+  font-family: var(--f-sans);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: var(--fs-small);
+  color: var(--fg-mute);
+}
+/* Field numbers stay as numerals: mono is for numbers. */
+.field__num { letter-spacing: 0; color: var(--fg-mute); }
+@media (max-width: 760px) {
+  .strip[data-open='true'] .strip__toggle { padding-right: 2.75rem; }
+}
