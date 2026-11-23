@@ -198,7 +198,7 @@ export const ABOUT_OWNER = {
   title: 'Founder, BS EXIMNEXUS',
   summary: [
     'Bhupendra Sain coordinates export sourcing from India. He works directly with overseas buyers, buyers in India, and production mills.',
-    'His work includes reviewing technical specifications, checking fabric swatches and production samples, agreeing on commercial terms in writing, and tracking orders through dispatch.',
+    'His work includes reviewing technical specifications and agreeing commercial terms in writing.',
     'All enquiries are handled directly. Questions on specifications, samples, or order status receive written replies from the business mailbox.',
   ],
 } as const
@@ -221,11 +221,6 @@ export const ABOUT_STANDARDS = [
   },
   {
     num: '02',
-    title: 'Sample verification',
-    body: 'Physical swatches or lab dips are checked against buyer requirements before bulk production starts.',
-  },
-  {
-    num: '03',
     title: 'Written terms',
     body: 'Prices, minimum quantities, packaging specifications, and delivery terms are confirmed in writing before shipment.',
   },
