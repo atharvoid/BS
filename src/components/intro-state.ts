@@ -1,4 +1,6 @@
-type IntroPhase = 'idle' | 'drawing' | 'settling'
+/* drawing: the logo draws; settling: it flies to the header; revealing: the
+   cotton cover fades and the hero enters (globe flies in, headline slides in). */
+export type IntroPhase = 'idle' | 'drawing' | 'settling' | 'revealing'
 const listeners = new Set<() => void>()
 let phase: IntroPhase = 'idle'
 
@@ -7,7 +9,13 @@ export function setIntroPhase(next: IntroPhase) {
   phase = next
   if (introActive()) document.documentElement.dataset.introActive = 'true'
   else delete document.documentElement.dataset.introActive
+  document.documentElement.dataset.introPhase = next
   listeners.forEach(listener => listener())
+}
+
+/** The current phase of the opening. */
+export function introPhase() {
+  return phase
 }
 
 /** Is the opening on screen right now? */

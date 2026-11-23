@@ -4,6 +4,7 @@ import { Stage } from '../three/Stage'
 import { useReveal, useParallax } from '../components/useReveal'
 import { Arrow } from '../components/Nav'
 import { SwatchBook } from '../components/SwatchBook'
+import { GlobePoster } from '../components/GlobePoster'
 import { FIRST_MESSAGE } from '../content'
 
 /* The globe is the largest scene on the site. Loading it through the stage
@@ -24,7 +25,7 @@ function Hero() {
           label="Globe centred on India"
           z={7.4}
           fov={36}
-          fallback={<picture><source media="(max-width:980px), (max-height:479px)" srcSet="/posters/globe-mobile-small.webp 500w, /posters/globe-mobile.webp 1000w" sizes="(max-width:540px) 100vw, 500px" /><img className="globe-poster" src="/posters/globe-desktop.webp" alt="" width={1280} height={800} fetchPriority="high" /></picture>}
+          fallback={<GlobePoster />}
           stableVisual
           continuous
           load={loadGlobe}

@@ -892,3 +892,39 @@
 
 /* About: until the vision text arrives the facts table stands alone. */
 .about-desk-grid:has(> :only-child) { grid-template-columns: minmax(0, 1fr); max-width: 56rem; }
+
+/* ---- Globe still image --------------------------------------------------- */
+/* Positioned by GlobePoster with the live scene's own arithmetic. */
+.globe-still { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.globe-still img { position: absolute; max-width: none; display: block; }
+
+/* ---- Opening: the hero enters as the logo cover fades ------------------- */
+/* The old entrance (copy rising on load) ran underneath the cover where no
+   one saw it. Now the copy waits off to the left while the logo draws and
+   slides in when the cover starts to fade, line by line. The globe's own
+   entrance is in GlobeScene (Frame); if the live globe is not ready yet, its
+   still image slides in from the right on the same cue. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero__eyebrow, .hero__line, .hero__lede, .hero__actions { animation: none; }
+
+  .hero__line, .hero__lede, .hero__actions {
+    transition: transform 1100ms cubic-bezier(.16, 1, .3, 1), opacity 900ms ease-out;
+  }
+  .hero__line:nth-child(2) { transition-delay: 90ms; }
+  .hero__lede { transition-delay: 200ms; }
+  .hero__actions { transition-delay: 300ms; }
+
+  :root[data-intro-phase='drawing'] :is(.hero__line, .hero__lede, .hero__actions),
+  :root[data-intro-phase='settling'] :is(.hero__line, .hero__lede, .hero__actions) {
+    opacity: 0;
+    transform: translate3d(-72px, 0, 0);
+    transition: none;
+  }
+
+  .globe-still img { transition: transform 1500ms cubic-bezier(.16, 1, .3, 1); }
+  :root[data-intro-phase='drawing'] .globe-still img,
+  :root[data-intro-phase='settling'] .globe-still img {
+    transform: translate3d(110vw, 0, 0);
+    transition: none;
+  }
+}

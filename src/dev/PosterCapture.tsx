@@ -108,7 +108,8 @@ export default function PosterCapture() {
   if (motif === 'textiles' && iteration === 'fabric-sample') CATEGORY_OBJECTS.textiles.model = <TextileSample />
   if (motif === 'agriculture' && iteration === 'wheat') CATEGORY_OBJECTS.agriculture.model = <WheatHead />
   if (iteration && ['swatches','rail','scoops','bowls'].includes(iteration) && (motif === 'textiles' || motif === 'agriculture')) CATEGORY_OBJECTS[motif].model = <SourcingIteration kind={iteration as Iteration} />
-  const globe = motif === 'globe'
+  const square = motif === 'globe-square'
+  const globe = motif === 'globe' || square
   const cloth = motif === 'cloth'
   const category = !globe && !cloth
   const width = innerWidth, height = innerHeight
@@ -128,7 +129,7 @@ export default function PosterCapture() {
           ) : (
             <>
               <Studio />
-              {globe ? <GlobeScene compact={width/height < 1.5} /> : <><Lights intensity={1.02}/><group scale={.82}><ClothPanel palette="indigo" width={2.15} height={2.7} folds={3.4} seed={3.8} threads={16}/></group></>}
+              {globe ? <GlobeScene compact={width/height < 1.5} capture={square} /> : <><Lights intensity={1.02}/><group scale={.82}><ClothPanel palette="indigo" width={2.15} height={2.7} folds={3.4} seed={3.8} threads={16}/></group></>}
               <InspectModel motif={motif} params={params}/>
               <CaptureReady ready={complete}/>
             </>

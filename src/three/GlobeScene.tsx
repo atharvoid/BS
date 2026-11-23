@@ -1,6 +1,7 @@
 import { globeYaw, globeUserYaw } from './globe-pose'
+import { globeFrame, CAPTURE_RADIUS } from './globe-frame'
 import { useSceneDrag } from './useSceneDrag'
-import { onIntroChange, isGlobeHeld } from '../components/intro-state'
+import { onIntroChange, isGlobeHeld, introPhase } from '../components/intro-state'
 import { createGlobeGate } from './globe-gate'
 import { useSceneSession } from './SceneSession'
 import React from 'react'
@@ -725,52 +726,76 @@ export function Globe() {
  * navigation use, so the globe no longer shrinks on its own between 900 and
  * 980px while everything around it has already gone compact.
  */
-const COPY_MAX_PX = 720
+/* The entrance. While the logo draws, the globe waits off-screen to the right.
+   When the cover starts to fade it flies in, spinning fast, slows, and lands
+   facing India exactly where it rests; the slow drift takes over from there.
+   Only on a first load that plays the opening: a later visit to the page, a
+   reduced-motion setting, or a still-frame device shows it at rest. */
+const ENTRY_S = 1.7
+const ENTRY_TURNS = 1.25
+const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
+const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4)
 
-function Frame({ children, compact = false }: { children: React.ReactNode; compact?: boolean }) {
-  const viewport = useThree((s) => s.viewport)
+function Frame({ children, compact = false, capture = false }: { children: React.ReactNode; compact?: boolean; capture?: boolean }) {
   const size = useThree((s) => s.size)
-  /* The same breakpoint as the stylesheet, inclusive: at exactly 980 the CSS
-     has already stacked, so the scene must not still be laying out for desktop. */
-  const stacked = compact || size.width <= 980
+  const viewport = useThree((s) => s.viewport)
+  const session = useSceneSession()
+  /* The arithmetic lives in globe-frame.ts so the still image can use exactly
+     the same numbers and land in exactly the same place. */
+  const frame = capture
+    ? { radius: CAPTURE_RADIUS, x: 0, y: 0 }
+    : globeFrame(size.width, size.height, compact)
 
-  let radius: number
-  let x: number
+  const outer = React.useRef<THREE.Group>(null)
+  const spin = React.useRef<THREE.Group>(null)
+  /* waiting: parked off-screen; running: flying in (t = start time); done: at rest. */
+  const entry = React.useRef<{ state: 'waiting' | 'running' | 'done'; t: number }>({
+    state: !capture && !reducedMotion() && (introPhase() === 'drawing' || introPhase() === 'settling') ? 'waiting' : 'done',
+    t: 0,
+  })
 
-  if (stacked) {
-    /* Centred under the text: most of the stage width, most of its height. */
-    radius = Math.min(viewport.height * 0.50, viewport.width * 0.46)
-    x = 0
-  } else {
-    /* The copy column, in world units. The heading is capped at 46rem and the
-       gutter sits outside it, so this is the space the globe must not enter. */
-    /* 55%, not 50%: on the light hero the headline sits on cotton next to the
-       indigo sphere, and at 1024px the two were touching. */
-    const copyPx = Math.min(COPY_MAX_PX, size.width * 0.55) + 32
-    const copyWorld = (copyPx / size.width) * viewport.width
-    radius = Math.min(
-      viewport.height * 0.38,
-      viewport.width * 0.36,
-      /* keep the left edge clear of the copy at 1.7 radii from the right edge */
-      Math.max(0, (viewport.width - copyWorld) / 1.7),
-    )
-    radius = Math.max(radius, viewport.height * 0.16)
-    x = viewport.width * 0.5 - radius * 0.78
-  }
+  React.useEffect(() => onIntroChange(() => {
+    const phase = introPhase()
+    if (entry.current.state === 'waiting' && (phase === 'revealing' || phase === 'idle')) {
+      entry.current = { state: 'running', t: performance.now() }
+      session?.invalidate.current()
+    }
+  }), [session])
+
+  useFrame(() => {
+    const g = outer.current, r = spin.current
+    if (!g || !r) return
+    const e = entry.current
+    let p = 1
+    if (e.state === 'waiting') p = 0
+    else if (e.state === 'running') {
+      /* Wall-clock time, so a slow device lands on time rather than late. */
+      p = Math.min(1, (performance.now() - e.t) / 1000 / ENTRY_S)
+      if (p >= 1) e.state = 'done'
+      session?.invalidate.current()
+    }
+    /* Off to the right by the width of the view plus the globe, so it starts
+       fully out of sight whatever the window shape. */
+    const away = viewport.width * 0.5 + frame.radius * 1.2 + Math.max(0, -frame.x)
+    g.position.x = frame.x + (1 - easeOutCubic(p)) * away
+    g.position.y = frame.y
+    /* Fast spin that slows to nothing, ending on the India-facing angle. */
+    r.rotation.y = (1 - easeOutQuart(p)) * ENTRY_TURNS * Math.PI * 2
+  })
 
   return (
-    <group scale={Math.max(0.4, radius)} position={[x, stacked ? 0 : -0.07, 0]}>
-      {children}
+    <group ref={outer} scale={frame.radius} position={[frame.x, frame.y, 0]}>
+      <group ref={spin}>{children}</group>
     </group>
   )
 }
 
-export function GlobeScene({ compact = false }: {compact?: boolean}) {
+export function GlobeScene({ compact = false, capture = false }: {compact?: boolean; capture?: boolean}) {
   React.use(globeAssets)
   return (
     <>
       <Studio />
-      <Frame compact={compact}>
+      <Frame compact={compact} capture={capture}>
         <Globe />
       </Frame>
     </>

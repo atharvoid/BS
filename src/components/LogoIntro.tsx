@@ -55,6 +55,7 @@ export function LogoIntro() {
       return animation
     }
     const reveal = () => {
+      setIntroPhase('revealing')
       const fade = animate(surface, [{ opacity: 1 }, { opacity: 0 }], {
         duration: REVEAL,
         easing: 'cubic-bezier(.4,0,.2,1)',
