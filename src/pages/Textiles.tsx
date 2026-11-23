@@ -22,11 +22,11 @@ export default function Textiles() {
 
   return (
     <>
-      <section className="page-hero page-hero--textile page-hero--right on-dark grain">
+      <section className="page-hero page-hero--textile page-hero--right">
         <div className="page-hero__canvas">
           <Stage
             className="page-hero__stage"
-            label="Green woven cloth illustration"
+            label="Indigo woven cloth illustration"
             z={6.2}
             fov={36}
             fallback={<img className="cloth-poster" src="/posters/cloth-mobile.webp" srcSet="/posters/cloth-mobile-small.webp 500w, /posters/cloth-mobile.webp 1000w" sizes="(max-width:540px) 100vw, 500px" alt="" width={1000} height={800} />}
@@ -44,7 +44,7 @@ export default function Textiles() {
           <p className="eyebrow">Textiles &amp; fabrics</p>
           <h1 className="page-hero__title">Textiles and fabrics <em className="display-italic">from India</em>.</h1>
           <p className="page-hero__lede">Explore the regions where we’re beginning our sourcing work.</p>
-          <Link to="/textiles#textile-enquiry" className="btn btn--light">Start a textile enquiry <Arrow /></Link>
+          <Link to="/textiles#textile-enquiry" className="btn">Start a textile enquiry <Arrow /></Link>
         </div>
       </section>
 

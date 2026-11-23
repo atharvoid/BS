@@ -10,7 +10,7 @@ export default function Acknowledgement() {
   const role = ENQUIRY_FIELDS.role.options.find((option) => option.value === receipt?.role)
 
   return (
-    <section className="ack on-dark grain">
+    <section className="ack">
       <div className="shell ack__inner" style={{ gridTemplateColumns: '1fr' }}>
         <div className="ack__text">
           <p className="eyebrow">Enquiry acknowledgement</p>

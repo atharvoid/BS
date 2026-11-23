@@ -31,7 +31,7 @@ function TextileObject({ aside = false }: { aside?: boolean }) {
           a drag adds to that angle instead of stopping it. */}
       <Draggable drift={compact ? 0.22 : 0.18} tilt={0.4} float={0.03} spin={compact ? 0 : Math.PI * 2 / 52} yawLimit={compact ? .65 : undefined}>
         <group scale={scale} position={[x, 0, 0]}>
-          <ClothPanel palette="verdigris" width={2.15} height={2.7} folds={3.4} seed={3.8} threads={16} />
+          <ClothPanel palette="indigo" width={2.15} height={2.7} folds={3.4} seed={3.8} threads={16} />
         </group>
       </Draggable>
     </>

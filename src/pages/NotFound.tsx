@@ -3,7 +3,7 @@ import { Arrow } from '../components/Nav'
 
 export default function NotFound() {
   return (
-    <section className="notfound on-dark grain">
+    <section className="notfound">
       <div className="shell notfound__inner">
         <p className="eyebrow">404</p>
         <h1 className="notfound__title">

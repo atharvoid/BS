@@ -51,7 +51,7 @@ export default function Privacy() {
 
   return (
     <>
-      <section className="page-hero page-hero--plain on-dark grain">
+      <section className="page-hero page-hero--plain">
         <div className="shell page-hero__inner">
           <p className="eyebrow">Enquiry privacy</p>
           <h1 className="page-hero__title">

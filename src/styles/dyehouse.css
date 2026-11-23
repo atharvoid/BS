@@ -416,3 +416,86 @@
 .wall__item:hover .wall__frame img { transform: none; }
 
 .pulse { animation: none; box-shadow: none; }
+
+/* ---- Inner pages: every hero is undyed cotton --------------------------- */
+/* The old heroes were charcoal with hard-coded light text. They now sit on
+   cotton like the homepage; the textiles page carries its indigo in the
+   regions band below the hero, not in the hero itself. */
+.page-hero,
+.enquiry-hero,
+.about-hero,
+.ack,
+.notfound {
+  background: var(--cotton);
+  color: var(--fg);
+}
+.page-hero::before, .enquiry-hero::before, .about-hero::before,
+.ack::before, .notfound::before { content: none; }
+
+.page-hero__title,
+.enquiry-hero__title,
+.about-hero__title,
+.ack__title,
+.notfound__title { color: var(--fg); }
+
+.page-hero__lede,
+.enquiry-hero__lede,
+.about-hero__lede,
+.notfound__lede { color: var(--fg-soft); }
+
+.page-hero--textile .page-hero__title,
+.page-hero--textile .page-hero__lede,
+.page-hero--textile .page-hero__inner .eyebrow { color: inherit; }
+.page-hero--textile .page-hero__lede { color: var(--fg-soft); }
+
+.page-hero__fallback { background: var(--dye-textiles); }
+
+.enquiry-hero__aside { border-top-color: var(--rule); }
+.enquiry-hero__aside-label { color: var(--fg-mute); }
+.enquiry-hero__mail { color: var(--indigo); border-bottom-color: currentColor; }
+.enquiry-hero__mail:hover { color: var(--fg); border-color: var(--fg); }
+
+.ack__notice {
+  border-left-color: var(--indigo);
+  background: var(--cotton-lit);
+  color: var(--fg-soft);
+}
+.ack__notice strong { color: var(--fg); }
+.ack__notice a { color: var(--indigo); }
+
+/* The closing call on About is an action, so it takes the action colour. */
+.about-cta { background: var(--indigo); color: #eef0f6; }
+.about-cta__title { color: #eef0f6; }
+.about-cta__lede { color: #c3cadb; }
+.about-cta .btn { --btn-bg: var(--cotton-lit); --btn-fg: var(--indigo); }
+.about-cta .btn::before { background: var(--cotton-deep); }
+.about-cta .btn:hover { color: var(--indigo); }
+
+/* Cards and briefs: no shadows, labels in the sans. */
+.brief, .brief *,
+.about-desk-card, .about-founder-card { box-shadow: none !important; }
+
+/* ---- About: labels in the sans, no borrowed category dyes --------------- */
+.about-desk-card__head,
+.about-desk-key,
+.about-founder-card__badge,
+.about-founder-card__role,
+.about-desk-val a {
+  font-family: var(--f-sans);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.about-desk-card__head { font-size: var(--fs-small); font-weight: 500; color: var(--fg-mute); }
+.about-desk-key { font-size: var(--fs-small); font-weight: 500; color: var(--fg-mute); }
+.about-founder-card__badge {
+  color: var(--fg-mute);
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: var(--fs-small);
+  font-weight: 500;
+}
+.about-founder-card__role { color: var(--fg-mute); font-size: var(--fs-small); }
+/* Madder belongs to handicrafts; step numbers are plain ink numerals. */
+.about-process-card__num { color: var(--fg-mute); font-variant-numeric: tabular-nums; }
+.about-desk-card, .about-founder-card { box-shadow: none; }

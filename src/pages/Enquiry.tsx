@@ -15,7 +15,7 @@ export default function Enquiry() {
 
   return (
     <>
-      <section className="enquiry-hero on-dark grain">
+      <section className="enquiry-hero">
         <div className="shell">
           <div className="enquiry-hero__grid">
             <div>

@@ -15,7 +15,7 @@ export default function About() {
 
   return (
     <div className="about-page">
-      <section className="about-hero on-dark grain">
+      <section className="about-hero">
         <div className="shell about-hero__inner">
           <p className="eyebrow eyebrow--bare">{ABOUT_BUSINESS.eyebrow}</p>
           <h1 className="about-hero__title">
@@ -85,7 +85,7 @@ export default function About() {
         </div>
       </section>
 
-      <section className="about-cta on-dark grain" id="enquiry">
+      <section className="about-cta on-indigo" id="enquiry">
         <div className="shell">
           <div className="about-cta__inner">
             <p className="eyebrow eyebrow--bare">Enquiry</p>
