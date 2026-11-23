@@ -16,8 +16,6 @@ export const BUSINESS = {
   email: 'bsexim.nexus@gmail.com',
   descriptor: 'Sourcing & trade coordination, India',
   status: 'Developing business',
-  owner: 'Bhupendra Sain',
-  ownerRole: 'Founder',
   location: 'India',
 } as const
 
@@ -149,7 +147,7 @@ export const BOUNDARIES = [
   },
 ] as const
 
-/** The five required answers. Kept in one place so the form and its copy cannot drift. */
+/** The six required answers. Kept in one place so the form and its copy cannot drift. */
 export const ENQUIRY_FIELDS = {
   role: {
     label: 'Which best describes you?',
@@ -171,6 +169,11 @@ export const ENQUIRY_FIELDS = {
   },
   name: { label: 'Your name', placeholder: 'Full name' },
   email: { label: 'Email address', hint: 'Replies come from bsexim.nexus@gmail.com.' },
+  phone: {
+    label: 'Phone number',
+    hint: 'Include the country code, so we can call or message you about the enquiry.',
+    placeholder: '+91 98765 43210',
+  },
 } as const
 
 const CATEGORY_ARTWORK: Record<CategoryId, { motif: CategoryMotif; note: string; to?: string }> = {
@@ -209,24 +212,23 @@ export const CATEGORY_JOURNEY = CATEGORIES.map(category => ({
 export const ABOUT_BUSINESS = {
   eyebrow: 'Desk coordinates',
   title: 'Trade coordination and export sourcing in India',
-  lede: 'BS EXIMNEXUS is an export sourcing and trade coordination desk based in India, founded by Bhupendra Sain.',
+  lede: 'BS EXIMNEXUS is an export sourcing and trade coordination desk based in India.',
 } as const
 
-export const ABOUT_OWNER = {
-  name: 'Bhupendra Sain',
-  title: 'Founder, BS EXIMNEXUS',
-  summary: [
-    'Bhupendra Sain coordinates export sourcing from India. He works directly with overseas buyers, buyers in India, and production mills.',
-    'His work includes reviewing technical specifications and agreeing commercial terms in writing.',
-    'All enquiries are handled directly. Questions on specifications, samples, or order status receive written replies from the business mailbox.',
-  ],
-} as const
+/**
+ * The company's vision, in the client's own words. Leave `body` empty until
+ * the text arrives: the About page only shows this card when there is text,
+ * so nothing half-finished ever appears on the live site.
+ */
+export const ABOUT_VISION: { title: string; body: readonly string[] } = {
+  title: 'Our vision',
+  body: [],
+}
 
 export const ABOUT_DESK_FACTS = [
   { label: 'Business name', value: 'BS EXIMNEXUS' },
-  { label: 'Founder', value: 'Bhupendra Sain' },
   { label: 'Operating base', value: 'India' },
-  { label: 'Categories', value: 'Textiles and fabrics first; also handicrafts and home decor, agriculture and food, industrial materials, organic and sustainable products, and other requests' },
+  { label: 'Categories', value: 'Textiles and fabrics, handicrafts and home decor, agriculture and food, industrial materials, organic and sustainable products, and other sourcing requests' },
   { label: 'Direct email', value: 'bsexim.nexus@gmail.com' },
   { label: 'Trade terms', value: 'Agreed in writing per enquiry' },
 ] as const

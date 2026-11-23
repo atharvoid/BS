@@ -35,6 +35,7 @@ export type EnquiryDraft = {
   location: string
   name: string
   email: string
+  phone: string
 }
 
 const EMPTY: EnquiryDraft = {
@@ -44,6 +45,7 @@ const EMPTY: EnquiryDraft = {
   location: '',
   name: '',
   email: '',
+  phone: '',
 }
 
 type EnquiryContextValue = {
@@ -126,6 +128,9 @@ export function EnquiryForm() {
     if (d.name.trim().length < 2) e.name = 'Please add your name.'
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email.trim()))
       e.email = 'Please check the email address. That is where the reply goes.'
+    // At least 7 digits; digits, spaces, + ( ) . - only; starts with + or a digit.
+    if ((d.phone.match(/\d/g) ?? []).length < 7 || !/^[+\d][\d\s().-]{5,24}$/.test(d.phone.trim()))
+      e.phone = 'Please add a phone number with its country code, for example +91 98765 43210.'
     return e
   }
 
@@ -160,6 +165,7 @@ export function EnquiryForm() {
       'Destination or business location': snapshot.location.trim(),
       name: snapshot.name.trim(),
       email: snapshot.email.trim(),
+      Phone: snapshot.phone.trim(),
       'Enquiry subject': category.label,
     }
 
@@ -338,6 +344,30 @@ export function EnquiryForm() {
           />
           {errors.email && <p className="field__error" id="email-error">{errors.email}</p>}
         </div>
+      </div>
+
+      {/* 6 — phone */}
+      <div className="field" data-field="phone">
+        <label className="field__label" htmlFor="phone">
+          <span className="field__num">06</span>
+          {ENQUIRY_FIELDS.phone.label}
+          <span className="field__req" aria-hidden="true">required</span>
+        </label>
+        <p className="field__hint" id="phone-hint">{ENQUIRY_FIELDS.phone.hint}</p>
+        <input
+          id="phone"
+          aria-required="true"
+          maxLength={25}
+          type="tel"
+          value={draft.phone}
+          onChange={set('phone')}
+          placeholder={ENQUIRY_FIELDS.phone.placeholder}
+          aria-invalid={!!errors.phone}
+          aria-describedby={`phone-hint ${errors.phone ? 'phone-error' : ''}`}
+          autoComplete="tel"
+          inputMode="tel"
+        />
+        {errors.phone && <p className="field__error" id="phone-error">{errors.phone}</p>}
       </div>
 
       <div className="form__submit">

@@ -8,7 +8,7 @@ const SECTIONS = [
     id: 'collected',
     t: 'What information is collected',
     d: [
-      'The enquiry form asks for five things: which description fits you (overseas buyer, buyer in India, or Indian supplier), what you are looking for or offering, the destination or business location, your name, and your email address.',
+      'The enquiry form asks for six things: which description fits you (overseas buyer, buyer in India, or Indian supplier), what you are looking for or offering, the destination or business location, your name, your email address, and your phone number. The phone number is used only to contact you about the enquiry.',
       'The enquiry also records its product category. Attachments are not accepted, so no documents are collected through the form.',
     ],
   },

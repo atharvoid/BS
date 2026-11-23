@@ -889,3 +889,6 @@
   /* The theme toggle takes the free space; the menu button sits right beside it. */
   .nav__toggle { margin-left: 0; }
 }
+
+/* About: until the vision text arrives the facts table stands alone. */
+.about-desk-grid:has(> :only-child) { grid-template-columns: minmax(0, 1fr); max-width: 56rem; }

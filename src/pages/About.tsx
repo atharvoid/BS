@@ -5,7 +5,7 @@ import { Arrow } from '../components/Nav'
 import {
   BUSINESS,
   ABOUT_BUSINESS,
-  ABOUT_OWNER,
+  ABOUT_VISION,
   ABOUT_STANDARDS,
   ABOUT_DESK_FACTS,
 } from '../content'
@@ -51,16 +51,16 @@ export default function About() {
               </table>
             </div>
 
-            <div className="about-founder-card reveal">
-              <span className="about-founder-card__badge">Founder</span>
-              <h2 className="about-founder-card__name">{ABOUT_OWNER.name}</h2>
-              <p className="about-founder-card__role">{ABOUT_OWNER.title}</p>
-              <div className="about-founder-card__bio">
-                {ABOUT_OWNER.summary.map((text, i) => (
-                  <p key={i}>{text}</p>
-                ))}
+            {ABOUT_VISION.body.length > 0 && (
+              <div className="about-founder-card about-vision reveal">
+                <h2 className="about-founder-card__name">{ABOUT_VISION.title}</h2>
+                <div className="about-founder-card__bio">
+                  {ABOUT_VISION.body.map((text, i) => (
+                    <p key={i}>{text}</p>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
@@ -93,7 +93,7 @@ export default function About() {
               Send your sourcing enquiry
             </h2>
             <p className="about-cta__lede">
-              Send your required materials, specifications, and delivery destination. Bhupendra Sain reviews each enquiry and replies directly by email.
+              Send your required materials, specifications, and delivery destination. A person reviews each enquiry and replies directly by email.
             </p>
             <div className="about-cta__actions">
               <Link to="/enquiry" className="btn btn--light">
