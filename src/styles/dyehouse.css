@@ -201,9 +201,8 @@
   background-image:
     repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.09) 0 1px, transparent 1px 4px),
     repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 4px);
-  transform: scaleY(0.16);
-  transform-origin: bottom;
-  transition: transform 620ms var(--ease-out);
+  clip-path: inset(84% 0 0 0);
+  transition: clip-path 620ms var(--ease-out);
 }
 
 /* A row of tied-resist dots marks where the dye stopped. Lives on the strip,
@@ -221,9 +220,9 @@
   pointer-events: none;
 }
 
-.strip:hover .strip__cloth { transform: scaleY(0.24); }
+.strip:hover .strip__cloth { clip-path: inset(76% 0 0 0); }
 .strip:hover::after { bottom: calc(24% + 4px); }
-.strip[data-open='true'] .strip__cloth { transform: scaleY(1); }
+.strip[data-open='true'] .strip__cloth { clip-path: inset(0); }
 .strip[data-open='true']::after { opacity: 0; }
 
 .strip[data-open='true'][data-tone='dark'] { --strip-fg: var(--cotton-lit); --strip-fg-soft: #e6ddcc; }
@@ -323,9 +322,9 @@
   .strip { min-height: 0; border-radius: 0 2px 2px 0; }
   .strip::before { top: 50%; left: -12px; width: 12px; height: 6px; margin: -3px 0 0; }
   .strip::after { display: none; }
-  .strip__cloth { transform: scaleX(0.07); transform-origin: right; }
-  .strip:hover .strip__cloth { transform: scaleX(0.07); }
-  .strip[data-open='true'] .strip__cloth { transform: scaleX(1); }
+  .strip__cloth { clip-path: inset(0 0 0 93%); }
+  .strip:hover .strip__cloth { clip-path: inset(0 0 0 93%); }
+  .strip[data-open='true'] .strip__cloth { clip-path: inset(0); }
   .strip__cloth::after { inset: 0 auto 0 0; width: 12px; height: auto; background: radial-gradient(circle, var(--dye) 1.6px, transparent 2.2px) 50% 0 / 12px 12px repeat-y; transform: translateX(-100%); }
   .strip__toggle {
     flex-direction: row;
@@ -499,3 +498,28 @@
 /* Madder belongs to handicrafts; step numbers are plain ink numerals. */
 .about-process-card__num { color: var(--fg-mute); font-variant-numeric: tabular-nums; }
 .about-desk-card, .about-founder-card { box-shadow: none; }
+
+/* ---- Enquiry: the chosen category dyes the top of the form -------------- */
+.form { --form-dye: var(--rule); border-top: 6px solid var(--form-dye); transition: border-color 420ms var(--ease-out); }
+.form[data-category='textiles'] { --form-dye: var(--dye-textiles); }
+.form[data-category='handicrafts'] { --form-dye: var(--dye-handicrafts); }
+.form[data-category='agriculture-food'] { --form-dye: var(--dye-agriculture); }
+.form[data-category='industrial-materials'] { --form-dye: var(--dye-industrial); }
+.form[data-category='organic-sustainable'] { --form-dye: var(--dye-organic); }
+.form[data-category='general'] { --form-dye: var(--dye-general); }
+.form .eyebrow--index { font-family: var(--f-sans); letter-spacing: 0; text-transform: none; }
+
+/* ---- Drag hint: a plain label on cotton, no glass ----------------------- */
+.drag-hint {
+  background: var(--cotton-lit);
+  border: 1px solid var(--rule);
+  color: var(--fg-soft);
+  font-family: var(--f-sans);
+  font-size: 0.8rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Focus inside a dyed strip uses the strip's own text colour, which is
+   already contrast-checked against that dye. */
+.strip :focus-visible { outline-color: var(--strip-fg); }

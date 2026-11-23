@@ -198,7 +198,7 @@ export function EnquiryForm() {
   }
 
   return (
-    <form ref={form} className="form" onSubmit={submit} noValidate>
+    <form ref={form} className="form" data-category={getCategory(draft.subject).id} onSubmit={submit} noValidate>
       <div className="form__head">
         <p className="eyebrow eyebrow--index">{getCategory(draft.subject).label}</p>
         <h2 className="form__title">
