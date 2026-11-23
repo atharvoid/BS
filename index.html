@@ -3,7 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#14120f" />
+    <meta name="theme-color" content="#f2ebdd" />
+    <!-- Theme before first paint: the visitor's stored choice, else the system
+         setting. Runs before any CSS so there is no flash of the wrong theme. -->
+    <script>
+      (function () {
+        var theme = 'light'
+        try {
+          theme = localStorage.getItem('bs-theme') ||
+            (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+        } catch (e) {}
+        document.documentElement.dataset.theme = theme
+        if (theme === 'dark') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#14110d')
+      })()
+    </script>
     <!--
       The hero's headline is set in two Fraunces faces, roman and italic, both
       above the fold on every page. With `font-display: swap` the browser paints

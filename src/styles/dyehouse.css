@@ -30,8 +30,8 @@
 
 /* ---- Actions ------------------------------------------------------------ */
 .btn {
-  --btn-bg: var(--indigo);
-  --btn-fg: var(--cotton-lit);
+  --btn-bg: var(--action);
+  --btn-fg: var(--paper);
   border-radius: 3px;
   font-size: 0.95rem;
   font-weight: 500;
@@ -45,27 +45,27 @@
 .btn:hover .btn__arrow { transform: translate(0.12em, -0.12em); }
 
 .btn--light {
-  --btn-bg: var(--cotton-lit);
+  --btn-bg: var(--paper);
   --btn-fg: var(--indigo);
 }
-.btn--light::before { background: var(--cotton-deep); }
+.btn--light::before { background: var(--paper-deep); }
 .btn--light:hover { color: var(--indigo); }
 
 .btn--ghost { --btn-fg: var(--fg); border-color: var(--control-border); }
-.btn--ghost::before { background: var(--indigo); }
+.btn--ghost::before { background: var(--action); }
 
 .btn--small { font-size: 0.875rem; padding: 0.6em 1em; }
 
-.tlink { font-size: 0.95rem; font-weight: 500; color: var(--indigo); }
+.tlink { font-size: 0.95rem; font-weight: 500; color: var(--action-text); }
 .on-dark .tlink,
-.on-indigo .tlink { color: var(--cotton-lit); }
+.on-indigo .tlink { color: var(--paper); }
 
 :focus-visible {
-  outline: 2px solid var(--indigo);
+  outline: 2px solid var(--action-text);
   outline-offset: 3px;
 }
 .on-dark :focus-visible,
-.on-indigo :focus-visible { outline-color: var(--cotton-lit); }
+.on-indigo :focus-visible { outline-color: var(--paper); }
 
 /* ---- The signature: bandhani dots -------------------------------------- */
 .dots {
@@ -77,24 +77,24 @@
 }
 
 /* ---- Scroll progress: one indigo thread -------------------------------- */
-.progress { background: var(--indigo); opacity: 1; height: 2px; }
+.progress { background: var(--action-text); opacity: 1; height: 2px; }
 
 /* ---- Navigation ---------------------------------------------------------- */
 .nav { color: var(--fg); }
 .nav::after { background: var(--rule); }
 .nav--lifted { background: var(--cotton); color: var(--fg); }
-.nav, .drawer { --accent: var(--indigo); }
+.nav, .drawer { --accent: var(--action-text); }
 
-.nav .brand-logo { --brand-mark: var(--indigo); --brand-name: var(--indigo); }
+.nav .brand-logo { --brand-mark: var(--logo); --brand-name: var(--logo); }
 
 .nav__link { font-size: 0.95rem; opacity: 0.78; }
 .nav__link::after { height: 2px; }
 
-.nav .btn--small { --btn-bg: var(--indigo); --btn-fg: var(--cotton-lit); }
+.nav .btn--small { --btn-bg: var(--action); --btn-fg: var(--paper); }
 
 .nav__toggle-bar { background: currentColor; }
 
-.drawer { background: var(--indigo); color: var(--cotton-lit); }
+.drawer { background: var(--indigo); color: var(--paper); }
 .drawer .btn--light { --btn-fg: var(--indigo); }
 .drawer__link { font-family: var(--f-display); }
 .drawer__desc { color: #c3cadb; }
@@ -106,7 +106,7 @@
 }
 
 /* The opening draws the mark on undyed cotton, in indigo. */
-.brand-intro { --brand-mark: var(--indigo); --brand-name: var(--indigo); }
+.brand-intro { --brand-mark: var(--logo); --brand-name: var(--logo); }
 .intro-surface { background: var(--cotton); }
 .hero::before { content: none; }
 
@@ -115,7 +115,7 @@
 
 .hero__secondary { color: var(--fg); font-size: 0.95rem; font-weight: 500; }
 .hero__secondary-ring { border-color: var(--control-border); }
-.hero__secondary:hover .hero__secondary-ring { border-color: var(--indigo); background: transparent; }
+.hero__secondary:hover .hero__secondary-ring { border-color: var(--action-text); background: transparent; }
 
 .drag-hint { color: var(--fg-mute); }
 
@@ -225,7 +225,7 @@
 .strip[data-open='true'] .strip__cloth { clip-path: inset(0); }
 .strip[data-open='true']::after { opacity: 0; }
 
-.strip[data-open='true'][data-tone='dark'] { --strip-fg: var(--cotton-lit); --strip-fg-soft: #e6ddcc; }
+.strip[data-open='true'][data-tone='dark'] { --strip-fg: var(--paper); --strip-fg-soft: #e6ddcc; }
 .strip[data-open='true'][data-tone='light'] { --strip-fg: var(--ink); --strip-fg-soft: #2a2218; }
 
 .strip__head { margin: 0; flex: 1; display: flex; }
@@ -274,7 +274,7 @@
   font-weight: 500;
   color: var(--strip-fg-soft);
 }
-.strip:not([data-open='true'])[data-tone='dark'] .strip__dye { color: var(--cotton-lit); }
+.strip:not([data-open='true'])[data-tone='dark'] .strip__dye { color: var(--paper); }
 .strip:not([data-open='true'])[data-tone='light'] .strip__dye { color: var(--ink); }
 
 .strip__panel {
@@ -348,7 +348,7 @@
 
 /* ---- How an enquiry works ---------------------------------------------- */
 .purpose { border-top: 1px solid var(--rule); }
-.purpose__steps li::marker { color: var(--indigo); font-family: var(--f-mono); }
+.purpose__steps li::marker { color: var(--action-text); font-family: var(--f-mono); }
 
 /* ---- First message ------------------------------------------------------- */
 .first-message { padding-block: var(--section-y); }
@@ -405,7 +405,7 @@
   background-color: var(--indigo);
 }
 .footer .eyebrow { color: var(--fg-mute); }
-.footer .footer__logo { --brand-mark: var(--cotton); --brand-name: var(--cotton); }
+.footer .footer__logo { --brand-mark: var(--gold); --brand-name: var(--gold); }
 .grain.footer::after { opacity: 0.08; }
 
 /* ---- Retire leftover decoration ----------------------------------------- */
@@ -452,23 +452,23 @@
 
 .enquiry-hero__aside { border-top-color: var(--rule); }
 .enquiry-hero__aside-label { color: var(--fg-mute); }
-.enquiry-hero__mail { color: var(--indigo); border-bottom-color: currentColor; }
+.enquiry-hero__mail { color: var(--action-text); border-bottom-color: currentColor; }
 .enquiry-hero__mail:hover { color: var(--fg); border-color: var(--fg); }
 
 .ack__notice {
-  border-left-color: var(--indigo);
+  border-left-color: var(--action-text);
   background: var(--cotton-lit);
   color: var(--fg-soft);
 }
 .ack__notice strong { color: var(--fg); }
-.ack__notice a { color: var(--indigo); }
+.ack__notice a { color: var(--action-text); }
 
 /* The closing call on About is an action, so it takes the action colour. */
 .about-cta { background: var(--indigo); color: #eef0f6; }
 .about-cta__title { color: #eef0f6; }
 .about-cta__lede { color: #c3cadb; }
-.about-cta .btn { --btn-bg: var(--cotton-lit); --btn-fg: var(--indigo); }
-.about-cta .btn::before { background: var(--cotton-deep); }
+.about-cta .btn { --btn-bg: var(--paper); --btn-fg: var(--indigo); }
+.about-cta .btn::before { background: var(--paper-deep); }
 .about-cta .btn:hover { color: var(--indigo); }
 
 /* Cards and briefs: no shadows, labels in the sans. */
@@ -569,3 +569,70 @@
 @media (max-width: 760px) {
   .strip[data-open='true'] .strip__toggle { padding-right: 2.75rem; }
 }
+
+/* ---- Theme toggle -------------------------------------------------------- */
+.theme-toggle {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+  color: var(--fg);
+  cursor: pointer;
+  flex: none;
+  transition: border-color 200ms var(--ease-out);
+}
+.theme-toggle:hover { border-color: var(--control-border); }
+.theme-toggle:focus-visible { outline: 2px solid var(--action-text); outline-offset: 3px; }
+
+.theme-toggle__icon { width: 20px; height: 20px; overflow: visible; }
+.theme-toggle__body { fill: currentColor; transition: r 420ms var(--ease-out); }
+.theme-toggle__shadow { transition: cx 420ms var(--ease-out), cy 420ms var(--ease-out); }
+.theme-toggle__rays {
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  transform-origin: 12px 12px;
+  transition: transform 420ms var(--ease-out), opacity 300ms var(--ease-out);
+}
+
+/* Dark: the sun grows into a full disc, a shadow slides over to leave a
+   crescent, and the rays turn and retract. */
+.theme-toggle[data-mode='dark'] .theme-toggle__body { r: 8px; }
+.theme-toggle[data-mode='dark'] .theme-toggle__shadow { cx: 17px; cy: 8px; }
+.theme-toggle[data-mode='dark'] .theme-toggle__rays { transform: rotate(45deg) scale(0.4); opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle__body, .theme-toggle__shadow, .theme-toggle__rays { transition: none; }
+}
+
+/* The page change spreads out as a circle from the button. */
+::view-transition-old(root),
+::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-new(root) { animation: theme-reveal 650ms var(--ease-in-out); }
+@keyframes theme-reveal {
+  from { clip-path: circle(0 at var(--vt-x, 100%) var(--vt-y, 0)); }
+  to { clip-path: circle(var(--vt-r, 150vmax) at var(--vt-x, 100%) var(--vt-y, 0)); }
+}
+
+.nav__theme { display: flex; align-items: center; margin-left: 0.25rem; }
+@media (max-width: 980px) {
+  .nav__theme { margin-left: auto; margin-right: 0.5rem; }
+}
+
+/* ---- Dark mode details the tokens cannot reach ------------------------- */
+:root[data-theme='dark'] .btn::before { background: #2c4272; }
+:root[data-theme='dark'] .strip__toggle:focus-visible { outline-color: var(--fg); }
+/* Undyed strips at night: a little lighter than the ground so the cloth
+   still reads as cloth. Threads become light. */
+:root[data-theme='dark'] .strip {
+  background-color: #221d17;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(242, 235, 221, 0.035) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(0deg, rgba(242, 235, 221, 0.022) 0 1px, transparent 1px 5px);
+}
+:root[data-theme='dark'] .strip::before,
+:root[data-theme='dark'] .swatches__book { --fg: #efe7d8; }

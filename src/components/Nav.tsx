@@ -2,6 +2,7 @@ import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { BUSINESS } from '../content'
 import { Logo } from './Logo'
+import { ThemeToggle } from './ThemeToggle'
 import { useCompactLayout } from './useCompactLayout'
 
 const LINKS = [
@@ -114,6 +115,10 @@ export function Nav() {
               Start an enquiry
               <Arrow />
             </Link>
+          </div>
+
+          <div className="nav__theme">
+            <ThemeToggle />
           </div>
 
           <button

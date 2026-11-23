@@ -147,3 +147,52 @@
   color: var(--fg);
   background-color: var(--bg);
 }
+
+/* ==========================================================================
+   Theme layer
+   --paper is the light colour of text and marks that sit on a dye. It never
+   flips. Everything else that says "cotton" is the page ground, and flips in
+   dark mode, so most rules follow the theme without being touched.
+   ========================================================================== */
+:root {
+  --paper: #faf5ea;
+  --paper-soft: #e6ddcc;
+  --paper-deep: #e6dbc7;
+
+  /* Action colour as a fill and as text on the page ground. */
+  --action: var(--indigo);
+  --action-text: var(--indigo);
+
+  /* The logo is gold. On cotton the original gold (#dabc72) measures 1.55:1,
+     so light mode prints a deeper shade of the same gold (3.4:1). */
+  --gold: #dabc72;
+  --gold-on-light: #9a7a2c;
+  --logo: var(--gold-on-light);
+
+  color-scheme: light;
+}
+
+/* Dark mode: the dye yard at night. Ink ground, cotton text, the same six
+   dyes (indigo lifted so it still reads on ink), the original gold logo.
+   Contrast measured against #14110d: fg 15.3, soft 10.7, mute 6.6. */
+:root[data-theme='dark'] {
+  --cotton: #14110d;
+  --cotton-lit: #1c1813;
+  --cotton-deep: #26201a;
+  --cotton-shade: #3a3128;
+
+  --fg: #efe7d8;
+  --fg-soft: #cdc2ae;
+  --fg-mute: #a39880;
+  --rule: rgba(242, 235, 221, 0.14);
+  --rule-soft: rgba(242, 235, 221, 0.075);
+  --control-border: #6f6556;
+
+  --action: #3b5591;        /* paper text on it: 6.7:1 */
+  --action-text: #9fb0d8;   /* on the ground: 8.7:1 */
+  --accent: var(--action-text);
+  --dye-textiles: #34508c;  /* paper text on it: 7.2:1 */
+
+  --logo: var(--gold);
+  color-scheme: dark;
+}
