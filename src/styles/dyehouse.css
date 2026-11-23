@@ -765,3 +765,127 @@
 @media (max-width: 760px) {
   .lightbox__close { top: 6px; right: 6px; }
 }
+
+/* ==========================================================================
+   Standard layout and type (round two)
+   One rhythm, one heading scale, applied the same way on every page.
+     Page title (h1, inner pages) .. --fs-display
+     Home hero (h1) ................. --fs-hero
+     Section title (h2) ............. --fs-h2
+     Sub-title (h3, legal h2) ....... --fs-h3
+   Every content section: --section-y top and bottom.
+   Every inner-page hero: the same top (clears the nav) and bottom spacing.
+   All display headings: weight 400, the same tracking.
+   ========================================================================== */
+:root {
+  --hero-top: calc(4.6rem + clamp(2.5rem, 6vw, 5.5rem));
+  --hero-bottom: clamp(2.25rem, 4.5vw, 3.75rem);
+}
+
+/* Inner-page heroes */
+.page-hero,
+.enquiry-hero,
+.about-hero,
+.ack,
+.notfound {
+  padding-top: var(--hero-top);
+  padding-bottom: var(--hero-bottom);
+}
+.page-hero--textile { padding-bottom: var(--hero-bottom); }
+
+/* Content sections */
+.swatches,
+.purpose,
+.first-message,
+.areas,
+.brief,
+.about-desk-section,
+.about-process,
+.about-cta,
+.privacy {
+  padding-top: var(--section-y);
+  padding-bottom: var(--section-y);
+}
+/* The form follows its hero directly, so it only needs a bottom rhythm. */
+.enquiry-body { padding-top: clamp(1rem, 2vw, 1.5rem); padding-bottom: var(--section-y); }
+
+/* Headings */
+.hero__title,
+.page-hero__title,
+.enquiry-hero__title,
+.about-hero__title,
+.ack__title,
+.notfound__title,
+.swatches__head h2,
+.purpose__title,
+.first-message__title,
+.areas__title,
+.brief__title,
+.about-process__title,
+.about-cta__title,
+.enquiry-body__textiles h2 {
+  font-family: var(--f-display);
+  font-weight: 400;
+  font-variation-settings: var(--fraunces-tight);
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+.hero__title { font-size: var(--fs-hero); line-height: 0.98; }
+.page-hero__title,
+.enquiry-hero__title,
+.about-hero__title,
+.ack__title,
+.notfound__title { font-size: var(--fs-display); line-height: 1.02; }
+.swatches__head h2,
+.purpose__title,
+.first-message__title,
+.areas__title,
+.brief__title,
+.about-process__title,
+.about-cta__title,
+.enquiry-body__textiles h2 { font-size: var(--fs-h2); line-height: 1.08; }
+.privacy h2,
+.form__title { font-size: var(--fs-h3); line-height: 1.2; font-weight: 500; letter-spacing: -0.01em; }
+
+/* Ledes under page titles: one size and measure. */
+.hero__lede,
+.page-hero__lede,
+.enquiry-hero__lede,
+.about-hero__lede {
+  font-family: var(--f-serif);
+  font-size: var(--fs-lead);
+  line-height: 1.5;
+  max-width: 36rem;
+  margin-top: clamp(1rem, 1.8vw, 1.4rem);
+}
+
+/* ---- Fabric brief: the last mono-uppercase block ----------------------- */
+.brief__sheet,
+.brief__sheet-head,
+.brief__sheet-foot,
+.brief__tag,
+.brief__example,
+.brief__example-label,
+.brief__mail {
+  font-family: var(--f-sans);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.brief__sheet-head { font-size: var(--fs-small); font-weight: 500; color: var(--fg-mute); }
+.brief__tag { font-size: 0.8rem; color: var(--fg-mute); }
+.brief__example-label { font-size: 0.8rem; font-weight: 500; color: var(--fg-mute); }
+.brief__sheet-foot { font-size: var(--fs-small); line-height: 1.6; color: var(--fg-soft); }
+.brief__mail { font-size: 0.95rem; }
+.brief__num { letter-spacing: 0; color: var(--fg-mute); }
+
+/* Every hero's text starts on the same left edge as the rest of the site:
+   the full shell width, with the text itself limited by its own measure. */
+.page-hero--textile .page-hero__inner,
+.about-hero__inner { max-width: var(--maxw); }
+.page-hero__title,
+.about-hero__title,
+.enquiry-hero__title { max-width: 20ch; }
+@media (max-width: 980px) {
+  /* The theme toggle takes the free space; the menu button sits right beside it. */
+  .nav__toggle { margin-left: 0; }
+}

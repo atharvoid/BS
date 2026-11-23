@@ -19,7 +19,7 @@ export default function About() {
         <div className="shell about-hero__inner">
           <p className="eyebrow eyebrow--bare">{ABOUT_BUSINESS.eyebrow}</p>
           <h1 className="about-hero__title">
-            Trade coordination and export sourcing in <em className="display-italic">India</em>.
+            Trade coordination and export sourcing in India
           </h1>
           <p className="about-hero__lede">{ABOUT_BUSINESS.lede}</p>
         </div>
@@ -70,7 +70,7 @@ export default function About() {
           <div className="about-process__head">
             <p className="eyebrow eyebrow--bare reveal">Working method</p>
             <h2 className="about-process__title reveal">
-              How enquiries and orders are handled.
+              How enquiries are handled
             </h2>
           </div>
           <div className="about-process__grid">
@@ -90,7 +90,7 @@ export default function About() {
           <div className="about-cta__inner">
             <p className="eyebrow eyebrow--bare">Enquiry</p>
             <h2 className="about-cta__title">
-              Send your sourcing <em className="display-italic">enquiry</em>.
+              Send your sourcing enquiry
             </h2>
             <p className="about-cta__lede">
               Send your required materials, specifications, and delivery destination. Bhupendra Sain reviews each enquiry and replies directly by email.

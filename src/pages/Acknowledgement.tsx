@@ -16,7 +16,7 @@ export default function Acknowledgement() {
           <p className="eyebrow">Enquiry acknowledgement</p>
           {receipt ? (
             <>
-              <h1 className="ack__title">Enquiry <em className="display-italic">submitted.</em></h1>
+              <h1 className="ack__title">Enquiry submitted</h1>
               <div className="ack__notice">
                 Your enquiry was submitted for review. If you do not hear back, email{' '}
                 <a href={`mailto:${enquiryContact}`}>{enquiryContact}</a>.
@@ -29,7 +29,7 @@ export default function Acknowledgement() {
             </>
           ) : (
             <>
-              <h1 className="ack__title">No enquiry recorded <em className="display-italic">in this tab.</em></h1>
+              <h1 className="ack__title">No enquiry recorded in this tab</h1>
               <p className="ack__no-receipt">Start an enquiry to share your requirement.</p>
             </>
           )}

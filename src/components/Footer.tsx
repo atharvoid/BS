@@ -12,7 +12,7 @@ export function Footer() {
             <li><Link to="/#products">Products</Link></li>
             <li><Link to="/textiles">Textiles</Link></li>
             <li><Link to="/about">About</Link></li>
-            <li><Link to="/enquiry">Enquire</Link></li><li><Link to="/privacy">Enquiry privacy</Link></li>
+            <li><Link to="/enquiry">Start an enquiry</Link></li><li><Link to="/privacy">Enquiry privacy</Link></li>
           </ul></nav>
         </div>
         <div className="footer__wordmark" aria-hidden="true"><Logo className="brand-logo footer__logo" /></div>

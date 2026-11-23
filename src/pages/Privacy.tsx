@@ -55,7 +55,7 @@ export default function Privacy() {
         <div className="shell page-hero__inner">
           <p className="eyebrow">Enquiry privacy</p>
           <h1 className="page-hero__title">
-            What happens to an <em className="display-italic">enquiry</em>.
+            What happens to an enquiry
           </h1>
           <p className="page-hero__lede">
             A short, specific notice. It covers only the enquiry form on this site. There are no

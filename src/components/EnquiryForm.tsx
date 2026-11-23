@@ -202,7 +202,7 @@ export function EnquiryForm() {
       <div className="form__head">
         <p className="eyebrow eyebrow--index">{getCategory(draft.subject).label}</p>
         <h2 className="form__title">
-          Tell us what <em className="display-italic">you need.</em>
+          Tell us what you need
         </h2>
       </div>
 

@@ -41,7 +41,7 @@ function Hero() {
         <div className="hero__copy">
           <h1 className="hero__title">
             <span className="hero__line">Import and export</span>
-            <span className="hero__line">sourcing in India.</span>
+            <span className="hero__line">sourcing in India</span>
           </h1>
 
           <p className="hero__lede">

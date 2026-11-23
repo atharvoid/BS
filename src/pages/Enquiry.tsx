@@ -19,7 +19,7 @@ export default function Enquiry() {
         <div className="shell">
           <div className="enquiry-hero__grid">
             <div>
-              <h1 className="enquiry-hero__title">Start an <em className="display-italic">enquiry.</em></h1>
+              <h1 className="enquiry-hero__title">Start an enquiry</h1>
               <p className="enquiry-hero__lede">Tell us what you need or supply, and where the goods are going.</p>
             </div>
             <div className="enquiry-hero__aside">

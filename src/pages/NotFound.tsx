@@ -7,7 +7,7 @@ export default function NotFound() {
       <div className="shell notfound__inner">
         <p className="eyebrow">404</p>
         <h1 className="notfound__title">
-          Page <em className="display-italic">not found</em>.
+          Page not found
         </h1>
         <p className="notfound__lede">
           The page you asked for is not part of this site.

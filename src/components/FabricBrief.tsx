@@ -4,7 +4,7 @@ import { BUSINESS, FABRIC_TOPICS } from '../content'
 import { Arrow } from './Nav'
 
 /* ==========================================================================
-   What to tell us about your fabric.
+   What to tell us about your fabric
 
    This replaced the four objects that used to swing in on arcs. The reasoning
    is in CHANGES.md, and it comes down to this: those objects illustrated
@@ -61,7 +61,7 @@ export function FabricBrief() {
           <div className="brief__intro">
             <p className="eyebrow reveal">Before you write</p>
             <h2 className="brief__title reveal">
-              What to tell us about your <em className="display-italic">fabric</em>.
+              What to tell us about your fabric
             </h2>
             <p className="brief__lede reveal">
               Four answers make an enquiry answerable. Anything you do not know yet can be left

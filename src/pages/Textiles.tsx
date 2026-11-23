@@ -42,7 +42,7 @@ export default function Textiles() {
         </div>
         <div className="shell page-hero__inner">
           <p className="eyebrow">Textiles &amp; fabrics</p>
-          <h1 className="page-hero__title">Textiles and fabrics <em className="display-italic">from India</em>.</h1>
+          <h1 className="page-hero__title">Textiles and fabrics from India</h1>
           <p className="page-hero__lede">Explore the regions where we’re beginning our sourcing work.</p>
           <Link to="/textiles#textile-enquiry" className="btn">Start a textile enquiry <Arrow /></Link>
         </div>
@@ -50,7 +50,7 @@ export default function Textiles() {
 
       <section className="areas on-indigo grain" id="areas">
         <div className="shell">
-          <div className="areas__head"><p className="eyebrow reveal">Initial sourcing areas</p><h2 className="areas__title reveal">Tamil Nadu and <em className="display-italic">Gujarat</em>.</h2></div>
+          <div className="areas__head"><p className="eyebrow reveal">Initial sourcing areas</p><h2 className="areas__title reveal">Tamil Nadu and Gujarat</h2></div>
           <div className="areas__grid">
             {FOCUS_AREAS.map((area, index) => (
               <article className="area reveal" key={area.id}>

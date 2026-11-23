@@ -208,7 +208,7 @@ export const CATEGORY_JOURNEY = CATEGORIES.map(category => ({
 
 export const ABOUT_BUSINESS = {
   eyebrow: 'Desk coordinates',
-  title: 'Trade coordination and export sourcing in India.',
+  title: 'Trade coordination and export sourcing in India',
   lede: 'BS EXIMNEXUS is an export sourcing and trade coordination desk based in India, founded by Bhupendra Sain.',
 } as const
 
@@ -226,8 +226,7 @@ export const ABOUT_DESK_FACTS = [
   { label: 'Business name', value: 'BS EXIMNEXUS' },
   { label: 'Founder', value: 'Bhupendra Sain' },
   { label: 'Operating base', value: 'India' },
-  { label: 'Lead category', value: 'Textiles and fabrics' },
-  { label: 'Secondary scope', value: 'Handicrafts, agriculture, industrial materials' },
+  { label: 'Categories', value: 'Textiles and fabrics first; also handicrafts and home decor, agriculture and food, industrial materials, organic and sustainable products, and other requests' },
   { label: 'Direct email', value: 'bsexim.nexus@gmail.com' },
   { label: 'Trade terms', value: 'Agreed in writing per enquiry' },
 ] as const
