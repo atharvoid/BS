@@ -928,3 +928,34 @@
     transition: none;
   }
 }
+
+/* ---- Sound toggle -------------------------------------------------------- */
+.nav__theme { gap: 0.4rem; }
+.sound-toggle {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+  color: var(--fg);
+  cursor: pointer;
+  flex: none;
+  transition: border-color 200ms var(--ease-out);
+}
+.sound-toggle:hover { border-color: var(--control-border); }
+.sound-toggle:focus-visible { outline: 2px solid var(--action-text); outline-offset: 3px; }
+.sound-toggle__icon { width: 20px; height: 20px; overflow: visible; }
+.sound-toggle__speaker { fill: currentColor; }
+.sound-toggle__wave,
+.sound-toggle__slash { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.sound-toggle__wave { transform-origin: 12px 12px; transition: opacity 250ms var(--ease-out), transform 300ms var(--ease-out); }
+.sound-toggle__wave--2 { transition-delay: 60ms; }
+.sound-toggle__slash { stroke-dasharray: 8; stroke-dashoffset: 8; transition: stroke-dashoffset 300ms var(--ease-out); }
+.sound-toggle[data-on='false'] .sound-toggle__wave { opacity: 0; transform: scale(0.6); }
+.sound-toggle[data-on='false'] .sound-toggle__slash { stroke-dashoffset: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .sound-toggle__wave, .sound-toggle__slash { transition: none; }
+}

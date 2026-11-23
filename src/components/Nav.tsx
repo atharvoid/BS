@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { BUSINESS } from '../content'
 import { Logo } from './Logo'
 import { ThemeToggle } from './ThemeToggle'
+import { SoundToggle } from './SoundToggle'
 import { useCompactLayout } from './useCompactLayout'
 
 const LINKS = [
@@ -118,6 +119,7 @@ export function Nav() {
           </div>
 
           <div className="nav__theme">
+            <SoundToggle />
             <ThemeToggle />
           </div>
 
