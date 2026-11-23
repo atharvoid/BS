@@ -192,14 +192,24 @@ const CATEGORY_ARTWORK: Record<CategoryId, { motif: CategoryMotif; note: string;
  * touching. Every image is captioned as representative, because none of them
  * is a photograph of supplier stock.
  */
+/* Photographs are AI-generated (arena.ai, prompts in docs/redesign/IMAGE-PROMPTS.md)
+   and saved at 1600px with an 800px `-small` version beside each. */
 export const CATEGORY_IMAGES: Record<CategoryId, { src: string; alt: string; kind: 'render' | 'photo' }> = {
-  textiles: { src: '/posters/textiles-mobile.webp', alt: 'A roll of indigo woven fabric', kind: 'render' },
-  handicrafts: { src: '/posters/handicrafts-mobile.webp', alt: 'A hand-painted ceramic vase', kind: 'render' },
-  'agriculture-food': { src: '/posters/agriculture-mobile.webp', alt: 'Grain and food produce samples', kind: 'render' },
-  'industrial-materials': { src: '/posters/industrial-mobile.webp', alt: 'A coil of industrial material', kind: 'render' },
-  'organic-sustainable': { src: '/posters/organic-mobile.webp', alt: 'A boll of raw organic cotton', kind: 'render' },
-  general: { src: '/posters/general-mobile.webp', alt: 'A wooden shipping crate', kind: 'render' },
+  textiles: { src: '/photos/textiles.webp', alt: 'A roll of indigo cotton twill with a folded swatch beside it', kind: 'photo' },
+  handicrafts: { src: '/photos/handicrafts.webp', alt: 'A blue-pottery vase painted with indigo flowers, beside a small carved wooden box', kind: 'photo' },
+  'agriculture-food': { src: '/photos/agriculture.webp', alt: 'Wheat ears and grain spilling from a jute sack, with turmeric root in a brass bowl', kind: 'photo' },
+  'industrial-materials': { src: '/photos/industrial.webp', alt: 'A coil of copper wire, steel bolts and a length of aluminium extrusion', kind: 'photo' },
+  'organic-sustainable': { src: '/photos/organic.webp', alt: 'Open cotton bolls on a dried stem', kind: 'photo' },
+  general: { src: '/photos/crate.webp', alt: 'A pine export crate with the BS EXIMNEXUS logo printed on its front', kind: 'photo' },
 }
+
+export const REGION_IMAGES = {
+  'tamil-nadu': { src: '/photos/region-tamil-nadu.webp', alt: 'Folded indigo handloom cotton with a fine check' },
+  gujarat: { src: '/photos/region-gujarat.webp', alt: 'Folded block-printed cotton in bronze and rust' },
+} as const
+
+/** The 800px version of a photo saved beside it, for srcset. */
+export const smallPhoto = (src: string) => src.replace(/\.webp$/, '-small.webp')
 
 export const IMAGE_CAPTION = 'Representative image, not a photograph of supplier stock.'
 

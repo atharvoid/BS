@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { CATEGORY_JOURNEY, IMAGE_CAPTION } from '../content'
+import { CATEGORY_JOURNEY, IMAGE_CAPTION, smallPhoto } from '../content'
 import { Arrow } from './Nav'
 import { Lightbox, type LightboxImage } from './Lightbox'
 
@@ -16,6 +16,15 @@ const DYES: Record<string, { token: string; name: string; tone: 'dark' | 'light'
   'industrial-materials': { token: 'industrial', name: 'Iron', tone: 'dark' },
   'organic-sustainable': { token: 'organic', name: 'Verdigris', tone: 'dark' },
   general: { token: 'general', name: 'Brass', tone: 'light' },
+}
+
+const preloaded = new Set<string>()
+function preload(src: string) {
+  if (preloaded.has(src)) return
+  preloaded.add(src)
+  const img = new Image()
+  img.decoding = 'async'
+  img.src = src
 }
 
 export function SwatchBook() {
@@ -42,6 +51,10 @@ export function SwatchBook() {
                 data-open={isOpen}
                 data-tone={dye.tone}
                 style={{ '--dye': `var(--dye-${dye.token})` } as React.CSSProperties}
+                /* Start fetching the strip's photo as the pointer or focus
+                   arrives, so it is already there when the strip opens. */
+                onPointerEnter={() => preload(smallPhoto(item.image.src))}
+                onFocus={() => preload(smallPhoto(item.image.src))}
               >
                 <span className="strip__cloth" aria-hidden="true" />
                 <h3 className="strip__head">
@@ -72,7 +85,7 @@ export function SwatchBook() {
                     className="strip__photo"
                     onClick={() => setViewing({ ...item.image, title: item.label, caption: IMAGE_CAPTION })}
                   >
-                    <img src={item.image.src} alt="" loading="lazy" decoding="async" width={750} height={600} />
+                    <img src={smallPhoto(item.image.src)} srcSet={`${smallPhoto(item.image.src)} 800w, ${item.image.src} 1600w`} sizes="(max-width: 760px) 17rem, 15rem" alt="" loading="lazy" decoding="async" width={800} height={533} />
                     <span className="strip__photo-hint">
                       <span className="visually-hidden">Open a larger picture: {item.image.alt}</span>
                       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9" /></svg>

@@ -3,8 +3,7 @@ import { Stage } from '../three/Stage'
 import React from 'react'
 import { useReveal } from '../components/useReveal'
 import { Arrow } from '../components/Nav'
-import { FOCUS_AREAS } from '../content'
-import { RegionWeave } from '../components/RegionWeave'
+import { FOCUS_AREAS, REGION_IMAGES, smallPhoto } from '../content'
 import { FabricBrief } from '../components/FabricBrief'
 import { EnquiryForm, useEnquiryDraft } from '../components/EnquiryForm'
 
@@ -55,7 +54,7 @@ export default function Textiles() {
             {FOCUS_AREAS.map((area, index) => (
               <article className="area reveal" key={area.id}>
                 <div className={'area__weave area__weave--' + area.id} aria-hidden="true">
-                  <RegionWeave motif={area.id} /><span className="area__grain" />
+                  <img className="area__photo" src={smallPhoto(REGION_IMAGES[area.id].src)} srcSet={`${smallPhoto(REGION_IMAGES[area.id].src)} 800w, ${REGION_IMAGES[area.id].src} 1600w`} sizes="(max-width: 760px) 100vw, 50vw" alt={REGION_IMAGES[area.id].alt} loading="lazy" decoding="async" width={800} height={533} />
                 </div>
                 <div className="area__text">
                   <p className="area__kicker">{area.kicker}</p>
