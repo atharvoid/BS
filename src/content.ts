@@ -182,9 +182,28 @@ const CATEGORY_ARTWORK: Record<CategoryId, { motif: CategoryMotif; note: string;
   general: { motif: 'general', note: 'Other products' },
 }
 
+/**
+ * One picture per category, shown on a sample card inside the open swatch
+ * strip and in the larger view. To use a real photograph, put the file in
+ * public/photos/ and change `src`, `alt` and `kind` here; nothing else needs
+ * touching. Every image is captioned as representative, because none of them
+ * is a photograph of supplier stock.
+ */
+export const CATEGORY_IMAGES: Record<CategoryId, { src: string; alt: string; kind: 'render' | 'photo' }> = {
+  textiles: { src: '/posters/textiles-mobile.webp', alt: 'A roll of indigo woven fabric', kind: 'render' },
+  handicrafts: { src: '/posters/handicrafts-mobile.webp', alt: 'A hand-painted ceramic vase', kind: 'render' },
+  'agriculture-food': { src: '/posters/agriculture-mobile.webp', alt: 'Grain and food produce samples', kind: 'render' },
+  'industrial-materials': { src: '/posters/industrial-mobile.webp', alt: 'A coil of industrial material', kind: 'render' },
+  'organic-sustainable': { src: '/posters/organic-mobile.webp', alt: 'A boll of raw organic cotton', kind: 'render' },
+  general: { src: '/posters/general-mobile.webp', alt: 'A wooden shipping crate', kind: 'render' },
+}
+
+export const IMAGE_CAPTION = 'Representative image, not a photograph of supplier stock.'
+
 export const CATEGORY_JOURNEY = CATEGORIES.map(category => ({
   ...category,
   ...CATEGORY_ARTWORK[category.id],
+  image: CATEGORY_IMAGES[category.id],
 }))
 
 export const ABOUT_BUSINESS = {

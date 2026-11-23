@@ -1,7 +1,8 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { CATEGORY_JOURNEY } from '../content'
+import { CATEGORY_JOURNEY, IMAGE_CAPTION } from '../content'
 import { Arrow } from './Nav'
+import { Lightbox, type LightboxImage } from './Lightbox'
 
 /* The swatch book: one undyed cotton strip per category, each with its dye
    showing only at the hem. Opening a strip dyes the whole cloth and shows what
@@ -19,6 +20,7 @@ const DYES: Record<string, { token: string; name: string; tone: 'dark' | 'light'
 
 export function SwatchBook() {
   const [open, setOpen] = React.useState<string | null>(null)
+  const [viewing, setViewing] = React.useState<LightboxImage | null>(null)
 
   return (
     <section className="swatches" id="products" aria-labelledby="swatches-title" data-tone="light">
@@ -64,6 +66,18 @@ export function SwatchBook() {
                   aria-labelledby={`strip-${item.id}`}
                   hidden={!isOpen}
                 >
+                  {/* A sample card pinned to the cloth. Tap for a larger view. */}
+                  <button
+                    type="button"
+                    className="strip__photo"
+                    onClick={() => setViewing({ ...item.image, title: item.label, caption: IMAGE_CAPTION })}
+                  >
+                    <img src={item.image.src} alt="" loading="lazy" decoding="async" width={750} height={600} />
+                    <span className="strip__photo-hint">
+                      <span className="visually-hidden">Open a larger picture: {item.image.alt}</span>
+                      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9" /></svg>
+                    </span>
+                  </button>
                   <p>{item.hint}</p>
                   <Link to={href} className="strip__link">
                     {item.to ? 'Read about textiles' : 'Start this enquiry'}
@@ -76,9 +90,10 @@ export function SwatchBook() {
         </div>
 
         <p className="swatches__note">
-          The colours are dyes, not products. Availability and terms are discussed for each enquiry.
+          The colours are dyes and the pictures are representative, not products. Availability and terms are discussed for each enquiry.
         </p>
       </div>
+      <Lightbox image={viewing} onClose={() => setViewing(null)} />
     </section>
   )
 }

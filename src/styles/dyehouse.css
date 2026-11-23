@@ -636,3 +636,132 @@
 }
 :root[data-theme='dark'] .strip::before,
 :root[data-theme='dark'] .swatches__book { --fg: #efe7d8; }
+
+/* ---- Sample card inside an open strip ---------------------------------- */
+/* A paper card pinned to the dyed cloth, tilted a little as if tacked on by
+   hand. It is a button: tapping it opens the larger view. */
+.strip__photo {
+  all: unset;
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: min(100%, 15rem);
+  margin: 0 0 1.1rem;
+  padding: 6px 6px 8px;
+  background: var(--paper);
+  border-radius: 2px;
+  cursor: zoom-in;
+  transform: rotate(-1.6deg);
+  transition: transform 300ms var(--ease-out);
+}
+.strip__photo::before {
+  /* The tack. */
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+.strip__photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 5 / 4;
+  object-fit: contain;
+  background: var(--paper-deep);
+}
+.strip__photo:hover { transform: rotate(0deg); }
+.strip__photo:focus-visible { outline: 2px solid var(--strip-fg); outline-offset: 4px; }
+.strip__photo-hint {
+  position: absolute;
+  right: 12px;
+  bottom: 14px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+}
+.strip__photo-hint svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+
+/* The card pops up out of the cloth when the strip opens. */
+@media (prefers-reduced-motion: no-preference) {
+  .strip__panel:not([hidden]) .strip__photo { animation: card-pop 520ms var(--ease-out) 260ms both; }
+}
+@keyframes card-pop {
+  from { opacity: 0; transform: translateY(18px) rotate(-6deg) scale(0.92); }
+  to { opacity: 1; transform: rotate(-1.6deg); }
+}
+
+@media (max-width: 760px) {
+  .strip__photo { width: min(100%, 17rem); }
+}
+
+/* ---- Lightbox ----------------------------------------------------------- */
+.lightbox {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  max-width: min(92vw, 60rem);
+  max-height: 92vh;
+  overflow: visible;
+}
+.lightbox::backdrop { background: rgba(20, 17, 13, 0.78); }
+.lightbox__card {
+  position: relative;
+  margin: 0;
+  padding: 10px 10px 14px;
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 3px;
+}
+.lightbox__card img {
+  display: block;
+  width: 100%;
+  max-height: 74vh;
+  object-fit: contain;
+  background: var(--paper-deep);
+}
+.lightbox__card figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  padding: 0.8rem 0.25rem 0;
+  font-size: var(--fs-small);
+  color: #4b4136;
+}
+.lightbox__card figcaption strong { font-family: var(--f-display); font-size: 1.15rem; font-weight: 500; color: var(--ink); }
+.lightbox__close {
+  all: unset;
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+}
+.lightbox__close svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.lightbox__close:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .lightbox[open] .lightbox__card { animation: lightbox-in 360ms var(--ease-out); }
+  .lightbox[open]::backdrop { animation: lightbox-fade 300ms var(--ease-out); }
+}
+@keyframes lightbox-in { from { opacity: 0; transform: translateY(16px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes lightbox-fade { from { opacity: 0; } to { opacity: 1; } }
+
+@media (max-width: 760px) {
+  .lightbox__close { top: 6px; right: 6px; }
+}
