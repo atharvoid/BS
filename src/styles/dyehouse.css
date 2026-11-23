@@ -312,7 +312,8 @@
   .swatches__head { grid-template-columns: 1fr; }
   .swatches__book,
   .swatches__book[data-open='true']:has(.strip[data-open='true']) {
-    grid-template-columns: 1fr;
+    /* !important: the desktop open-strip rules use :nth-child and outrank this. */
+    grid-template-columns: 1fr !important;
     gap: 0.45rem;
     padding-top: 0;
     padding-left: 12px;
