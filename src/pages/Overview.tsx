@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { Stage } from '../three/Stage'
 import { useReveal, useParallax } from '../components/useReveal'
 import { Arrow } from '../components/Nav'
-import { ProductExplorer } from '../components/ProductExplorer'
+import { SwatchBook } from '../components/SwatchBook'
+import { FIRST_MESSAGE } from '../content'
 
 /* The globe is the largest scene on the site. Loading it through the stage
    boundary keeps it off the path of the hero's own text: the headline, the lede
@@ -16,7 +17,7 @@ function Hero() {
   useParallax(ref, 0.06)
 
   return (
-    <section className="hero on-dark grain" ref={ref}>
+    <section className="hero" ref={ref} data-tone="light">
       <div className="hero__canvas" onPointerDown={() => setEngaged(true)}>
         <Stage
           className="hero__stage"
@@ -40,18 +41,16 @@ function Hero() {
         <div className="hero__copy">
           <h1 className="hero__title">
             <span className="hero__line">Import and export</span>
-            <span className="hero__line">
-              sourcing in <em className="display-italic">India</em>.
-            </span>
+            <span className="hero__line">sourcing in India.</span>
           </h1>
 
           <p className="hero__lede">
-            We’re building a sourcing business for overseas buyers, buyers in India and Indian
-            suppliers, starting with textiles and fabrics.
+            A sourcing and trade coordination desk for overseas buyers, buyers in India and
+            Indian suppliers: textiles, handicrafts, food, industrial materials and more.
           </p>
 
           <div className="hero__actions">
-            <Link to="/enquiry" className="btn btn--light">
+            <Link to="/enquiry" className="btn">
               Start an enquiry
               <Arrow />
             </Link>
@@ -61,7 +60,7 @@ function Hero() {
                   <path d="M6 1v10M2 7l4 4 4-4" stroke="currentColor" strokeWidth="1.4" />
                 </svg>
               </span>
-              Explore products
+              See what we source
             </Link>
           </div>
         </div>
@@ -80,16 +79,27 @@ export default function Overview() {
   return (
     <>
       <Hero />
-      <ProductExplorer />
+      <SwatchBook />
       <section className="purpose" id="process">
         <div className="shell purpose__grid">
-          <h2 className="purpose__title">How sourcing enquiries <em className="display-italic">work</em>.</h2>
+          <h2 className="purpose__title">How an enquiry works</h2>
           <div className="purpose__body">
             <ol className="purpose__steps">
               <li><strong>Share your requirement.</strong> Tell us what you need or supply, any specifications you have, and where the goods are going.</li>
               <li><strong>We review the details.</strong> We’ll reply from our business inbox to discuss the product and any missing information.</li>
               <li><strong>Discuss availability and terms.</strong> Quantities, samples and commercial terms depend on the enquiry.</li>
             </ol>
+          </div>
+        </div>
+      </section>
+      <section className="first-message">
+        <div className="shell first-message__grid">
+          <h2 className="first-message__title">A first message needs four things</h2>
+          <div>
+            <ul className="first-message__list">
+              {FIRST_MESSAGE.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+            <p className="first-message__note">A finished specification is not required to begin.</p>
             <Link to="/enquiry" className="btn">Start an enquiry <Arrow /></Link>
           </div>
         </div>

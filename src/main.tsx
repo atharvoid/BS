@@ -13,10 +13,9 @@ import './styles/about.css'
    them: they are the home page's, and a route-split import would have left the
    row unstyled until the textiles page happened to load. */
 import './styles/products.css'
-import './styles/journey.css'
-import './styles/posters.css'
 import './styles/logo-intro.css'
 import './styles/mobile.css'
+import './styles/dyehouse.css'
 
 if (import.meta.env.MODE === 'posters') {
   import('./dev/PosterCapture').then(({default: Capture}) => ReactDOM.createRoot(document.getElementById('root')!).render(<Capture />))

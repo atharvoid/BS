@@ -1,0 +1,418 @@
+/* ==========================================================================
+   Dye house layer. Loaded last; overrides the older charcoal-and-amber look.
+   Direction: see the comment at the top of tokens.css.
+
+   Rules this file follows:
+   - Undyed cotton is the ground. Ink is the text. Indigo is the one action.
+   - The six category dyes appear only in the swatch book and on the page that
+     belongs to that category.
+   - Sentence case and the sans for interface text. Mono only for numbers.
+   - No shadows, no decorative gradients, no blur, no hover scaling.
+   ========================================================================== */
+
+/* ---- Type: labels stop shouting --------------------------------------- */
+.eyebrow,
+.tlink,
+.btn,
+.nav__link,
+.hero__secondary,
+.drawer__link {
+  font-family: var(--f-sans);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.eyebrow {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--fg-mute);
+}
+
+/* ---- Actions ------------------------------------------------------------ */
+.btn {
+  --btn-bg: var(--indigo);
+  --btn-fg: var(--cotton-lit);
+  border-radius: 3px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.85em 1.25em;
+  will-change: auto;
+}
+
+/* The hover is the dye rising: a deeper indigo comes up from the hem. */
+.btn::before { background: #121b30; }
+.btn:hover { transform: none; }
+.btn:hover .btn__arrow { transform: translate(0.12em, -0.12em); }
+
+.btn--light {
+  --btn-bg: var(--cotton-lit);
+  --btn-fg: var(--indigo);
+}
+.btn--light::before { background: var(--cotton-deep); }
+.btn--light:hover { color: var(--indigo); }
+
+.btn--ghost { --btn-fg: var(--fg); border-color: var(--control-border); }
+.btn--ghost::before { background: var(--indigo); }
+
+.btn--small { font-size: 0.875rem; padding: 0.6em 1em; }
+
+.tlink { font-size: 0.95rem; font-weight: 500; color: var(--indigo); }
+.on-dark .tlink,
+.on-indigo .tlink { color: var(--cotton-lit); }
+
+:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 3px;
+}
+.on-dark :focus-visible,
+.on-indigo :focus-visible { outline-color: var(--cotton-lit); }
+
+/* ---- The signature: bandhani dots -------------------------------------- */
+.dots {
+  display: block;
+  height: 12px;
+  color: var(--fg-mute);
+  background: var(--dots);
+  opacity: 0.55;
+}
+
+/* ---- Scroll progress: one indigo thread -------------------------------- */
+.progress { background: var(--indigo); opacity: 1; height: 2px; }
+
+/* ---- Navigation ---------------------------------------------------------- */
+.nav { color: var(--fg); }
+.nav::after { background: var(--rule); }
+.nav--lifted { background: var(--cotton); color: var(--fg); }
+.nav, .drawer { --accent: var(--indigo); }
+
+.nav .brand-logo { --brand-mark: var(--indigo); --brand-name: var(--indigo); }
+
+.nav__link { font-size: 0.95rem; opacity: 0.78; }
+.nav__link::after { height: 2px; }
+
+.nav .btn--small { --btn-bg: var(--indigo); --btn-fg: var(--cotton-lit); }
+
+.nav__toggle-bar { background: currentColor; }
+
+.drawer { background: var(--indigo); color: var(--cotton-lit); }
+.drawer .btn--light { --btn-fg: var(--indigo); }
+.drawer__link { font-family: var(--f-display); }
+.drawer__desc { color: #c3cadb; }
+
+/* ---- Hero: undyed cotton, the globe as an indigo vat -------------------- */
+.hero {
+  background: var(--cotton);
+  color: var(--fg);
+}
+
+/* The opening draws the mark on undyed cotton, in indigo. */
+.brand-intro { --brand-mark: var(--indigo); --brand-name: var(--indigo); }
+.intro-surface { background: var(--cotton); }
+.hero::before { content: none; }
+
+.hero__title { color: var(--fg); font-weight: 380; }
+.hero__lede { color: var(--fg-soft); font-weight: 400; max-width: 34rem; }
+
+.hero__secondary { color: var(--fg); font-size: 0.95rem; font-weight: 500; }
+.hero__secondary-ring { border-color: var(--control-border); }
+.hero__secondary:hover .hero__secondary-ring { border-color: var(--indigo); background: transparent; }
+
+.drag-hint { color: var(--fg-mute); }
+
+@media (max-width: 980px) {
+  /* The globe follows the words and never takes a whole phone screen. */
+  .hero__stage {
+    height: min(62vw, 300px);
+    min-height: min(62vw, 300px);
+  }
+}
+
+/* ---- The swatch book ----------------------------------------------------- */
+.swatches {
+  padding-block: var(--section-y);
+  border-top: 1px solid var(--rule);
+}
+
+.swatches__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+  gap: 1.5rem 3rem;
+  align-items: end;
+  margin-bottom: clamp(2rem, 4vw, 3.25rem);
+}
+.swatches__head h2 { font-size: var(--fs-display); line-height: 1.02; letter-spacing: -0.025em; }
+.swatches__head p { color: var(--fg-soft); }
+
+/* The rail the cloth hangs from. */
+.swatches__book {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(0.4rem, 0.9vw, 0.9rem);
+  padding-top: 14px;
+  border-top: 3px solid var(--fg);
+  transition: grid-template-columns 520ms var(--ease-out);
+}
+
+.swatches__book[data-open='true']:has(.strip:nth-child(1)[data-open='true']) { grid-template-columns: 2.6fr repeat(5, 1fr); }
+.swatches__book[data-open='true']:has(.strip:nth-child(2)[data-open='true']) { grid-template-columns: 1fr 2.6fr repeat(4, 1fr); }
+.swatches__book[data-open='true']:has(.strip:nth-child(3)[data-open='true']) { grid-template-columns: repeat(2, 1fr) 2.6fr repeat(3, 1fr); }
+.swatches__book[data-open='true']:has(.strip:nth-child(4)[data-open='true']) { grid-template-columns: repeat(3, 1fr) 2.6fr repeat(2, 1fr); }
+.swatches__book[data-open='true']:has(.strip:nth-child(5)[data-open='true']) { grid-template-columns: repeat(4, 1fr) 2.6fr 1fr; }
+.swatches__book[data-open='true']:has(.strip:nth-child(6)[data-open='true']) { grid-template-columns: repeat(5, 1fr) 2.6fr; }
+
+.strip {
+  --strip-fg: var(--fg);
+  --strip-fg-soft: var(--fg-soft);
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-height: clamp(20rem, 32vw, 26rem);
+  min-width: 0;
+  background-color: var(--cotton-lit);
+  /* Plain weave: warp and weft threads at different pitches, drawn not
+     photographed. Unequal spacing keeps it reading as cloth, not graph paper. */
+  background-image:
+    repeating-linear-gradient(90deg, rgba(26, 22, 17, 0.028) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(0deg, rgba(26, 22, 17, 0.018) 0 1px, transparent 1px 5px);
+  color: var(--strip-fg);
+  border-radius: 0 0 2px 2px;
+}
+
+/* Each strip hangs from a peg on the rail. */
+.strip::before {
+  content: '';
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  width: 6px;
+  height: 14px;
+  margin-left: -3px;
+  background: var(--fg);
+}
+
+/* The dye. At rest only the hem has been dipped; open, the whole cloth takes it. */
+.strip__cloth {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--dye);
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.09) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 4px);
+  transform: scaleY(0.16);
+  transform-origin: bottom;
+  transition: transform 620ms var(--ease-out);
+}
+
+/* A row of tied-resist dots marks where the dye stopped. Lives on the strip,
+   not the scaled cloth, so the dots keep their shape. */
+.strip::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(16% + 4px);
+  height: 12px;
+  color: var(--dye);
+  background: var(--dots);
+  transition: opacity 200ms var(--ease-out), bottom 620ms var(--ease-out);
+  pointer-events: none;
+}
+
+.strip:hover .strip__cloth { transform: scaleY(0.24); }
+.strip:hover::after { bottom: calc(24% + 4px); }
+.strip[data-open='true'] .strip__cloth { transform: scaleY(1); }
+.strip[data-open='true']::after { opacity: 0; }
+
+.strip[data-open='true'][data-tone='dark'] { --strip-fg: var(--cotton-lit); --strip-fg-soft: #e6ddcc; }
+.strip[data-open='true'][data-tone='light'] { --strip-fg: var(--ink); --strip-fg-soft: #2a2218; }
+
+.strip__head { margin: 0; flex: 1; display: flex; }
+
+.strip__toggle {
+  all: unset;
+  box-sizing: border-box;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: clamp(0.9rem, 1.4vw, 1.25rem);
+  cursor: pointer;
+  color: var(--strip-fg);
+  transition: color 300ms var(--ease-out) 120ms;
+}
+.strip__toggle:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
+
+.strip__num {
+  font-family: var(--f-mono);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--strip-fg-soft);
+}
+
+.strip__label {
+  font-family: var(--f-display);
+  font-variation-settings: var(--fraunces-tight);
+  font-size: clamp(1.1rem, 1.55vw, 1.55rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  hyphens: manual;
+  overflow-wrap: normal;
+  text-wrap: balance;
+}
+
+/* While one strip is open the others narrow; their labels step down a size. */
+.swatches__book[data-open='true'] .strip:not([data-open='true']) .strip__label {
+  font-size: clamp(0.95rem, 1.15vw, 1.15rem);
+}
+
+/* The dye name sits on the hem, in the hem's own ink. */
+.strip__dye {
+  margin-top: auto;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--strip-fg-soft);
+}
+.strip:not([data-open='true'])[data-tone='dark'] .strip__dye { color: var(--cotton-lit); }
+.strip:not([data-open='true'])[data-tone='light'] .strip__dye { color: var(--ink); }
+
+.strip__panel {
+  padding: 0 clamp(0.9rem, 1.4vw, 1.25rem) clamp(1.1rem, 1.6vw, 1.5rem);
+  color: var(--strip-fg);
+}
+.strip__panel p { margin: 0 0 1.1rem; max-width: 30ch; color: var(--strip-fg-soft); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .strip__panel:not([hidden]) { animation: strip-panel 420ms var(--ease-out) 200ms both; }
+}
+@keyframes strip-panel { from { opacity: 0; } to { opacity: 1; } }
+
+.strip__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-weight: 500;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+}
+.strip__link .btn__arrow { width: 0.8em; height: 0.8em; }
+
+/* With the panel open the label and dye name share the top of the strip. */
+.strip[data-open='true'] .strip__head { flex: 0 0 auto; }
+.strip[data-open='true'] .strip__dye { margin-top: 0; }
+.strip[data-open='true'] .strip__panel { margin-top: auto; }
+
+.swatches__note { margin-top: 1.4rem; font-size: var(--fs-small); color: var(--fg-mute); }
+
+/* Phones and narrow tablets: the cloth hangs sideways, one strip per row. */
+@media (max-width: 760px) {
+  .swatches__head { grid-template-columns: 1fr; }
+  .swatches__book,
+  .swatches__book[data-open='true']:has(.strip[data-open='true']) {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+    padding-top: 0;
+    padding-left: 12px;
+    border-top: 0;
+    border-left: 3px solid var(--fg);
+  }
+  .strip { min-height: 0; border-radius: 0 2px 2px 0; }
+  .strip::before { top: 50%; left: -12px; width: 12px; height: 6px; margin: -3px 0 0; }
+  .strip::after { display: none; }
+  .strip__cloth { transform: scaleX(0.07); transform-origin: right; }
+  .strip:hover .strip__cloth { transform: scaleX(0.07); }
+  .strip[data-open='true'] .strip__cloth { transform: scaleX(1); }
+  .strip__cloth::after { inset: 0 auto 0 0; width: 12px; height: auto; background: radial-gradient(circle, var(--dye) 1.6px, transparent 2.2px) 50% 0 / 12px 12px repeat-y; transform: translateX(-100%); }
+  .strip__toggle {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.9rem;
+    padding: 1.05rem 1rem;
+    padding-right: calc(7% + 1rem);
+  }
+  .strip__label { font-size: 1.2rem; }
+  .strip__dye { margin: 0 0 0 auto; }
+  .strip:not([data-open='true']) .strip__dye { position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%); writing-mode: vertical-rl; font-size: 0.7rem; }
+  .strip:not([data-open='true'])[data-tone] .strip__dye { color: transparent; }
+  .strip[data-open='true'] .strip__toggle { padding-right: 1rem; }
+  .strip__panel p { max-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swatches__book, .strip__cloth, .strip__toggle { transition: none; }
+}
+
+/* ---- How an enquiry works ---------------------------------------------- */
+.purpose { border-top: 1px solid var(--rule); }
+.purpose__steps li::marker { color: var(--indigo); font-family: var(--f-mono); }
+
+/* ---- First message ------------------------------------------------------- */
+.first-message { padding-block: var(--section-y); }
+.first-message::before {
+  content: '';
+  display: block;
+  height: 12px;
+  margin: calc(var(--section-y) * -1) var(--gutter) var(--section-y);
+  color: var(--fg-mute);
+  background: var(--dots);
+  opacity: 0.55;
+}
+.first-message__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 2rem clamp(2rem, 6vw, 6rem);
+}
+.first-message__title { font-size: var(--fs-h2); line-height: 1.08; letter-spacing: -0.02em; max-width: 16ch; }
+.first-message__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: need;
+  border-top: 1px solid var(--rule);
+}
+.first-message__list li {
+  counter-increment: need;
+  display: grid;
+  grid-template-columns: 2.5rem 1fr;
+  padding-block: 0.95rem;
+  border-bottom: 1px solid var(--rule);
+  font-size: var(--fs-lead);
+}
+.first-message__list li::before {
+  content: counter(need, decimal-leading-zero);
+  font-family: var(--f-mono);
+  font-size: 0.8rem;
+  padding-top: 0.35em;
+  color: var(--fg-mute);
+}
+.first-message__note { margin: 1.2rem 0 1.8rem; color: var(--fg-soft); }
+
+@media (max-width: 760px) {
+  .first-message__grid { grid-template-columns: 1fr; }
+}
+
+/* ---- Footer: the textile page's indigo, cloth folded at the end --------- */
+.footer.on-dark {
+  --bg: var(--indigo);
+  --fg: #eef0f6;
+  --fg-soft: #c3cadb;
+  --fg-mute: #a7b0c6;
+  --rule: rgba(238, 240, 246, 0.18);
+  background-color: var(--indigo);
+}
+.footer .eyebrow { color: var(--fg-mute); }
+.footer .footer__logo { --brand-mark: var(--cotton); --brand-name: var(--cotton); }
+.grain.footer::after { opacity: 0.08; }
+
+/* ---- Retire leftover decoration ----------------------------------------- */
+.brand:hover .brand__mark,
+.brand:hover .brand__mark span,
+.area:hover .area__weave,
+.area:hover .region-weave,
+.wall__item:hover .wall__frame img { transform: none; }
+
+.pulse { animation: none; box-shadow: none; }

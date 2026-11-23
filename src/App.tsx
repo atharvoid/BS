@@ -3,7 +3,6 @@ import React from 'react'
 import { Route, Routes, useLocation, useNavigationType } from 'react-router-dom'
 import { Nav } from './components/Nav'
 import { Footer } from './components/Footer'
-import { Cursor } from './components/Cursor'
 import { LogoIntro } from './components/LogoIntro'
 import { EnquiryProvider } from './components/EnquiryForm'
 
@@ -145,7 +144,6 @@ export default function App() {
       <ScrollManager />
       <TextTransitions />
       <PageMetadata />
-      <Cursor />
       <LogoIntro />
       <Nav />
       <main id="main" tabIndex={-1}>

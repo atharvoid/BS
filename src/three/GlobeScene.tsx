@@ -76,11 +76,13 @@ function useMemoCam() {
 /* Shaders                                                                     */
 /* -------------------------------------------------------------------------- */
 
-const OCEAN = '#24405f'
-const OCEAN_DEEP = '#16283f'
-const LAND_LOW = '#a99268'
-const LAND_HIGH = '#e6d6b4'
-const COAST_LIGHT = '#f0e2c4'
+/* Dye-house palette: the sea is the indigo vat, the land is undyed cotton.
+   (Was navy and tan, which read as gold on the light hero.) */
+const OCEAN = '#263454'
+const OCEAN_DEEP = '#162038'
+const LAND_LOW = '#c9bda5'
+const LAND_HIGH = '#f2ebdd'
+const COAST_LIGHT = '#faf5ea'
 
 const globeVert = /* glsl */ `
   varying vec2 vUv;
@@ -742,7 +744,9 @@ function Frame({ children, compact = false }: { children: React.ReactNode; compa
   } else {
     /* The copy column, in world units. The heading is capped at 46rem and the
        gutter sits outside it, so this is the space the globe must not enter. */
-    const copyPx = Math.min(COPY_MAX_PX, size.width * 0.5) + 32
+    /* 55%, not 50%: on the light hero the headline sits on cotton next to the
+       indigo sphere, and at 1024px the two were touching. */
+    const copyPx = Math.min(COPY_MAX_PX, size.width * 0.55) + 32
     const copyWorld = (copyPx / size.width) * viewport.width
     radius = Math.min(
       viewport.height * 0.38,
