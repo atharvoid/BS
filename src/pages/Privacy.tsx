@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { useReveal } from '../components/useReveal'
 import { useCompactLayout } from '../components/useCompactLayout'
 import { BUSINESS } from '../content'
 
@@ -46,7 +45,6 @@ const SECTIONS = [
 ]
 
 export default function Privacy() {
-  useReveal([])
   const compact = useCompactLayout()
 
   return (

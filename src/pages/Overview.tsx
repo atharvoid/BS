@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Stage } from '../three/Stage'
-import { useReveal, useParallax } from '../components/useReveal'
+import { useParallax } from '../components/useParallax'
 import { Arrow } from '../components/Nav'
 import { SwatchBook } from '../components/SwatchBook'
 import { GlobePoster } from '../components/GlobePoster'
@@ -75,7 +75,6 @@ function Hero() {
 /* -------------------------------------------------------------------------- */
 
 export default function Overview() {
-  useReveal([])
 
   return (
     <>

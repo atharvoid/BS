@@ -156,10 +156,9 @@
 }
 /* Open: the closed label fades; the panel carries the title. */
 .vat[data-active='true'] .vat__label { opacity: 0; }
-.vat[data-active='true'] .vat__num {
-  left: clamp(1.25rem, 2.4vw, 2.25rem);
-  top: clamp(1.25rem, 2.4vw, 2rem);
-}
+/* Open: the number lines up with the panel's text, and stays on the same
+   line as the closed vats' numbers. */
+.vat[data-active='true'] .vat__num { left: clamp(1.25rem, 2.4vw, 2.25rem); }
 
 /* ---- Panel ---------------------------------------------------------------- */
 .vat__panel {
@@ -203,6 +202,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
+  /* A 44px tap area around a small text link, without moving anything. */
+  padding-block: 10px;
+  margin-block: -10px;
   cursor: pointer;
   font-family: var(--f-sans);
   font-size: var(--fs-small);

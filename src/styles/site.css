@@ -831,7 +831,7 @@ fieldset .field__label { float: none; }
 
 .field input[aria-invalid='true'],
 .field textarea[aria-invalid='true'] {
-  border-color: var(--madder);
+  border-color: var(--error);
   background: #fbeee9;
 }
 
@@ -841,6 +841,9 @@ fieldset .field__label { float: none; }
   margin-top: 0.45rem;
   min-height: 1.2rem;
 }
+
+/* An error here reads from the left like every other field's error. */
+.field__foot .field__error { margin: 0 auto 0 0; }
 
 .field__counter {
   font-family: var(--f-mono);
@@ -852,7 +855,7 @@ fieldset .field__label { float: none; }
 .field__error {
   margin-top: 0.5rem;
   font-size: 0.82rem;
-  color: var(--madder);
+  color: var(--error);
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -866,10 +869,10 @@ fieldset .field__label { float: none; }
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--madder);
-  color: var(--cotton-lit);
+  background: var(--error);
+  color: var(--cotton);
   font-family: var(--f-mono);
-  font-size: 0.54rem;
+  font-size: 0.6rem;
   flex: none;
 }
 
@@ -1007,7 +1010,7 @@ fieldset .field__label { float: none; }
 .notice strong { color: var(--fg); }
 .notice a { border-bottom: 1px solid currentColor; }
 
-.notice--error { border-color: var(--madder); background: #fbeee9; }
+.notice--error { border-color: var(--error); background: #fbeee9; }
 
 /* --------------------------------------------------------------------------
    Acknowledgement
@@ -1044,7 +1047,7 @@ fieldset .field__label { float: none; }
   font-size: 0.94rem;
   line-height: 1.62;
   color: #ddd2bd;
-  max-width: 52ch;
+  max-width: 40rem;
 }
 
 .ack__notice strong { color: #f2ebdd; }
@@ -1054,7 +1057,7 @@ fieldset .field__label { float: none; }
   margin-top: 1.6rem;
   display: grid;
   gap: 0;
-  border-top: 1px solid rgba(242, 235, 221, 0.16);
+  border-top: 1px solid var(--rule);
   max-width: 40rem;
 }
 
@@ -1063,30 +1066,28 @@ fieldset .field__label { float: none; }
   grid-template-columns: 9rem 1fr;
   gap: 1rem;
   padding-block: 0.75rem;
-  border-bottom: 1px solid rgba(242, 235, 221, 0.1);
+  border-bottom: 1px solid var(--rule);
   align-items: baseline;
 }
 
 .ack__receipt dt {
-  font-family: var(--f-mono);
-  font-size: 0.58rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #8f8471;
+  font-family: var(--f-sans);
+  font-size: var(--fs-small);
+  color: var(--fg-mute);
 }
 
 .ack__receipt dd {
   margin: 0;
   font-family: var(--f-serif);
   font-size: 0.99rem;
-  color: #e2d8c5;
+  color: var(--fg);
   font-weight: 300;
 }
 
 .ack__no-receipt {
   margin-top: 1.4rem;
   font-size: 0.92rem;
-  color: #b7ab95;
+  color: var(--fg-soft);
   max-width: 46ch;
   line-height: 1.6;
 }
@@ -1153,9 +1154,9 @@ fieldset .field__label { float: none; }
 
 .privacy__num {
   font-family: var(--f-mono);
-  font-size: 0.58rem;
+  font-size: 0.8rem;
   letter-spacing: 0.14em;
-  color: var(--madder);
+  color: var(--fg-mute);
   flex: none;
 }
 
@@ -1177,8 +1178,8 @@ fieldset .field__label { float: none; }
   margin-block: 0.8rem 1rem;
   font-family: var(--f-serif);
   font-size: clamp(1.05rem, 1.6vw, 1.35rem);
-  border-bottom: 1px solid var(--madder);
-  color: var(--madder);
+  border-bottom: 1px solid currentColor;
+  color: var(--action-text);
   padding-bottom: 2px;
 }
 

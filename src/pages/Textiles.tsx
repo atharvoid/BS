@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Stage } from '../three/Stage'
 import React from 'react'
-import { useReveal } from '../components/useReveal'
 import { Arrow } from '../components/Nav'
 import { FOCUS_AREAS, REGION_IMAGES, smallPhoto } from '../content'
 import { FabricBrief } from '../components/FabricBrief'
@@ -12,7 +11,6 @@ import { EnquiryForm, useEnquiryDraft } from '../components/EnquiryForm'
 const loadHeroScene = () => import('../three/TextileHeroScene')
 
 export default function Textiles() {
-  useReveal([])
   const { setDraft } = useEnquiryDraft()
 
   React.useEffect(() => {

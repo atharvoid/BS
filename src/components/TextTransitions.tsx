@@ -35,7 +35,10 @@ export function TextTransitions() {
     const observer = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
       if (introActive()) return
       for (const entry of entries) if (entry.isIntersecting) show(entry.target as HTMLElement)
-    }, { threshold: .01, rootMargin: '0px 0px -18px 0px' }) : null
+    /* No inset at the bottom: text in the last few pixels of the page (the
+       footer's base line) could otherwise never count as on screen, even
+       scrolled all the way down, and would stay invisible. */
+    }, { threshold: .01 }) : null
     const scan = () => {
       // Legacy image/card reveals remain visible; this layer owns text timing.
       document.querySelectorAll<HTMLElement>('.reveal').forEach(el => el.classList.add('is-in'))
@@ -56,14 +59,14 @@ export function TextTransitions() {
           pending.add(el)
           el.style.opacity = '0'
           observer.observe(el)
-          if (!introActive() && r.top < innerHeight - 18 && r.bottom > 0) show(el)
+          if (!introActive() && r.top < innerHeight && r.bottom > 0) show(el)
         }
       }
     }
     const clearIntro = onIntroChange(() => {
       if (!introActive()) for (const el of pending) {
         const r = el.getBoundingClientRect()
-        if (r.top < innerHeight - 18 && r.bottom > 0) show(el)
+        if (r.top < innerHeight && r.bottom > 0) show(el)
       }
     })
     const focus = (event: FocusEvent) => {

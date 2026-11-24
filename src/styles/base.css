@@ -79,7 +79,7 @@ input, textarea, select {
 
 ::selection {
   background: var(--madder);
-  color: var(--cotton-lit);
+  color: #fbf7ef;
 }
 
 :focus-visible {

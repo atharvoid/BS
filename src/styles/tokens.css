@@ -142,6 +142,9 @@
   --action-fg: var(--ink);
   --action-text: #7a5f1c;
 
+  /* Form errors: madder, printed for its ground (6.9:1 on cotton). */
+  --error: #9c3a2d;
+
   /* The logo is gold. On cotton the original gold (#dabc72) measures 1.55:1,
      so light mode prints a deeper shade of the same gold (3.4:1). */
   --gold: #dabc72;
@@ -170,6 +173,7 @@
   --action-deep: #c9a24a;
   --action-text: #dabc72;   /* on the ground: 9.6:1 */
   --accent: var(--action-text);
+  --error: #ec8c76;         /* on the ground: 7.4:1 (madder alone is 2.5:1) */
   --dye-textiles: #34508c;  /* paper text on it: 7.2:1 */
 
   --logo: var(--gold);

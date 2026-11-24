@@ -105,6 +105,9 @@ body:has(.about-page) .footer .eyebrow::before {
 }
 
 .about-desk-val a {
+  display: inline-block;
+  padding-block: 10px;
+  margin-block: -10px;
   color: var(--accent);
   text-decoration: none;
   font-family: var(--f-mono);

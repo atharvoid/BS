@@ -80,13 +80,13 @@
 }
 
 .select[data-open='true'] .select__button {
-  border-color: var(--madder);
+  border-color: var(--action-text);
   background: var(--cotton-lit);
 }
 
 .select[data-open='true'] .select__chevron {
   transform: rotate(180deg);
-  color: var(--madder);
+  color: var(--action-text);
 }
 
 /* ---- The list ------------------------------------------------------------- */
@@ -163,7 +163,7 @@
   height: 0.42em;
   margin-left: 0.5em;
   border-radius: 50%;
-  background: var(--madder);
+  background: var(--action-text);
   vertical-align: 0.1em;
 }
 

@@ -412,6 +412,9 @@
 .about-hero__lede {
   font-family: var(--f-serif);
   font-size: var(--fs-lead);
+  /* The home lede was 400 and the inner pages 300, which read thin and pale
+     at this size. One weight for all of them. */
+  font-weight: 400;
   line-height: 1.5;
   max-width: 36rem;
   margin-top: clamp(1rem, 1.8vw, 1.4rem);
@@ -564,7 +567,7 @@
   background: var(--cotton-lit);
   box-shadow: none;
 }
-.field :is(input, textarea)[aria-invalid='true'] { border-color: var(--madder); background: var(--cotton); }
+.field :is(input, textarea)[aria-invalid='true'] { border-color: var(--error); background: var(--cotton); }
 
 /* Browser autofill paints its own blue or yellow; keep the site's ground. */
 .field input:-webkit-autofill,
@@ -744,9 +747,6 @@
 ::view-transition-new(theme-stage) { animation: none; }
 ::view-transition-old(theme-stage) { display: none; }
 
-/* Headings and <main> receive focus after navigation so screen readers land
-   in the right place. They are not controls, so no focus ring. */
-[tabindex='-1']:focus,
 /* The nav is lifted above it and takes the same circle as the page. It is
    fixed at the viewport's top-left, so the circle's coordinates line up. */
 ::view-transition-group(theme-nav) { animation: none; }
@@ -754,6 +754,9 @@
 ::view-transition-new(theme-nav) { animation: none; mix-blend-mode: normal; }
 ::view-transition-new(theme-nav) { animation: theme-reveal 650ms var(--ease-in-out) both; }
 
+/* Headings and <main> receive focus after navigation so screen readers land
+   in the right place. They are not controls, so no focus ring. */
+[tabindex='-1']:focus,
 [tabindex='-1']:focus-visible { outline: none; }
 
 /* ==========================================================================
@@ -1020,7 +1023,7 @@ html { scroll-padding-top: 4.6rem; }
   font-size: var(--fs-small);
   font-weight: 500;
   letter-spacing: 0;
-  color: var(--fg-mute);
+  color: var(--fg-soft);
 }
 .about-vision__statement {
   margin-top: 0.9rem;
@@ -1044,13 +1047,13 @@ html { scroll-padding-top: 4.6rem; }
 }
 .about-vision__sign { margin-top: 1.8rem; display: grid; gap: 0.15rem; }
 .about-vision__name { font-family: var(--f-sans); font-weight: 600; font-size: 1.02rem; color: var(--fg); }
-.about-vision__role { font-family: var(--f-sans); font-size: var(--fs-small); color: var(--fg-mute); }
+.about-vision__role { font-family: var(--f-sans); font-size: var(--fs-small); color: var(--fg-soft); }
 
 .about-goals__title {
   font-family: var(--f-sans);
   font-size: var(--fs-small);
   font-weight: 500;
-  color: var(--fg-mute);
+  color: var(--fg-soft);
 }
 .about-goals__list { list-style: none; margin: 0.9rem 0 0; padding: 0; border-top: 1px solid var(--rule); }
 .about-goal {

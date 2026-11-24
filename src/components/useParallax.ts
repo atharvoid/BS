@@ -1,14 +1,5 @@
 import React from 'react'
 
-/**
- * Adds `.is-in` to every `.reveal` element as it enters the viewport.
- * One observer for the whole page, and it disconnects once everything has
- * been revealed, so there is no permanent scroll listener.
- */
-/** Compatibility for existing pages. TextTransitions now coordinates reveals
- * across routes (including footer and dynamically inserted content). */
-export function useReveal(_deps: unknown[] = []) {}
-
 /** Parallax offset driven by scroll position, written straight to a CSS var. */
 export function useParallax(ref: React.RefObject<HTMLElement | null>, strength = 0.12) {
   React.useEffect(() => {

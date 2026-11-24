@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { useReveal } from '../components/useReveal'
 import { Arrow } from '../components/Nav'
 import {
   BUSINESS,
@@ -11,7 +10,6 @@ import {
 } from '../content'
 
 export default function About() {
-  useReveal([])
 
   return (
     <div className="about-page">

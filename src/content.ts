@@ -88,7 +88,7 @@ export const ENQUIRY_FIELDS = {
   location: {
     label: 'Destination or business location',
     hint: 'Where the goods are going, or where your business is based.',
-    placeholder: 'For example: Rotterdam, Netherlands. Or Coimbatore, Tamil Nadu.',
+    placeholder: 'For example: Rotterdam, or Coimbatore',
   },
   name: { label: 'Your name', placeholder: 'Full name' },
   email: { label: 'Email address', hint: 'Replies come from bsexim.nexus@gmail.com.' },
