@@ -63,7 +63,15 @@ export function ThemeToggle() {
     root.setProperty('--vt-x', `${x}px`)
     root.setProperty('--vt-y', `${y}px`)
     root.setProperty('--vt-r', `${radius}px`)
-    doc.startViewTransition(() => flushSync(commit))
+    /* The reveal works on a still snapshot of the old page, which would freeze
+       the turning globe for the length of the circle. Lifting the globe out
+       of the snapshot as its own live layer keeps it turning throughout. */
+    const globe = document.querySelector<HTMLElement>('.hero__stage')
+    if (globe) globe.style.setProperty('view-transition-name', 'hero-globe')
+    const transition = doc.startViewTransition(() => flushSync(commit)) as { finished?: Promise<void> } | undefined
+    const release = () => globe?.style.removeProperty('view-transition-name')
+    if (transition?.finished) transition.finished.finally(release)
+    else release()
   }
 
   const dark = theme === 'dark'

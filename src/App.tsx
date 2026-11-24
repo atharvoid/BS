@@ -4,6 +4,7 @@ import { Route, Routes, useLocation, useNavigationType } from 'react-router-dom'
 import { Nav } from './components/Nav'
 import { Footer } from './components/Footer'
 import { LogoIntro } from './components/LogoIntro'
+import { Cursor } from './components/Cursor'
 import { EnquiryProvider } from './components/EnquiryForm'
 
 /* The pages are static imports on purpose.
@@ -145,6 +146,7 @@ export default function App() {
       <TextTransitions />
       <PageMetadata />
       <LogoIntro />
+      <Cursor />
       <Nav />
       <main id="main" tabIndex={-1}>
         <Routes>

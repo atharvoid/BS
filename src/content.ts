@@ -42,10 +42,10 @@ export function getCategory(id: string | null | undefined) {
  * exist.
  */
 export const FABRIC_TOPICS = [
-  { n: '01', title: 'Fabric and use', body: 'What are you making, and how should the fabric feel?', field: ['Fabric', 'Use'] },
-  { n: '02', title: 'Samples', body: 'Mention a sample or reference you would like to match.', field: ['Samples', 'Reference'] },
-  { n: '03', title: 'Quantity and packing', body: 'Include an approximate quantity if you have one.', field: ['Quantity', 'Packing'] },
-  { n: '04', title: 'Acceptance and terms', body: 'Which details need agreement before you can place an order?', field: ['Acceptance', 'Terms'] },
+  { n: '1', title: 'Fabric and use', body: 'What are you making, and how should the fabric feel?' },
+  { n: '2', title: 'Samples', body: 'Is there a sample or reference to match?' },
+  { n: '3', title: 'Quantity and packing', body: 'Roughly how much, and how should it be packed?' },
+  { n: '4', title: 'Acceptance and terms', body: 'What must be agreed before you order?' },
 ] as const
 
 export const FOCUS_AREAS = [

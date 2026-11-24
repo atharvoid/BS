@@ -9,7 +9,7 @@
    and this file says exactly where to put it.
 
    Rules (unchanged from the scene's original framing):
-   - Stacked (phones, <=980px wide): centred, most of the stage.
+   - Stacked (phones, <=980px wide): centred and whole, with a margin.
    - Wide: as large as the height allows, kept clear of the copy column, with
      the centre 0.78 of a radius in from the right edge so it crops off-screen.
    ========================================================================== */
@@ -33,7 +33,10 @@ export function globeFrame(width: number, height: number, compact = false): Glob
   const viewport = viewportAt(width, height)
   const stacked = compact || width <= 980
   if (stacked) {
-    return { radius: Math.max(0.4, Math.min(viewport.height * 0.5, viewport.width * 0.46)), x: 0, y: 0, stacked }
+    /* The whole globe, with air: 84% of the shorter side. The raised
+       continents and the routes stand a little proud of the sphere, so a
+       globe that filled the stage edge to edge was clipped top and bottom. */
+    return { radius: Math.max(0.4, Math.min(viewport.height, viewport.width) * 0.42), x: 0, y: 0, stacked }
   }
   /* 55% of the width is the copy column's share: on the light hero the
      headline sits next to the sphere, and at 1024px the two were touching. */

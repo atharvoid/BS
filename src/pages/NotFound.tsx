@@ -10,15 +10,15 @@ export default function NotFound() {
           Page not found
         </h1>
         <p className="notfound__lede">
-          The page you asked for is not part of this site.
+          This page doesn’t exist, or it has moved.
         </p>
         <div className="notfound__actions">
-          <Link to="/" className="btn btn--light">
+          <Link to="/" className="btn">
             Back to home
             <Arrow />
           </Link>
           <Link to="/#products" className="tlink">
-            Browse products
+            See what we source
           </Link>
         </div>
       </div>

@@ -3,111 +3,170 @@ import { Link } from 'react-router-dom'
 import { CATEGORY_JOURNEY, IMAGE_CAPTION, smallPhoto } from '../content'
 import { Arrow } from './Nav'
 import { Lightbox, type LightboxImage } from './Lightbox'
+import { playSound } from './click-sound'
+import '../styles/sourcing.css'
 
-/* The swatch book: one undyed cotton strip per category, each with its dye
-   showing only at the hem, where a few words say what the category covers.
-   Opening a strip dyes the whole cloth and shows what to tell us about that
-   category, with a link straight into the enquiry form for it. Plain
-   disclosure buttons underneath, so it works with a keyboard, a screen
-   reader, and with motion turned off. */
+/* ==========================================================================
+   The dye vats: what do you want to source?
 
-const DYES: Record<string, { token: string; tone: 'dark' | 'light' }> = {
-  textiles: { token: 'textiles', tone: 'dark' },
-  handicrafts: { token: 'handicrafts', tone: 'dark' },
-  'agriculture-food': { token: 'agriculture', tone: 'light' },
-  'industrial-materials': { token: 'industrial', tone: 'dark' },
-  'organic-sustainable': { token: 'organic', tone: 'dark' },
-  general: { token: 'general', tone: 'dark' },
+   Six tall panels, one per category, side by side like vats in a dye yard.
+   Each holds its photograph steeped in that category's dye. Opening a panel
+   widens it and lifts the photograph out of the dye in its true colours,
+   revealed through a spreading pattern of tie-resist (bandhani) dots, the
+   site's signature. The open panel says what the category covers, what to
+   put in a first message, and goes straight into the enquiry form with that
+   category chosen.
+
+   One panel is always open, so the section is never a row of closed doors.
+   On a phone the vats stack and open downwards.
+
+   Behaviour:
+   - Each panel's header is a real button (aria-expanded) controlling its
+     content, so it works with a keyboard and a screen reader.
+   - Arrow keys move between panels, Home and End jump to the ends.
+   - With a fine pointer, resting on a panel for a moment opens it.
+   - Reduced motion: the panels switch without the widening and the reveal.
+   ========================================================================== */
+
+const DYES: Record<string, string> = {
+  textiles: 'textiles',
+  handicrafts: 'handicrafts',
+  'agriculture-food': 'agriculture',
+  'industrial-materials': 'industrial',
+  'organic-sustainable': 'organic',
+  general: 'general',
 }
 
-const preloaded = new Set<string>()
-function preload(src: string) {
-  if (preloaded.has(src)) return
-  preloaded.add(src)
-  const img = new Image()
-  img.decoding = 'async'
-  img.src = src
-}
+const HOVER_DWELL_MS = 140
 
 export function SwatchBook() {
-  const [open, setOpen] = React.useState<string | null>(null)
+  const [open, setOpen] = React.useState<string>(CATEGORY_JOURNEY[0].id)
   const [viewing, setViewing] = React.useState<LightboxImage | null>(null)
+  const tabs = React.useRef<(HTMLButtonElement | null)[]>([])
+  const dwell = React.useRef<number | undefined>(undefined)
+  const finePointer = React.useMemo(() => matchMedia('(hover: hover) and (pointer: fine)').matches, [])
+
+  React.useEffect(() => () => window.clearTimeout(dwell.current), [])
+
+  const choose = (id: string, reveal = false) => {
+    setOpen(id)
+    /* On a phone the vats stack, so opening one can push it partly off
+       screen as the previous one closes. Once the change settles, bring the
+       open vat fully into view. */
+    if (!reveal || !matchMedia('(max-width: 760px)').matches) return
+    window.setTimeout(() => {
+      const el = document.getElementById(`vat-panel-${id}`)?.closest('.vat')
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      if (r.top < 72 || r.bottom > innerHeight) {
+        el.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+      }
+    }, 680)
+  }
+
+  const onKeyDown = (event: React.KeyboardEvent, index: number) => {
+    const last = CATEGORY_JOURNEY.length - 1
+    const next =
+      event.key === 'ArrowRight' || event.key === 'ArrowDown' ? Math.min(last, index + 1)
+      : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? Math.max(0, index - 1)
+      : event.key === 'Home' ? 0
+      : event.key === 'End' ? last
+      : null
+    if (next === null || next === index) return
+    event.preventDefault()
+    tabs.current[next]?.focus()
+    choose(CATEGORY_JOURNEY[next].id)
+    playSound('dip')
+  }
 
   return (
-    <section className="swatches" id="products" aria-labelledby="swatches-title" data-tone="light">
+    <section className="vats-section" id="products" aria-labelledby="vats-title">
       <div className="shell">
-        <header className="swatches__head">
-          <h2 id="swatches-title">What do you want to source?</h2>
-          <p>Six areas, each discussed case by case. Open one to see what to put in your first message.</p>
+        <header className="vats-head">
+          <div>
+            <p className="vats-head__eyebrow">Six areas, one desk</p>
+            <h2 id="vats-title" className="vats-head__title">What do you want to source?</h2>
+          </div>
+          <p className="vats-head__lede">
+            Open an area to see what it covers and what to put in your first message. Each enquiry
+            is discussed case by case.
+          </p>
         </header>
 
-        <div className="swatches__book" data-open={open ? 'true' : 'false'}>
-          {CATEGORY_JOURNEY.map((item, i) => {
-            const dye = DYES[item.id]
-            const isOpen = open === item.id
+        <ol className="vats" aria-label="Product areas">
+          {CATEGORY_JOURNEY.map((item, index) => {
+            const active = open === item.id
+            const photo = smallPhoto(item.image.src)
             return (
-              <div
+              <li
                 key={item.id}
-                className="strip"
-                data-open={isOpen}
-                data-tone={dye.tone}
-                style={{ '--dye': `var(--dye-${dye.token})` } as React.CSSProperties}
-                /* Start fetching the strip's photo as the pointer or focus
-                   arrives, so it is already there when the strip opens. */
-                onPointerEnter={() => preload(smallPhoto(item.image.src))}
-                onFocus={() => preload(smallPhoto(item.image.src))}
+                className="vat"
+                data-active={active}
+                style={{ '--dye': `var(--dye-${DYES[item.id]})` } as React.CSSProperties}
+                onPointerEnter={(event) => {
+                  if (!finePointer || event.pointerType !== 'mouse' || active) return
+                  window.clearTimeout(dwell.current)
+                  dwell.current = window.setTimeout(() => choose(item.id), HOVER_DWELL_MS)
+                }}
+                onPointerLeave={() => window.clearTimeout(dwell.current)}
               >
-                <span className="strip__cloth" aria-hidden="true" />
-                <h3 className="strip__head">
+                <div className="vat__art" aria-hidden="true">
+                  <img className="vat__img vat__img--dyed" src={photo} alt="" loading="lazy" decoding="async" width={800} height={533} />
+                  <img className="vat__img vat__img--true" src={photo} srcSet={`${photo} 800w, ${item.image.src} 1600w`} sizes="(max-width: 760px) 100vw, 46vw" alt="" loading="lazy" decoding="async" width={800} height={533} />
+                  <span className="vat__shade" />
+                </div>
+
+                <h3 className="vat__head">
                   <button
+                    ref={(el) => { tabs.current[index] = el }}
                     type="button"
-                    className="strip__toggle"
-                    aria-expanded={isOpen}
-                    aria-controls={`strip-panel-${item.id}`}
-                    id={`strip-${item.id}`}
-                    onClick={() => setOpen(isOpen ? null : item.id)}
+                    className="vat__tab"
+                    id={`vat-${item.id}`}
+                    aria-expanded={active}
+                    aria-controls={`vat-panel-${item.id}`}
+                    onClick={() => choose(item.id, true)}
+                    onKeyDown={(event) => onKeyDown(event, index)}
                   >
-                    <span className="strip__num">{String(i + 1).padStart(2, '0')}</span>
-                    <span className="strip__label">{item.label}</span>
-                    <span className="strip__dye">{item.scope}</span>
-                    <span className="strip__marker" aria-hidden="true" />
+                    <span className="vat__num">{String(index + 1).padStart(2, '0')}</span>
+                    <span className="vat__label">{item.label}</span>
                   </button>
                 </h3>
+
                 <div
-                  className="strip__panel"
-                  id={`strip-panel-${item.id}`}
+                  className="vat__panel"
+                  id={`vat-panel-${item.id}`}
                   role="region"
-                  aria-labelledby={`strip-${item.id}`}
-                  hidden={!isOpen}
+                  aria-labelledby={`vat-${item.id}`}
+                  hidden={!active}
                 >
-                  {/* A sample card pinned to the cloth. Tap for a larger view. */}
-                  <button
-                    type="button"
-                    className="strip__photo"
-                    onClick={() => setViewing({ ...item.image, title: item.label, caption: IMAGE_CAPTION })}
-                  >
-                    <img src={smallPhoto(item.image.src)} srcSet={`${smallPhoto(item.image.src)} 800w, ${item.image.src} 1600w`} sizes="(max-width: 760px) 17rem, 15rem" alt="" loading="lazy" decoding="async" width={800} height={533} />
-                    <span className="strip__photo-hint">
-                      <span className="visually-hidden">Open a larger picture: {item.image.alt}</span>
-                      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9" /></svg>
-                    </span>
-                  </button>
-                  <p>{item.hint}</p>
-                  <div className="strip__links">
-                    <Link to={`/enquiry?category=${item.id}`} className="strip__link">
+                  {/* The visible title of the open vat. The button above keeps the
+                      accessible name; this copy is for the eye. */}
+                  <p className="vat__title" aria-hidden="true">{item.label}</p>
+                  <p className="vat__scope">{item.scope}</p>
+                  <p className="vat__hint">{item.hint}</p>
+                  <div className="vat__actions">
+                    <Link to={`/enquiry?category=${item.id}`} className="btn vat__cta">
                       Enquire about this
                       <Arrow />
                     </Link>
-                    {item.to && <Link to={item.to} className="strip__more">More on textiles</Link>}
+                    {item.to && <Link to={item.to} className="vat__more">More on textiles</Link>}
+                    <button
+                      type="button"
+                      className="vat__zoom"
+                      onClick={() => setViewing({ ...item.image, title: item.label, caption: IMAGE_CAPTION })}
+                    >
+                      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9" /></svg>
+                      <span>View photo</span>
+                    </button>
                   </div>
                 </div>
-              </div>
+              </li>
             )
           })}
-        </div>
+        </ol>
 
-        <p className="swatches__note">
-          Pictures are representative, not products on offer. Availability and terms are discussed for each enquiry.
+        <p className="vats-note">
+          Photographs are representative, not products on offer. Availability and terms are agreed for each enquiry.
         </p>
       </div>
       <Lightbox image={viewing} onClose={() => setViewing(null)} />

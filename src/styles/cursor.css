@@ -1,0 +1,94 @@
+/* The pointer (Cursor.tsx). Only active with a mouse; see the component. */
+
+/* The system cursor is hidden only while the custom one is showing, and
+   never in text fields. */
+html.has-cursor,
+html.has-cursor * { cursor: none !important; }
+html.has-cursor :is(input:not([type='radio']):not([type='checkbox']), textarea, select, [contenteditable='true']) { cursor: text !important; }
+html.has-cursor select { cursor: default !important; }
+
+.cursor {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms var(--ease-out);
+}
+.cursor[data-visible='true'] { opacity: 1; }
+.cursor[data-mode='native'] { opacity: 0; }
+
+.cursor__dot,
+.cursor__ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+/* The dot: ink with a thin light halo, so it reads on cotton, ink, every
+   dye and every photograph. */
+.cursor__dot::before {
+  content: '';
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  background: #14110d;
+  box-shadow: 0 0 0 1.5px rgba(250, 245, 234, 0.92);
+  transition: transform 220ms var(--ease-out);
+}
+
+/* The ring, and the disc it becomes. Sized with scale so it never relayouts. */
+.cursor__disc {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--action-deep);
+  background: transparent;
+  transform: scale(0.5);
+  transition:
+    transform 380ms cubic-bezier(.2, .8, .2, 1),
+    background-color 260ms var(--ease-out),
+    border-color 260ms var(--ease-out);
+}
+.cursor__label {
+  font-family: var(--f-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 200ms var(--ease-out), transform 300ms var(--ease-out);
+}
+
+/* Over a link or a button: the ring swells and takes a wash of gold. */
+.cursor[data-mode='action'] .cursor__disc {
+  transform: scale(0.78);
+  background-color: color-mix(in srgb, var(--action) 22%, transparent);
+}
+.cursor[data-mode='action'] .cursor__dot::before { transform: scale(0.5); }
+
+/* Over the globe, the cloth or a closed product area: a labelled gold disc. */
+.cursor[data-mode='label'] .cursor__disc {
+  transform: scale(1);
+  background-color: var(--action);
+  border-color: var(--action);
+}
+.cursor[data-mode='label'] .cursor__label { opacity: 1; transform: none; }
+.cursor[data-mode='label'] .cursor__dot::before { transform: scale(0); }
+
+.cursor[data-pressed='true'] .cursor__disc { transform: scale(0.42); }
+.cursor[data-pressed='true'][data-mode='label'] .cursor__disc { transform: scale(0.88); }
+.cursor[data-pressed='true'][data-mode='action'] .cursor__disc { transform: scale(0.66); }
+
+@media (forced-colors: active), (prefers-reduced-motion: reduce), (hover: none), (pointer: coarse) {
+  .cursor { display: none; }
+}
+@media print { .cursor { display: none; } }

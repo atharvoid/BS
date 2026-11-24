@@ -60,12 +60,12 @@ export default function Textiles() {
                 <div className="area__text">
                   <p className="area__kicker">{area.kicker}</p>
                   <h3 className="area__name">{area.name}</h3>
-                  <p className="area__note">{index === 0 ? 'Tamil Nadu is an initial sourcing area for cotton, silk and blended fabric enquiries.' : 'Gujarat is an initial sourcing area for cotton, printed and dyed fabric enquiries.'}</p>
+                  <p className="area__note">{index === 0 ? 'Handloom and mill-made cotton, silk and blended fabrics.' : 'Cotton, block-printed and dyed fabrics, with a deep processing base.'}</p>
                 </div>
               </article>
             ))}
           </div>
-          <p className="areas__foot reveal">Suppliers elsewhere in India can also share what they offer.</p>
+          <p className="areas__foot reveal">Supplying from elsewhere in India? Tell us what you offer.</p>
         </div>
       </section>
 
@@ -76,7 +76,7 @@ export default function Textiles() {
           <div className="enquiry-body__textiles">
             <EnquiryForm
               title="Enquire about textiles"
-              intro={<>Not sure what to include? See the <Link to="/textiles#fabric-details">example fabric brief</Link> above.</>}
+              intro={<>Not sure what to include? See <Link to="/textiles#fabric-details">what to tell us about your fabric</Link>.</>}
             />
           </div>
         </div>

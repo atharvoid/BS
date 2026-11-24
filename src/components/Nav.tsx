@@ -155,7 +155,7 @@ export function Nav() {
           ))}
         </nav>
         <div className="drawer__foot">
-          <Link to="/enquiry" className="btn btn--light drawer__cta" aria-current={current('/enquiry')} onClick={closeMenu}>
+          <Link to="/enquiry" className="btn drawer__cta" aria-current={current('/enquiry')} onClick={closeMenu}>
             Start an enquiry
             <Arrow />
           </Link>

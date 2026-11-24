@@ -26,8 +26,11 @@ export default function About() {
       <section className="about-desk-section" id="desk-coordinates">
         <div className="shell">
           <div className="about-desk-grid">
+            <div className="about-glance__intro">
+              <h2 className="about-glance__title">At a glance</h2>
+              <p className="about-glance__lede">The essentials, in one place. Everything else is agreed per enquiry, in writing.</p>
+            </div>
             <div className="about-desk-card reveal">
-              <h2 className="about-desk-card__head">At a glance</h2>
               <table className="about-desk-table">
                 <tbody>
                   {ABOUT_DESK_FACTS.map((fact) => (
@@ -68,7 +71,7 @@ export default function About() {
           <div className="about-process__grid">
             {ABOUT_STANDARDS.map((std) => (
               <div key={std.num} className="about-process-card reveal">
-                <span className="about-process-card__num">{std.num}</span>
+                <span className="about-process-card__num" aria-hidden="true">{Number(std.num)}</span>
                 <h3 className="about-process-card__title">{std.title}</h3>
                 <p className="about-process-card__body">{std.body}</p>
               </div>

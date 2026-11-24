@@ -125,224 +125,7 @@
   }
 }
 
-/* ---- The swatch book ----------------------------------------------------- */
-.swatches {
-  padding-block: var(--section-y);
-  border-top: 1px solid var(--rule);
-}
 
-.swatches__head {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
-  gap: 1.5rem 3rem;
-  align-items: end;
-  margin-bottom: clamp(2rem, 4vw, 3.25rem);
-}
-.swatches__head h2 { font-size: var(--fs-display); line-height: 1.02; letter-spacing: -0.025em; }
-.swatches__head p { color: var(--fg-soft); }
-
-/* The rail the cloth hangs from. */
-.swatches__book {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: clamp(0.4rem, 0.9vw, 0.9rem);
-  padding-top: 14px;
-  border-top: 3px solid var(--fg);
-  transition: grid-template-columns 520ms var(--ease-out);
-}
-
-.swatches__book[data-open='true']:has(.strip:nth-child(1)[data-open='true']) { grid-template-columns: 2.6fr repeat(5, 1fr); }
-.swatches__book[data-open='true']:has(.strip:nth-child(2)[data-open='true']) { grid-template-columns: 1fr 2.6fr repeat(4, 1fr); }
-.swatches__book[data-open='true']:has(.strip:nth-child(3)[data-open='true']) { grid-template-columns: repeat(2, 1fr) 2.6fr repeat(3, 1fr); }
-.swatches__book[data-open='true']:has(.strip:nth-child(4)[data-open='true']) { grid-template-columns: repeat(3, 1fr) 2.6fr repeat(2, 1fr); }
-.swatches__book[data-open='true']:has(.strip:nth-child(5)[data-open='true']) { grid-template-columns: repeat(4, 1fr) 2.6fr 1fr; }
-.swatches__book[data-open='true']:has(.strip:nth-child(6)[data-open='true']) { grid-template-columns: repeat(5, 1fr) 2.6fr; }
-
-.strip {
-  --strip-fg: var(--fg);
-  --strip-fg-soft: var(--fg-soft);
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  flex-direction: column;
-  min-height: clamp(20rem, 32vw, 26rem);
-  min-width: 0;
-  background-color: var(--cotton-lit);
-  /* Plain weave: warp and weft threads at different pitches, drawn not
-     photographed. Unequal spacing keeps it reading as cloth, not graph paper. */
-  background-image:
-    repeating-linear-gradient(90deg, rgba(26, 22, 17, 0.028) 0 1px, transparent 1px 3px),
-    repeating-linear-gradient(0deg, rgba(26, 22, 17, 0.018) 0 1px, transparent 1px 5px);
-  color: var(--strip-fg);
-  border-radius: 0 0 2px 2px;
-}
-
-/* Each strip hangs from a peg on the rail. */
-.strip::before {
-  content: '';
-  position: absolute;
-  top: -14px;
-  left: 50%;
-  width: 6px;
-  height: 14px;
-  margin-left: -3px;
-  background: var(--fg);
-}
-
-/* The dye. At rest only the hem has been dipped; open, the whole cloth takes it. */
-.strip__cloth {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-color: var(--dye);
-  background-image:
-    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.09) 0 1px, transparent 1px 4px),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 4px);
-  clip-path: inset(84% 0 0 0);
-  transition: clip-path 620ms var(--ease-out);
-}
-
-/* A row of tied-resist dots marks where the dye stopped. Lives on the strip,
-   not the scaled cloth, so the dots keep their shape. */
-.strip::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(16% + 4px);
-  height: 12px;
-  color: var(--dye);
-  background: var(--dots);
-  transition: opacity 200ms var(--ease-out), bottom 620ms var(--ease-out);
-  pointer-events: none;
-}
-
-.strip:hover .strip__cloth { clip-path: inset(76% 0 0 0); }
-.strip:hover::after { bottom: calc(24% + 4px); }
-.strip[data-open='true'] .strip__cloth { clip-path: inset(0); }
-.strip[data-open='true']::after { opacity: 0; }
-
-.strip[data-open='true'][data-tone='dark'] { --strip-fg: var(--paper); --strip-fg-soft: #e6ddcc; }
-.strip[data-open='true'][data-tone='light'] { --strip-fg: var(--ink); --strip-fg-soft: #2a2218; }
-
-.strip__head { margin: 0; flex: 1; display: flex; }
-
-.strip__toggle {
-  all: unset;
-  box-sizing: border-box;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: clamp(0.9rem, 1.4vw, 1.25rem);
-  cursor: pointer;
-  color: var(--strip-fg);
-  transition: color 300ms var(--ease-out) 120ms;
-}
-.strip__toggle:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
-
-.strip__num {
-  font-family: var(--f-mono);
-  font-size: 0.8rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--strip-fg-soft);
-}
-
-.strip__label {
-  font-family: var(--f-display);
-  font-variation-settings: var(--fraunces-tight);
-  font-size: clamp(1.1rem, 1.55vw, 1.55rem);
-  line-height: 1.08;
-  letter-spacing: -0.015em;
-  hyphens: manual;
-  overflow-wrap: normal;
-  text-wrap: balance;
-}
-
-/* While one strip is open the others narrow; their labels step down a size. */
-.swatches__book[data-open='true'] .strip:not([data-open='true']) .strip__label {
-  font-size: clamp(0.95rem, 1.15vw, 1.15rem);
-}
-
-/* The dye name sits on the hem, in the hem's own ink. */
-.strip__dye {
-  margin-top: auto;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--strip-fg-soft);
-}
-.strip:not([data-open='true'])[data-tone='dark'] .strip__dye { color: var(--paper); }
-.strip:not([data-open='true'])[data-tone='light'] .strip__dye { color: var(--ink); }
-
-.strip__panel {
-  padding: 0 clamp(0.9rem, 1.4vw, 1.25rem) clamp(1.1rem, 1.6vw, 1.5rem);
-  color: var(--strip-fg);
-}
-.strip__panel p { margin: 0 0 1.1rem; max-width: 30ch; color: var(--strip-fg-soft); }
-
-@media (prefers-reduced-motion: no-preference) {
-  .strip__panel:not([hidden]) { animation: strip-panel 420ms var(--ease-out) 200ms both; }
-}
-@keyframes strip-panel { from { opacity: 0; } to { opacity: 1; } }
-
-.strip__link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
-  font-weight: 500;
-  color: inherit;
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.25em;
-}
-.strip__link .btn__arrow { width: 0.8em; height: 0.8em; }
-
-/* With the panel open the label and dye name share the top of the strip. */
-.strip[data-open='true'] .strip__head { flex: 0 0 auto; }
-.strip[data-open='true'] .strip__dye { margin-top: 0; }
-.strip[data-open='true'] .strip__panel { margin-top: auto; }
-
-.swatches__note { margin-top: 1.4rem; font-size: var(--fs-small); color: var(--fg-mute); }
-
-/* Phones and narrow tablets: the cloth hangs sideways, one strip per row. */
-@media (max-width: 760px) {
-  .swatches__head { grid-template-columns: 1fr; }
-  .swatches__book,
-  .swatches__book[data-open='true']:has(.strip[data-open='true']) {
-    /* !important: the desktop open-strip rules use :nth-child and outrank this. */
-    grid-template-columns: 1fr !important;
-    gap: 0.45rem;
-    padding-top: 0;
-    padding-left: 12px;
-    border-top: 0;
-    border-left: 3px solid var(--fg);
-  }
-  .strip { min-height: 0; border-radius: 0 2px 2px 0; }
-  .strip::before { top: 50%; left: -12px; width: 12px; height: 6px; margin: -3px 0 0; }
-  .strip::after { display: none; }
-  .strip__cloth { clip-path: inset(0 0 0 93%); }
-  .strip:hover .strip__cloth { clip-path: inset(0 0 0 93%); }
-  .strip[data-open='true'] .strip__cloth { clip-path: inset(0); }
-  .strip__cloth::after { inset: 0 auto 0 0; width: 12px; height: auto; background: radial-gradient(circle, var(--dye) 1.6px, transparent 2.2px) 50% 0 / 12px 12px repeat-y; transform: translateX(-100%); }
-  .strip__toggle {
-    flex-direction: row;
-    align-items: baseline;
-    gap: 0.9rem;
-    padding: 1.05rem 1rem;
-    padding-right: calc(7% + 1rem);
-  }
-  .strip__label { font-size: 1.2rem; }
-  .strip__dye { margin: 0 0 0 auto; }
-  .strip:not([data-open='true']) .strip__dye { position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%); writing-mode: vertical-rl; font-size: 0.7rem; }
-  .strip:not([data-open='true'])[data-tone] .strip__dye { color: transparent; }
-  .strip[data-open='true'] .strip__toggle { padding-right: 1rem; }
-  .strip__panel p { max-width: none; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .swatches__book, .strip__cloth, .strip__toggle { transition: none; }
-}
 
 /* ---- Footer: the textile page's indigo, cloth folded at the end --------- */
 .footer.on-dark {
@@ -468,40 +251,6 @@
   text-transform: none;
 }
 
-/* Focus inside a dyed strip uses the strip's own text colour, which is
-   already contrast-checked against that dye. */
-.strip :focus-visible { outline-color: var(--strip-fg); }
-
-/* ---- Strip marker: a plus that turns into a minus when the strip is open -- */
-.strip__toggle { position: relative; }
-.strip__marker {
-  position: absolute;
-  top: clamp(0.9rem, 1.4vw, 1.25rem);
-  right: clamp(0.9rem, 1.4vw, 1.25rem);
-  width: 12px;
-  height: 12px;
-}
-.strip__marker::before,
-.strip__marker::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 5px;
-  width: 12px;
-  height: 2px;
-  background: currentColor;
-  transition: transform 300ms var(--ease-out);
-}
-.strip__marker::after { transform: rotate(90deg); }
-.strip[data-open='true'] .strip__marker::after { transform: rotate(0deg); }
-.strip__num { padding-right: 1.5rem; }
-
-@media (max-width: 760px) {
-  .strip__marker { top: 50%; margin-top: -6px; right: calc(7% + 0.9rem); }
-  .strip[data-open='true'] .strip__marker { right: 1rem; top: 1.45rem; margin-top: 0; }
-}
-@media (prefers-reduced-motion: reduce) { .strip__marker::after { transition: none; } }
-
 /* ---- Enquiry: the last mono-uppercase labels move to the sans ----------- */
 .enquiry-hero__aside-label,
 .field__req {
@@ -513,9 +262,6 @@
 }
 /* Field numbers stay as numerals: mono is for numbers. */
 .field__num { letter-spacing: 0; color: var(--fg-mute); }
-@media (max-width: 760px) {
-  .strip[data-open='true'] .strip__toggle { padding-right: 2.75rem; }
-}
 
 /* ---- Theme toggle -------------------------------------------------------- */
 .theme-toggle {
@@ -571,83 +317,11 @@
 }
 
 /* ---- Dark mode details the tokens cannot reach ------------------------- */
-:root[data-theme='dark'] .btn::before { background: #2c4272; }
-:root[data-theme='dark'] .strip__toggle:focus-visible { outline-color: var(--fg); }
-/* Undyed strips at night: a little lighter than the ground so the cloth
-   still reads as cloth. Threads become light. */
-:root[data-theme='dark'] .strip {
-  background-color: #221d17;
-  background-image:
-    repeating-linear-gradient(90deg, rgba(242, 235, 221, 0.035) 0 1px, transparent 1px 3px),
-    repeating-linear-gradient(0deg, rgba(242, 235, 221, 0.022) 0 1px, transparent 1px 5px);
-}
-:root[data-theme='dark'] .strip::before,
-:root[data-theme='dark'] .swatches__book { --fg: #efe7d8; }
+:root[data-theme='dark'] .btn::before { background: var(--action-deep); }
 
-/* ---- Sample card inside an open strip ---------------------------------- */
-/* A paper card pinned to the dyed cloth, tilted a little as if tacked on by
-   hand. It is a button: tapping it opens the larger view. */
-.strip__photo {
-  all: unset;
-  box-sizing: border-box;
-  position: relative;
-  display: block;
-  width: min(100%, 15rem);
-  margin: 0 0 1.1rem;
-  padding: 6px 6px 8px;
-  background: var(--paper);
-  border-radius: 2px;
-  cursor: zoom-in;
-  transform: rotate(-1.6deg);
-  transition: transform 300ms var(--ease-out);
-}
-.strip__photo::before {
-  /* The tack. */
-  content: '';
-  position: absolute;
-  top: -5px;
-  left: 50%;
-  width: 9px;
-  height: 9px;
-  margin-left: -4.5px;
-  border-radius: 50%;
-  background: var(--ink);
-}
-.strip__photo img {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 5 / 4;
-  object-fit: contain;
-  background: var(--paper-deep);
-}
-.strip__photo:hover { transform: rotate(0deg); }
-.strip__photo:focus-visible { outline: 2px solid var(--strip-fg); outline-offset: 4px; }
-.strip__photo-hint {
-  position: absolute;
-  right: 12px;
-  bottom: 14px;
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--paper);
-  color: var(--ink);
-}
-.strip__photo-hint svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
-
-/* The card pops up out of the cloth when the strip opens. */
-@media (prefers-reduced-motion: no-preference) {
-  .strip__panel:not([hidden]) .strip__photo { animation: card-pop 520ms var(--ease-out) 260ms both; }
-}
 @keyframes card-pop {
   from { opacity: 0; transform: translateY(18px) rotate(-6deg) scale(0.92); }
   to { opacity: 1; transform: rotate(-1.6deg); }
-}
-
-@media (max-width: 760px) {
-  .strip__photo { width: min(100%, 17rem); }
 }
 
 /* ---- Lightbox ----------------------------------------------------------- */
@@ -913,8 +587,6 @@
   .sound-toggle__wave, .sound-toggle__slash { transition: none; }
 }
 
-/* ---- Photographs --------------------------------------------------------- */
-.strip__photo img { aspect-ratio: 3 / 2; object-fit: cover; }
 .lightbox__card img { aspect-ratio: auto; }
 
 /* Textiles regions: real fabric photographs instead of the drawn weave. */
@@ -1032,12 +704,6 @@
 .side-card__mail { display: inline-block; margin-top: 0.2rem; color: var(--action-text); font-weight: 500; overflow-wrap: anywhere; border-bottom: 1px solid currentColor; }
 .side-card__mail:hover { color: var(--fg); }
 .side-card .tlink { display: inline-block; margin-top: 1.1rem; font-size: var(--fs-small); }
-
-/* Swatch strips: the hem now says what the category covers. */
-.strip__dye { font-size: 0.78rem; line-height: 1.3; }
-.strip__links { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.1rem; }
-.strip__more { font-size: var(--fs-small); color: var(--strip-fg-soft); text-decoration: underline; text-underline-offset: 0.25em; text-decoration-thickness: 1px; }
-.strip__more:hover { color: var(--strip-fg); }
 
 /* ---- How an enquiry works (one section, replaces purpose + first-message) */
 .process {
@@ -1166,3 +832,284 @@
 .area__kicker { font-family: var(--f-sans); font-size: var(--fs-small); letter-spacing: 0; text-transform: none; font-weight: 500; }
 /* A fieldset puts its legend above the padding, so space it with a margin. */
 .form .field--group { padding-top: 0; margin-top: clamp(1rem, 1.8vw, 1.35rem); }
+
+/* The globe rides through the theme reveal as a live layer (ThemeToggle). */
+::view-transition-group(hero-globe),
+::view-transition-new(hero-globe) { animation: none; }
+::view-transition-old(hero-globe) { display: none; }
+
+/* Headings and <main> receive focus after navigation so screen readers land
+   in the right place. They are not controls, so no focus ring. */
+[tabindex='-1']:focus,
+[tabindex='-1']:focus-visible { outline: none; }
+
+/* ==========================================================================
+   Hero, final pass
+   - A small eyebrow carries the literal search phrase; the headline carries
+     the promise, its second line set in Fraunces italic in deep gold.
+   - Three short facts under the actions, separated by bandhani dots.
+   - Phones: the globe sits in a square stage and is always whole.
+   ========================================================================== */
+.hero__eyebrow-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: clamp(1rem, 2vw, 1.6rem);
+  font-family: var(--f-sans);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--action-text);
+}
+.hero__eyebrow-line::before {
+  content: '';
+  width: 1.75rem;
+  height: 6px;
+  color: var(--action-deep);
+  background: radial-gradient(circle, currentColor 2px, transparent 2.6px) 0 50% / 7px 6px repeat-x;
+}
+.hero__title {
+  font-weight: 380;
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  font-variation-settings: 'SOFT' 30, 'WONK' 0;
+}
+.hero__line--accent em {
+  font-style: italic;
+  font-weight: 340;
+  color: var(--action-text);
+  font-variation-settings: 'SOFT' 60, 'WONK' 1;
+  letter-spacing: -0.02em;
+  /* Italic overhang: keep the final stroke inside the line box. */
+  padding-right: 0.06em;
+}
+.hero__lede { max-width: 34rem; }
+
+.hero__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0;
+  margin: clamp(1.8rem, 3.2vw, 2.6rem) 0 0;
+  padding: 0;
+  list-style: none;
+  border: 0;
+  max-width: none;
+  font-family: var(--f-sans);
+  font-size: var(--fs-small);
+  color: var(--fg-mute);
+}
+.hero__facts li { display: inline-flex; align-items: center; }
+.hero__facts li + li::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  margin-inline: 0.8rem;
+  border-radius: 50%;
+  background: var(--action-deep);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero__eyebrow-line, .hero__facts { transition: transform 1100ms cubic-bezier(.16, 1, .3, 1), opacity 900ms ease-out; }
+  .hero__facts { transition-delay: 380ms; }
+  :root[data-intro-phase='drawing'] :is(.hero__eyebrow-line, .hero__facts),
+  :root[data-intro-phase='settling'] :is(.hero__eyebrow-line, .hero__facts) {
+    opacity: 0;
+    transform: translate3d(-72px, 0, 0);
+    transition: none;
+  }
+}
+
+@media (max-width: 980px) {
+  .hero { padding-top: 6.25rem; }
+  .hero__title { font-size: clamp(2.6rem, 12.5vw, 4.4rem); line-height: 1; }
+  .hero__eyebrow-line { margin-bottom: 0.9rem; }
+  .hero__facts { margin-top: 1.4rem; }
+  /* A square stage, so the whole globe fits with air around it. */
+  .hero__stage {
+    width: min(100%, 440px);
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+    margin: 1.25rem auto 0;
+  }
+}
+@media (max-width: 480px) {
+  .hero__facts { flex-direction: column; gap: 0.45rem; }
+  .hero__facts li + li::before { content: none; }
+  .hero__facts li::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    margin-right: 0.6rem;
+    border-radius: 50%;
+    background: var(--action-deep);
+  }
+}
+
+/* The open vat's number sits on a light part of some photographs. */
+.vat__num { text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45); }
+/* The original site's rise-in also targeted this class; the opening owns it now. */
+.hero__facts, .hero__eyebrow-line { animation: none; }
+
+/* ---- Textiles: the example brief, compact (FabricBrief.tsx) --------------- */
+.fbrief { padding-block: var(--section-y); background: var(--cotton); color: var(--fg); }
+.fbrief__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.4fr);
+  gap: 2rem clamp(2rem, 6vw, 6rem);
+  align-items: start;
+}
+.fbrief__title {
+  font-family: var(--f-display);
+  font-weight: 400;
+  font-variation-settings: var(--fraunces-tight);
+  font-size: var(--fs-h2);
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+  max-width: 14ch;
+}
+.fbrief__lede { margin: 1rem 0 1.6rem; color: var(--fg-soft); max-width: 34ch; }
+.fbrief__cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(0.75rem, 1.4vw, 1.1rem);
+}
+.fbrief__card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 0.75rem;
+  align-content: start;
+  padding: clamp(1.1rem, 2vw, 1.5rem);
+  background: var(--cotton-lit);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+}
+.fbrief__num {
+  grid-row: span 3;
+  display: inline-grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  background: var(--dye-textiles);
+  color: var(--paper);
+  font-family: var(--f-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.fbrief__field { font-family: var(--f-sans); font-size: 1.02rem; font-weight: 600; letter-spacing: -0.005em; margin-top: 0.25rem; }
+.fbrief__ask { margin-top: 0.3rem; color: var(--fg-soft); font-size: 0.94rem; line-height: 1.5; }
+.fbrief__example {
+  margin-top: 0.7rem;
+  font-family: var(--f-serif);
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--fg);
+}
+.fbrief__example span {
+  font-family: var(--f-sans);
+  font-style: normal;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--fg-mute);
+  margin-right: 0.25rem;
+}
+@media (max-width: 900px) {
+  .fbrief__grid { grid-template-columns: minmax(0, 1fr); }
+  .fbrief__title { max-width: none; }
+}
+@media (max-width: 560px) {
+  .fbrief__cards { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---- About, final pass: one ground, the same rhythm as the home page ---- */
+.about-desk-section,
+.about-process { background: var(--cotton); border-top: 1px solid var(--rule); }
+.about-desk-grid,
+.about-desk-grid:has(> :only-child) {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
+  gap: 2rem clamp(2rem, 6vw, 6rem);
+  max-width: none;
+  align-items: start;
+}
+.about-glance__title {
+  font-family: var(--f-display);
+  font-weight: 400;
+  font-variation-settings: var(--fraunces-tight);
+  font-size: var(--fs-h2);
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+}
+.about-glance__lede { margin-top: 0.9rem; color: var(--fg-soft); max-width: 30ch; }
+.about-desk-card { background: transparent; border: 0; border-top: 1px solid var(--rule); border-radius: 0; box-shadow: none; }
+.about-desk-row { border-bottom: 1px solid var(--rule); }
+.about-desk-row:last-child { border-bottom: 1px solid var(--rule); }
+.about-desk-key,
+.about-desk-val {
+  padding: 1.05rem 0;
+  vertical-align: top;
+  text-align: left;
+  font-family: var(--f-sans);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+.about-desk-key { width: 34%; padding-right: 1.5rem; color: var(--fg-mute); font-weight: 500; }
+.about-desk-val { color: var(--fg); }
+.about-desk-val a { font-size: inherit; color: var(--action-text); border-bottom: 1px solid currentColor; }
+/* The vision card, once its text arrives, spans under the facts. */
+.about-vision { grid-column: 1 / -1; }
+
+.about-process-card {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 1.1rem 0 0;
+}
+.about-process-card__num {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--action);
+  color: var(--action-fg);
+  font-family: var(--f-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.about-process-card__title { margin-top: 0.9rem; font-family: var(--f-sans); font-size: 1.1rem; font-weight: 600; letter-spacing: -0.01em; }
+.about-process-card__body { margin-top: 0.4rem; font-family: var(--f-sans); color: var(--fg-soft); font-size: 1rem; line-height: 1.55; max-width: 34ch; }
+
+@media (max-width: 900px) {
+  .about-desk-grid,
+  .about-desk-grid:has(> :only-child) { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 520px) {
+  .about-desk-row { display: grid; }
+  .about-desk-key { width: auto; padding: 0.9rem 0 0.1rem; }
+  .about-desk-val { padding: 0 0 0.9rem; }
+}
+
+/* One radius scale: 3px buttons, 4px fields and choices, 6px cards. */
+.form, .side-card, .process__first, .fbrief__card, .lightbox__card { border-radius: 6px; }
+.field :is(input[type='text'], input[type='email'], input[type='tel'], textarea), .select__button, .choice { border-radius: 4px; }
+.form { overflow: hidden; }
+@media (max-width: 480px) {
+  .hero__facts li::before,
+  .hero__facts li + li::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    margin: 0 0.6rem 0 0;
+    border-radius: 50%;
+    background: var(--action-deep);
+  }
+}
