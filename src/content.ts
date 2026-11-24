@@ -119,7 +119,9 @@ const CATEGORY_ARTWORK: Record<CategoryId, { motif: CategoryMotif; note: string;
  */
 /* Photographs are AI-generated (arena.ai, prompts in docs/redesign/IMAGE-PROMPTS.md)
    and saved at 1600px with an 800px `-small` version beside each. */
-export const CATEGORY_IMAGES: Record<CategoryId, { src: string; alt: string; kind: 'render' | 'photo' }> = {
+/** `focus` is the CSS object-position: which part of the photo stays in view
+ * when a vat crops it. Defaults to the centre. */
+export const CATEGORY_IMAGES: Record<CategoryId, { src: string; alt: string; kind: 'render' | 'photo'; focus?: string }> = {
   textiles: { src: '/photos/textiles.webp', alt: 'A roll of indigo cotton twill with a folded swatch beside it', kind: 'photo' },
   handicrafts: { src: '/photos/handicrafts.webp', alt: 'A blue-pottery vase painted with indigo flowers, beside a small carved wooden box', kind: 'photo' },
   'agriculture-food': { src: '/photos/agriculture.webp', alt: 'Wheat ears and grain spilling from a jute sack, with turmeric root in a brass bowl', kind: 'photo' },
@@ -150,18 +152,40 @@ export const ABOUT_BUSINESS = {
   lede: 'We connect overseas buyers and buyers in India with Indian suppliers, and help each side agree what is needed before anything is ordered.',
 } as const
 
+export const LEADERSHIP = { name: 'Bhupendra Sain', role: 'CEO' } as const
+
 /**
- * The company's vision, in the client's own words. Leave `body` empty until
- * the text arrives: the About page only shows this card when there is text,
- * so nothing half-finished ever appears on the live site.
+ * The company's vision and goals. Kept to what the business can stand behind:
+ * no figures, no track record, no certification claims, terms in writing.
  */
-export const ABOUT_VISION: { title: string; body: readonly string[] } = {
+export const ABOUT_VISION = {
   title: 'Our vision',
-  body: [],
-}
+  statement: 'To make buying from India feel certain.',
+  body: 'A buyer anywhere in the world should be able to source from Indian makers with the same confidence as buying from a supplier down the road: clear specifications, honest answers and terms agreed in writing before anything moves.',
+  signedBy: LEADERSHIP,
+} as const
+
+export const ABOUT_GOALS = {
+  title: 'What we are working towards',
+  items: [
+    {
+      title: 'Clarity before commitment',
+      body: 'Every enquiry ends in a written specification and written terms before an order is placed, so there are no surprises on either side.',
+    },
+    {
+      title: 'A wider door for Indian makers',
+      body: 'Connecting mills, workshops, artisans and growers across India with buyers they could not reach alone. We start with the textile regions of Tamil Nadu and Gujarat, and grow into all six categories.',
+    },
+    {
+      title: 'Trade that can be traced',
+      body: 'Where a buyer needs it, we work with suppliers who can document what they make and where it comes from, so organic and sustainable claims rest on paperwork, not words.',
+    },
+  ],
+} as const
 
 export const ABOUT_DESK_FACTS = [
   { label: 'Business name', value: 'BS EXIMNEXUS' },
+  { label: 'CEO', value: LEADERSHIP.name },
   { label: 'Operating base', value: 'India' },
   { label: 'Categories', value: 'Textiles and fabrics, handicrafts and home decor, agriculture and food, industrial materials, organic and sustainable products, and other sourcing requests' },
   { label: 'Direct email', value: 'bsexim.nexus@gmail.com' },

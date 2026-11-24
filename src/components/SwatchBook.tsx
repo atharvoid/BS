@@ -107,7 +107,7 @@ export function SwatchBook() {
                 key={item.id}
                 className="vat"
                 data-active={active}
-                style={{ '--dye': `var(--dye-${DYES[item.id]})` } as React.CSSProperties}
+                style={{ '--dye': `var(--dye-${DYES[item.id]})`, '--focus': item.image.focus ?? '50% 50%' } as React.CSSProperties}
                 onPointerEnter={(event) => {
                   if (!finePointer || event.pointerType !== 'mouse' || active) return
                   window.clearTimeout(dwell.current)

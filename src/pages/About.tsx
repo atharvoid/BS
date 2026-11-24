@@ -6,6 +6,7 @@ import {
   BUSINESS,
   ABOUT_BUSINESS,
   ABOUT_VISION,
+  ABOUT_GOALS,
   ABOUT_STANDARDS,
   ABOUT_DESK_FACTS,
 } from '../content'
@@ -48,17 +49,39 @@ export default function About() {
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+      </section>
 
-            {ABOUT_VISION.body.length > 0 && (
-              <div className="about-founder-card about-vision reveal">
-                <h2 className="about-founder-card__name">{ABOUT_VISION.title}</h2>
-                <div className="about-founder-card__bio">
-                  {ABOUT_VISION.body.map((text, i) => (
-                    <p key={i}>{text}</p>
-                  ))}
-                </div>
-              </div>
-            )}
+      <section className="about-vision" aria-labelledby="about-vision-title">
+        <div className="shell">
+          <div className="about-vision__grid">
+            <figure className="about-vision__quote reveal">
+              <h2 id="about-vision-title" className="about-vision__label">{ABOUT_VISION.title}</h2>
+              <blockquote>
+                <p className="about-vision__statement">{ABOUT_VISION.statement}</p>
+                <p className="about-vision__body">{ABOUT_VISION.body}</p>
+              </blockquote>
+              <figcaption className="about-vision__sign">
+                <span className="about-vision__name">{ABOUT_VISION.signedBy.name}</span>
+                <span className="about-vision__role">{ABOUT_VISION.signedBy.role}, {BUSINESS.name}</span>
+              </figcaption>
+            </figure>
+
+            <div className="about-goals">
+              <h3 className="about-goals__title reveal">{ABOUT_GOALS.title}</h3>
+              <ol className="about-goals__list">
+                {ABOUT_GOALS.items.map((goal, i) => (
+                  <li key={goal.title} className="about-goal reveal">
+                    <span className="about-process-card__num" aria-hidden="true">{i + 1}</span>
+                    <div>
+                      <h4 className="about-goal__title">{goal.title}</h4>
+                      <p className="about-goal__body">{goal.body}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
           </div>
         </div>
       </section>
