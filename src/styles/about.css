@@ -72,20 +72,6 @@ body:has(.about-page) .footer .eyebrow::before {
   box-shadow: 0 1px 0 rgba(26, 22, 17, 0.04), 0 20px 40px -30px rgba(26, 22, 17, 0.08);
 }
 
-.about-desk-card__head {
-  padding: 1rem 1.4rem;
-  border-bottom: 1px solid var(--rule);
-  display: grid;
-  grid-template-columns: 38% 1fr;
-  align-items: center;
-  font-family: var(--f-mono);
-  font-size: var(--fs-meta);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--fg-mute);
-  background: var(--cotton-deep);
-}
-
 .about-desk-table {
   width: 100%;
   border-collapse: collapse;
@@ -127,56 +113,6 @@ body:has(.about-page) .footer .eyebrow::before {
 
 .about-desk-val a:hover {
   text-decoration: underline;
-}
-
-/* Founder Profile Card */
-.about-founder-card {
-  background: var(--cotton);
-  border: 1px solid var(--rule);
-  padding: clamp(1.8rem, 3.5vw, 2.8rem);
-  box-shadow: 0 1px 0 rgba(26, 22, 17, 0.04), 0 20px 40px -30px rgba(26, 22, 17, 0.08);
-}
-
-.about-founder-card__badge {
-  display: inline-block;
-  font-family: var(--f-mono);
-  font-size: var(--fs-meta);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--madder);
-  padding: 0.28rem 0.65rem;
-  background: rgba(156, 58, 45, 0.07);
-  border: 1px solid rgba(156, 58, 45, 0.18);
-  margin-bottom: 1.2rem;
-}
-
-.about-founder-card__name {
-  font-family: var(--f-display);
-  font-size: clamp(2rem, 3.8vw, 3rem);
-  font-weight: 400;
-  letter-spacing: -0.025em;
-  line-height: 1;
-  color: var(--fg);
-}
-
-.about-founder-card__role {
-  font-family: var(--f-mono);
-  font-size: var(--fs-small);
-  letter-spacing: 0.04em;
-  color: var(--fg-mute);
-  margin-top: 0.4rem;
-  margin-bottom: 1.6rem;
-}
-
-.about-founder-card__bio p {
-  font-family: var(--f-serif);
-  font-size: var(--fs-body);
-  line-height: 1.6;
-  color: var(--fg-soft);
-}
-
-.about-founder-card__bio p + p {
-  margin-top: 1rem;
 }
 
 /* Section: Working Method / Process */

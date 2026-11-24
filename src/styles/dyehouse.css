@@ -44,10 +44,6 @@
 .btn:hover { transform: none; color: var(--btn-fg); }
 .btn:hover .btn__arrow { transform: translate(0.12em, -0.12em); }
 
-/* --light was the paper button for dark bands. Every primary action is now
-   the same gold button, on cotton and on indigo alike. */
-.btn--light { --btn-bg: var(--action); --btn-fg: var(--action-fg); }
-
 .btn--ghost { --btn-fg: var(--fg); border-color: var(--control-border); }
 .btn--ghost::before { background: var(--action); }
 .btn--ghost:hover { color: var(--action-fg); border-color: var(--action); }
@@ -65,15 +61,6 @@
 .on-dark :focus-visible,
 .on-indigo :focus-visible,
 .drawer :focus-visible { outline-color: var(--gold); }
-
-/* ---- The signature: bandhani dots -------------------------------------- */
-.dots {
-  display: block;
-  height: 12px;
-  color: var(--fg-mute);
-  background: var(--dots);
-  opacity: 0.55;
-}
 
 /* ---- Scroll progress: one indigo thread -------------------------------- */
 .progress { background: var(--action-deep); opacity: 1; height: 2px; }
@@ -141,13 +128,7 @@
 .grain.footer::after { opacity: 0.08; }
 
 /* ---- Retire leftover decoration ----------------------------------------- */
-.brand:hover .brand__mark,
-.brand:hover .brand__mark span,
-.area:hover .area__weave,
-.area:hover .region-weave,
-.wall__item:hover .wall__frame img { transform: none; }
-
-.pulse { animation: none; box-shadow: none; }
+.area:hover .area__weave { transform: none; }
 
 /* ---- Inner pages: every hero is undyed cotton --------------------------- */
 /* The old heroes were charcoal with hard-coded light text. They now sit on
@@ -180,13 +161,6 @@
 .page-hero--textile .page-hero__inner .eyebrow { color: inherit; }
 .page-hero--textile .page-hero__lede { color: var(--fg-soft); }
 
-.page-hero__fallback { background: var(--dye-textiles); }
-
-.enquiry-hero__aside { border-top-color: var(--rule); }
-.enquiry-hero__aside-label { color: var(--fg-mute); }
-.enquiry-hero__mail { color: var(--action-text); border-bottom-color: currentColor; }
-.enquiry-hero__mail:hover { color: var(--fg); border-color: var(--fg); }
-
 .ack__notice {
   border-left-color: var(--action-text);
   background: var(--cotton-lit);
@@ -202,33 +176,19 @@
 .about-cta .btn--ghost { --btn-fg: var(--paper); border-color: rgba(250, 245, 234, 0.45); }
 
 /* Cards and briefs: no shadows, labels in the sans. */
-.brief, .brief *,
-.about-desk-card, .about-founder-card { box-shadow: none !important; }
+.about-desk-card { box-shadow: none !important; }
 
 /* ---- About: labels in the sans, no borrowed category dyes --------------- */
-.about-desk-card__head,
 .about-desk-key,
-.about-founder-card__badge,
-.about-founder-card__role,
 .about-desk-val a {
   font-family: var(--f-sans);
   text-transform: none;
   letter-spacing: 0;
 }
-.about-desk-card__head { font-size: var(--fs-small); font-weight: 500; color: var(--fg-mute); }
 .about-desk-key { font-size: var(--fs-small); font-weight: 500; color: var(--fg-mute); }
-.about-founder-card__badge {
-  color: var(--fg-mute);
-  background: none;
-  border: 0;
-  padding: 0;
-  font-size: var(--fs-small);
-  font-weight: 500;
-}
-.about-founder-card__role { color: var(--fg-mute); font-size: var(--fs-small); }
 /* Madder belongs to handicrafts; step numbers are plain ink numerals. */
 .about-process-card__num { color: var(--fg-mute); font-variant-numeric: tabular-nums; }
-.about-desk-card, .about-founder-card { box-shadow: none; }
+.about-desk-card { box-shadow: none; }
 
 /* ---- Enquiry: the chosen category dyes the top of the form -------------- */
 .form { --form-dye: var(--rule); border-top: 6px solid var(--form-dye); transition: border-color 420ms var(--ease-out); }
@@ -238,7 +198,6 @@
 .form[data-category='industrial-materials'] { --form-dye: var(--dye-industrial); }
 .form[data-category='organic-sustainable'] { --form-dye: var(--dye-organic); }
 .form[data-category='general'] { --form-dye: var(--dye-general); }
-.form .eyebrow--index { font-family: var(--f-sans); letter-spacing: 0; text-transform: none; }
 
 /* ---- Drag hint: a plain label on cotton, no glass ----------------------- */
 .drag-hint {
@@ -250,18 +209,6 @@
   letter-spacing: 0;
   text-transform: none;
 }
-
-/* ---- Enquiry: the last mono-uppercase labels move to the sans ----------- */
-.enquiry-hero__aside-label,
-.field__req {
-  font-family: var(--f-sans);
-  text-transform: none;
-  letter-spacing: 0;
-  font-size: var(--fs-small);
-  color: var(--fg-mute);
-}
-/* Field numbers stay as numerals: mono is for numbers. */
-.field__num { letter-spacing: 0; color: var(--fg-mute); }
 
 /* ---- Theme toggle -------------------------------------------------------- */
 .theme-toggle {
@@ -325,11 +272,6 @@
 
 /* ---- Dark mode details the tokens cannot reach ------------------------- */
 :root[data-theme='dark'] .btn::before { background: var(--action-deep); }
-
-@keyframes card-pop {
-  from { opacity: 0; transform: translateY(18px) rotate(-6deg) scale(0.92); }
-  to { opacity: 1; transform: rotate(-1.6deg); }
-}
 
 /* ---- Lightbox ----------------------------------------------------------- */
 .lightbox {
@@ -422,11 +364,7 @@
 .page-hero--textile { padding-bottom: var(--hero-bottom); }
 
 /* Content sections */
-.swatches,
-.purpose,
-.first-message,
 .areas,
-.brief,
 .about-desk-section,
 .about-process,
 .about-cta,
@@ -444,11 +382,7 @@
 .about-hero__title,
 .ack__title,
 .notfound__title,
-.swatches__head h2,
-.purpose__title,
-.first-message__title,
 .areas__title,
-.brief__title,
 .about-process__title,
 .about-cta__title,
 .enquiry-body__textiles h2 {
@@ -464,11 +398,7 @@
 .about-hero__title,
 .ack__title,
 .notfound__title { font-size: var(--fs-display); line-height: 1.02; }
-.swatches__head h2,
-.purpose__title,
-.first-message__title,
 .areas__title,
-.brief__title,
 .about-process__title,
 .about-cta__title,
 .enquiry-body__textiles h2 { font-size: var(--fs-h2); line-height: 1.08; }
@@ -486,25 +416,6 @@
   max-width: 36rem;
   margin-top: clamp(1rem, 1.8vw, 1.4rem);
 }
-
-/* ---- Fabric brief: the last mono-uppercase block ----------------------- */
-.brief__sheet,
-.brief__sheet-head,
-.brief__sheet-foot,
-.brief__tag,
-.brief__example,
-.brief__example-label,
-.brief__mail {
-  font-family: var(--f-sans);
-  text-transform: none;
-  letter-spacing: 0;
-}
-.brief__sheet-head { font-size: var(--fs-small); font-weight: 500; color: var(--fg-mute); }
-.brief__tag { font-size: 0.8rem; color: var(--fg-mute); }
-.brief__example-label { font-size: 0.8rem; font-weight: 500; color: var(--fg-mute); }
-.brief__sheet-foot { font-size: var(--fs-small); line-height: 1.6; color: var(--fg-soft); }
-.brief__mail { font-size: 0.95rem; }
-.brief__num { letter-spacing: 0; color: var(--fg-mute); }
 
 /* Every hero's text starts on the same left edge as the rest of the site:
    the full shell width, with the text itself limited by its own measure. */
@@ -533,7 +444,7 @@
    entrance is in GlobeScene (Frame); if the live globe is not ready yet, its
    still image slides in from the right on the same cue. */
 @media (prefers-reduced-motion: no-preference) {
-  .hero__eyebrow, .hero__line, .hero__lede, .hero__actions { animation: none; }
+  .hero__line, .hero__lede, .hero__actions { animation: none; }
 
   .hero__line, .hero__lede, .hero__actions {
     transition: transform 1100ms cubic-bezier(.16, 1, .3, 1), opacity 900ms ease-out;
@@ -814,18 +725,6 @@
 @media (max-width: 480px) {
   .footer__top { grid-template-columns: minmax(0, 1fr); }
 }
-
-/* ---- About, tidied --------------------------------------------------------- */
-.about-desk-card__head {
-  display: block;
-  margin: 0;
-  font-family: var(--f-sans);
-  font-size: var(--fs-small);
-  font-weight: 600;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--fg-mute);
-}
 .about-process__title { margin-top: 0; }
 .about-process__head { margin-bottom: clamp(1.5rem, 3vw, 2.25rem); }
 .about-process-card { border-radius: 3px; }
@@ -857,24 +756,6 @@
    - Three short facts under the actions, separated by bandhani dots.
    - Phones: the globe sits in a square stage and is always whole.
    ========================================================================== */
-.hero__eyebrow-line {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  margin-bottom: clamp(1rem, 2vw, 1.6rem);
-  font-family: var(--f-sans);
-  font-size: var(--fs-small);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  color: var(--action-text);
-}
-.hero__eyebrow-line::before {
-  content: '';
-  width: 1.75rem;
-  height: 6px;
-  color: var(--action-deep);
-  background: radial-gradient(circle, currentColor 2px, transparent 2.6px) 0 50% / 7px 6px repeat-x;
-}
 .hero__title {
   font-weight: 380;
   line-height: 0.98;
@@ -892,32 +773,7 @@
 }
 .hero__lede { max-width: 34rem; }
 
-.hero__facts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 0;
-  margin: clamp(1.8rem, 3.2vw, 2.6rem) 0 0;
-  padding: 0;
-  list-style: none;
-  border: 0;
-  max-width: none;
-  font-family: var(--f-sans);
-  font-size: var(--fs-small);
-  color: var(--fg-mute);
-}
-.hero__facts li { display: inline-flex; align-items: center; }
-.hero__facts li + li::before {
-  content: '';
-  width: 4px;
-  height: 4px;
-  margin-inline: 0.8rem;
-  border-radius: 50%;
-  background: var(--action-deep);
-}
-
 @media (prefers-reduced-motion: no-preference) {
-  .hero__eyebrow-line, .hero__facts { transition: transform 1100ms cubic-bezier(.16, 1, .3, 1), opacity 900ms ease-out; }
-  .hero__facts { transition-delay: 380ms; }
   :root[data-intro-phase='drawing'] :is(.hero__eyebrow-line, .hero__facts),
   :root[data-intro-phase='settling'] :is(.hero__eyebrow-line, .hero__facts) {
     opacity: 0;
@@ -929,8 +785,6 @@
 @media (max-width: 980px) {
   .hero { padding-top: 6.25rem; }
   .hero__title { font-size: clamp(2.6rem, 12.5vw, 4.4rem); line-height: 1; }
-  .hero__eyebrow-line { margin-bottom: 0.9rem; }
-  .hero__facts { margin-top: 1.4rem; }
   /* A square stage, so the whole globe fits with air around it. */
   .hero__stage {
     width: min(100%, 440px);
@@ -940,23 +794,9 @@
     margin: 1.25rem auto 0;
   }
 }
-@media (max-width: 480px) {
-  .hero__facts { flex-direction: column; gap: 0.45rem; }
-  .hero__facts li + li::before { content: none; }
-  .hero__facts li::before {
-    content: '';
-    width: 4px;
-    height: 4px;
-    margin-right: 0.6rem;
-    border-radius: 50%;
-    background: var(--action-deep);
-  }
-}
 
 /* The open vat's number sits on a light part of some photographs. */
 .vat__num { text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45); }
-/* The original site's rise-in also targeted this class; the opening owns it now. */
-.hero__facts, .hero__eyebrow-line { animation: none; }
 
 /* ---- Textiles: the example brief, compact (FabricBrief.tsx) --------------- */
 .fbrief { padding-block: var(--section-y); background: var(--cotton); color: var(--fg); }
@@ -1109,17 +949,6 @@
 .form, .side-card, .process__first, .fbrief__card, .lightbox__card { border-radius: 6px; }
 .field :is(input[type='text'], input[type='email'], input[type='tel'], textarea), .select__button, .choice { border-radius: 4px; }
 .form { overflow: hidden; }
-@media (max-width: 480px) {
-  .hero__facts li::before,
-  .hero__facts li + li::before {
-    content: '';
-    width: 4px;
-    height: 4px;
-    margin: 0 0.6rem 0 0;
-    border-radius: 50%;
-    background: var(--action-deep);
-  }
-}
 
 /* Stage hand-over: the still fades off the live scene (Stage.tsx). */
 .scene-poster { transition: opacity 400ms ease-out; }

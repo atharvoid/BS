@@ -24,23 +24,14 @@
   --cotton: #f2ebdd;
   --cotton-lit: #faf5ea;
   --cotton-deep: #e6dbc7;
-  --cotton-shade: #d9cbb2;
 
   --ink: #12100d;
-  --ink-2: #1a1713;
   --ink-3: #241f19;
-  --ink-line: #342c23;
 
   --indigo: #1d2a45;
-  --indigo-2: #263454;
-  --indigo-3: #33446a;
-  --indigo-soft: #8f9cbb;
 
   --madder: #9c3a2d;
-  --madder-lit: #b8493a;
   --saffron: #c47b1c;
-  --verdigris: #4c7a68;
-  --brass: #b0864a;
 
   /* ---- One dye per category (contrast measured against --cotton) -------- */
   /* Dark dyes carry cotton text (5.1:1 to 12:1); marigold carries ink text
@@ -53,12 +44,9 @@
   --dye-general: #6e4b3a;      /* kattha brown */
 
   /* The signature: a row of tied-resist dots. Used only as a divider. */
-  --dots: radial-gradient(circle, currentColor 1.6px, transparent 2.2px) 0 50% / 12px 12px repeat-x;
 
   /* ---- Semantic (light sections) --------------------------------------- */
   --bg: var(--cotton);
-  --bg-lit: var(--cotton-lit);
-  --bg-deep: var(--cotton-deep);
   --fg: #1a1611;
   --fg-soft: #4b4136;
   --fg-mute: #6f6353;
@@ -66,7 +54,6 @@
   --rule-soft: rgba(26, 22, 17, 0.075);
   --control-border: #837661;
   --accent: var(--indigo);
-  --accent-quiet: var(--fg-mute);
 
   /* ---- Type scale (fluid) ---------------------------------------------- */
   --fs-hero: clamp(2.9rem, 7.1vw, 7.6rem);
@@ -93,25 +80,17 @@
   --f-mono: 'Chivo Mono Variable', ui-monospace, 'SF Mono', monospace;
 
   /* Fraunces axes: SOFT rounds terminals, WONK switches the quirky forms on. */
-  --fraunces-display: 'SOFT' 26, 'WONK' 1;
   --fraunces-tight: 'SOFT' 10, 'WONK' 0;
 
   /* ---- Space & rhythm --------------------------------------------------- */
   --gutter: clamp(1.15rem, 4.4vw, 4.5rem);
-  --measure: 34ch;
-  --measure-wide: 62ch;
   --section-y: clamp(4.5rem, 9vw, 9.5rem);
-  --stack: clamp(1rem, 1.7vw, 1.6rem);
-  --radius: 2px;
-  --radius-lg: 3px;
 
   /* ---- Motion ----------------------------------------------------------- */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
-  --dur-fast: 180ms;
   --dur: 380ms;
-  --dur-slow: 760ms;
 
   --z-canvas: 1;
   --z-content: 2;
@@ -130,7 +109,6 @@
   --rule: rgba(242, 235, 221, 0.16);
   --rule-soft: rgba(242, 235, 221, 0.075);
   --accent: #d98d4f;
-  --accent-quiet: var(--brass);
   color: var(--fg);
   background-color: var(--bg);
 }
@@ -143,7 +121,6 @@
   --rule: rgba(238, 240, 246, 0.18);
   --rule-soft: rgba(238, 240, 246, 0.08);
   --accent: #e8b464;
-  --accent-quiet: var(--indigo-soft);
   color: var(--fg);
   background-color: var(--bg);
 }
@@ -156,7 +133,6 @@
    ========================================================================== */
 :root {
   --paper: #faf5ea;
-  --paper-soft: #e6ddcc;
   --paper-deep: #e6dbc7;
 
   /* Action colour: the logo's gold. A fill carries ink text (7.6:1; the
@@ -182,7 +158,6 @@
   --cotton: #14110d;
   --cotton-lit: #1c1813;
   --cotton-deep: #26201a;
-  --cotton-shade: #3a3128;
 
   --fg: #efe7d8;
   --fg-soft: #cdc2ae;

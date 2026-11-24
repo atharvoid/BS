@@ -141,10 +141,6 @@ input, textarea, select {
   padding-inline: var(--gutter);
 }
 
-.shell--narrow {
-  max-width: 1080px;
-}
-
 .eyebrow {
   display: flex;
   align-items: center;
@@ -168,43 +164,10 @@ input, textarea, select {
   display: none !important;
 }
 
-.eyebrow--index {
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.13em;
-}
-
-.lede {
-  font-family: var(--f-serif);
-  font-size: var(--fs-lead);
-  line-height: 1.5;
-  color: var(--fg-soft);
-  max-width: 46ch;
-  font-weight: 300;
-}
-
-.body {
-  color: var(--fg-soft);
-  max-width: var(--measure-wide);
-}
-
 .small {
   font-size: var(--fs-small);
   color: var(--fg-mute);
   line-height: 1.55;
-}
-
-/* Retired: one italic coloured word on every heading stopped being emphasis.
-   Kept as a no-op so old markup renders plainly. */
-.display-italic {
-  font-style: inherit;
-  color: inherit;
-}
-
-.rule {
-  height: 1px;
-  background: var(--rule);
-  border: 0;
-  margin: 0;
 }
 
 /* ---- Buttons ------------------------------------------------------------ */
@@ -275,15 +238,6 @@ input, textarea, select {
 .btn--ghost:hover {
   color: var(--cotton-lit);
   border-color: transparent;
-}
-
-.btn--light {
-  --btn-bg: var(--cotton-lit);
-  --btn-fg: var(--ink);
-}
-
-.btn--light:hover {
-  color: var(--cotton-lit);
 }
 
 /* Text link with an animated underline that grows from the left. */
