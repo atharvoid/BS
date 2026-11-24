@@ -1132,9 +1132,9 @@ html { scroll-padding-top: 4.6rem; }
 /* ==========================================================================
    Hero, clean layout
    Left: headline, one line of description, two actions, vertically centred.
-   Right: the whole globe (globe-frame.ts), its right edge on the content
-   edge and its centre level with the copy. The copy column's width matches
-   COPY_SHARE there, so the two can never overlap.
+   Right: the globe, large and running off the right edge (globe-frame.ts),
+   its centre level with the copy. The frame keeps the globe clear of the
+   copy column, which is narrower than the share it reserves.
    ========================================================================== */
 .hero { padding-block: 5rem; align-items: center; }
 .hero__inner { gap: 0; }
