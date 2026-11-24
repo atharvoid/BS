@@ -12,3 +12,7 @@ npm-debug.log*
 .prerender/
 .poster-build/
 .mobile-preview/
+
+# Local review captures and TypeScript build info
+output/
+*.tsbuildinfo

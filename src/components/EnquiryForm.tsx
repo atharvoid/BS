@@ -107,7 +107,6 @@ export function EnquiryForm({ categoryField, title = 'Tell us what you need', in
   const [errors, setErrors] = React.useState<Errors>({})
   const [submitError, setSubmitError] = React.useState('')
   const request = React.useRef<AbortController | null>(null)
-  const [captchaError, setCaptchaError] = React.useState('')
   const form = React.useRef<HTMLFormElement>(null)
   const firstInvalid = React.useRef<string | null>(null)
 
@@ -144,6 +143,8 @@ export function EnquiryForm({ categoryField, title = 'Tell us what you need', in
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!enquiryAccessKey || request.current || sending) return
+    // Only an automated form-filler ticks the hidden trap box; send nothing.
+    if (form.current?.querySelector<HTMLInputElement>('input[name="botcheck"]')?.checked) return
     setSubmitError('')
     const found = validate(draft)
     setErrors(found)
@@ -350,6 +351,10 @@ export function EnquiryForm({ categoryField, title = 'Tell us what you need', in
             {errors.phone && <p className="field__error" id="phone-error">{errors.phone}</p>}
           </div>
         </div>
+
+        {/* Spam trap: hidden from people and assistive technology, but a bot
+            filling in every field will tick it. Web3Forms knows the name. */}
+        <input type="checkbox" name="botcheck" className="visually-hidden" tabIndex={-1} autoComplete="off" aria-hidden="true" />
 
         <div className="form__submit">
           <button className="btn btn--submit" type="submit" disabled={sending || !enquiryAccessKey}>

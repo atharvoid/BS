@@ -3,23 +3,15 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  server: {
-    host: '0.0.0.0',
-    port: 5173,
-    strictPort: true,
-    // The preview proxy reaches the dev server from a public host, so the
-    // allowlist has to accept it. Kept open because the sandbox is ephemeral.
-    allowedHosts: true,
-    hmr: { clientPort: 443, protocol: 'wss' },
-  },
-  preview: {
-    host: '0.0.0.0',
-    port: 4173,
-    allowedHosts: true,
-  },
+  server: { port: 5173, strictPort: true },
+  preview: { port: 4173 },
   build: {
     target: 'es2020',
     assetsInlineLimit: 2048,
+    // The `three` chunk (~920 kB, ~245 kB gzipped) is only fetched when a 3D
+    // stage mounts, never on first paint, so the default 500 kB warning is
+    // noise. Kept just above it so real growth still shows up.
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks(id: string) {
@@ -27,7 +19,6 @@ export default defineConfig({
             if (
               id.includes('three') ||
               id.includes('@react-three') ||
-              id.includes('tunnel-rat') ||
               id.includes('zustand') ||
               id.includes('suspend-react') ||
               id.includes('its-fine')
