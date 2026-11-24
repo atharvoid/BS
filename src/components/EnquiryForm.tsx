@@ -221,7 +221,6 @@ export function EnquiryForm({ categoryField, title = 'Tell us what you need', in
         <p className="form__intro">{intro}</p>
       </div>
 
-      {!enquiryAccessKey && <p className="notice">Online submission is unavailable. Email <a href={`mailto:${enquiryContact}`}>{enquiryContact}</a> to enquire.</p>}
       <fieldset disabled={sending} className="form__body">
         <p className="form__group" aria-hidden="true">The enquiry</p>
 
