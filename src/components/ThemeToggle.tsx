@@ -129,15 +129,27 @@ export function ThemeToggle() {
   /* Clicks on the button made mid-switch, or pressed mid-switch and released
      after, arrive at <html> (see above). */
   React.useEffect(() => {
-    const onStrayClick = (event: MouseEvent) => {
+    const onButton = (event: MouseEvent) => {
       const el = button.current
-      if (!el || event.target !== document.documentElement) return
+      if (!el) return false
       const r = el.getBoundingClientRect()
-      if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) return
-      press(el, setTheme)
+      return event.clientX >= r.left && event.clientX <= r.right && event.clientY >= r.top && event.clientY <= r.bottom
+    }
+    const onStrayClick = (event: MouseEvent) => {
+      if (event.target !== document.documentElement || !onButton(event)) return
+      press(button.current!, setTheme)
+    }
+    /* Quick repeated presses count as a double or triple click, which would
+       select the nearby headline; stop that selection on the button. */
+    const onRepeatPress = (event: MouseEvent) => {
+      if (event.detail > 1 && onButton(event)) event.preventDefault()
     }
     document.addEventListener('click', onStrayClick)
-    return () => document.removeEventListener('click', onStrayClick)
+    document.addEventListener('mousedown', onRepeatPress)
+    return () => {
+      document.removeEventListener('click', onStrayClick)
+      document.removeEventListener('mousedown', onRepeatPress)
+    }
   }, [])
 
   // Follow the system setting until the visitor makes a choice of their own.
