@@ -40,10 +40,10 @@ function Hero() {
 
       <div className="hero__inner shell">
         <div className="hero__copy">
-          <p className="hero__eyebrow-line">Import and export sourcing, India</p>
+          <p className="hero__eyebrow-line">Sourcing and trade coordination, India</p>
           <h1 className="hero__title">
-            <span className="hero__line">India’s makers,</span>
-            <span className="hero__line hero__line--accent"><em>within reach.</em></span>
+            <span className="hero__line">Import. Export.</span>
+            <span className="hero__line hero__line--accent"><em>India on speed dial.</em></span>
           </h1>
 
           <p className="hero__lede">

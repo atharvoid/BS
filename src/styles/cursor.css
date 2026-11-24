@@ -1,94 +1,178 @@
-/* The pointer (Cursor.tsx). Only active with a mouse; see the component. */
+/* ==========================================================================
+   The pointer.
 
-/* The system cursor is hidden only while the custom one is showing, and
-   never in text fields. */
-html.has-cursor,
-html.has-cursor * { cursor: none !important; }
-html.has-cursor :is(input:not([type='radio']):not([type='checkbox']), textarea, select, [contenteditable='true']) { cursor: text !important; }
-html.has-cursor select { cursor: default !important; }
+   One shape, one word. Normal movement is a small restrained ring; over
+   navigation it is a 60px contrast-inverting disc holding the word Explore; over a
+   draggable scene it is the same 60px disc holding the word Drag, shrinking
+   slightly while the drag is underway. The separate dot is hidden whenever a
+   label is showing, so a labelled circle only ever contains its word.
 
-.cursor {
+   Colour comes from the section the pointer is over, read from that section's
+   declared theme (`data-tone`), never guessed per component:
+
+   - dark ground  -> warm-white disc, dark text
+   - light ground -> dark disc, warm-white text
+
+   That keeps contrast predictable on every section without a second palette.
+   ========================================================================== */
+
+.cursor[data-mode] {
   position: fixed;
   inset: 0;
-  z-index: 2147483000;
+  z-index: 250;
+  display: block;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 200ms var(--ease-out);
 }
-.cursor[data-visible='true'] { opacity: 1; }
-.cursor[data-mode='native'] { opacity: 0; }
 
-.cursor__dot,
-.cursor__ring {
+.cursor[data-visible='true'] { opacity: 1; }
+
+@media (any-hover: hover) and (any-pointer: fine) {
+  html.has-custom-cursor,
+  html.has-custom-cursor * { cursor: none !important; }
+}
+
+.cursor[data-mode] .cursor__ring,
+.cursor[data-mode] .cursor__dot {
   position: absolute;
   top: 0;
   left: 0;
-  will-change: transform;
+  opacity: 1;
+  pointer-events: none;
 }
 
-/* The dot: ink with a thin light halo, so it reads on cotton, ink, every
-   dye and every photograph. */
-.cursor__dot::before {
-  content: '';
-  position: absolute;
-  width: 7px;
-  height: 7px;
-  margin: -3.5px 0 0 -3.5px;
-  border-radius: 50%;
-  background: #14110d;
-  box-shadow: 0 0 0 1.5px rgba(250, 245, 234, 0.92);
-  transition: transform 220ms var(--ease-out);
-}
+/* ---- The resting pointer ------------------------------------------------- */
 
-/* The ring, and the disc it becomes. Sized with scale so it never relayouts. */
-.cursor__disc {
-  position: absolute;
-  width: 64px;
-  height: 64px;
-  margin: -32px 0 0 -32px;
-  border-radius: 50%;
+.cursor[data-mode] .cursor__ring {
   display: grid;
   place-items: center;
-  border: 1.5px solid var(--action-deep);
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--cursor-ring, var(--cursor-accent, #e0a262));
+  border-radius: 50%;
   background: transparent;
-  transform: scale(0.5);
-  transition:
-    transform 380ms cubic-bezier(.2, .8, .2, 1),
-    background-color 260ms var(--ease-out),
-    border-color 260ms var(--ease-out);
+  box-shadow: 0 0 0 1px rgba(18, 16, 13, 0.25);
+  transition: width 170ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 170ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 150ms ease-out,
+    border-color 150ms ease-out;
 }
+
+.cursor[data-mode] .cursor__dot {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--cursor-dot, var(--cursor-ink));
+  box-shadow: 0 0 0 1px var(--cursor-dot-shadow, rgba(0, 0, 0, 0.4));
+  transition: opacity 120ms ease-out, background-color 150ms ease-out, transform 120ms ease-out;
+}
+
+/* Ordinary buttons and links: a small, honestly-sized response. */
+.cursor[data-mode='action'] .cursor__ring {
+  width: 26px;
+  height: 26px;
+}
+
+/* ---- Labelled discs ------------------------------------------------------ */
+
+/* Explore and Drag are the same disc at the same size; only the word and the
+   colours differ. Round throughout: no oval, no stretch. */
+.cursor[data-mode='explore'] .cursor__ring,
+.cursor[data-mode='scene'] .cursor__ring {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--cursor-disc, #f7f0e2);
+  border-color: transparent;
+  box-shadow: none;
+  transition: width 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 150ms ease-out;
+}
+
+/* Pressed into a drag: the same disc, a little smaller. */
+.cursor[data-mode='dragging'] .cursor__ring {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--cursor-disc, #f7f0e2);
+  border-color: transparent;
+  box-shadow: none;
+  transition: width 140ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 140ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 150ms ease-out;
+}
+
+/* The word, centred both ways in the disc. Letter-spacing is tight enough that
+   Explore fits inside 60px with room to spare. */
 .cursor__label {
-  font-family: var(--f-sans);
-  font-size: 0.78rem;
+  color: var(--cursor-text, #17140f);
+  font-family: var(--f-mono);
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.01em;
-  color: var(--ink);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
   opacity: 0;
-  transform: scale(0.8);
-  transition: opacity 200ms var(--ease-out), transform 300ms var(--ease-out);
+  text-shadow: none;
+  transition: opacity 130ms ease-out;
 }
 
-/* Over a link or a button: the ring swells and takes a wash of gold. */
-.cursor[data-mode='action'] .cursor__disc {
-  transform: scale(0.78);
-  background-color: color-mix(in srgb, var(--action) 22%, transparent);
+.cursor[data-mode='explore'] .cursor__label,
+.cursor[data-mode='scene'] .cursor__label,
+.cursor[data-mode='dragging'] .cursor__label {
+  opacity: 1;
 }
-.cursor[data-mode='action'] .cursor__dot::before { transform: scale(0.5); }
 
-/* Over the globe, the cloth or a closed product area: a labelled gold disc. */
-.cursor[data-mode='label'] .cursor__disc {
-  transform: scale(1);
-  background-color: var(--action);
-  border-color: var(--action);
+/* No second mark inside a labelled circle. */
+.cursor[data-mode='explore'] .cursor__dot,
+.cursor[data-mode='scene'] .cursor__dot,
+.cursor[data-mode='dragging'] .cursor__dot {
+  opacity: 0;
+  transform: scale(0.4);
 }
-.cursor[data-mode='label'] .cursor__label { opacity: 1; transform: none; }
-.cursor[data-mode='label'] .cursor__dot::before { transform: scale(0); }
 
-.cursor[data-pressed='true'] .cursor__disc { transform: scale(0.42); }
-.cursor[data-pressed='true'][data-mode='label'] .cursor__disc { transform: scale(0.88); }
-.cursor[data-pressed='true'][data-mode='action'] .cursor__disc { transform: scale(0.66); }
+/* ---- Tone ---------------------------------------------------------------- */
 
-@media (forced-colors: active), (prefers-reduced-motion: reduce), (hover: none), (pointer: coarse) {
-  .cursor { display: none; }
+/* Dark sections: bright white dot with clear contrast against dark grounds */
+.cursor[data-tone='dark'] {
+  --cursor-disc: #f7f0e2;
+  --cursor-text: #17140f;
+  --cursor-ink: #ffffff;
+  --cursor-dot: #ffffff;
+  --cursor-dot-shadow: rgba(0, 0, 0, 0.7);
+  --cursor-ring: rgba(247, 240, 226, 0.5);
+  --cursor-accent: #e0a262;
 }
-@media print { .cursor { display: none; } }
+
+/* Light sections: deep ink dot with crisp contrast against light grounds */
+.cursor[data-tone='light'] {
+  --cursor-disc: #17140f;
+  --cursor-text: #f7f0e2;
+  --cursor-ink: #12100d;
+  --cursor-dot: #12100d;
+  --cursor-dot-shadow: rgba(255, 255, 255, 0.6);
+  --cursor-ring: rgba(18, 16, 13, 0.4);
+  --cursor-accent: #9c3a2d;
+}
+
+@media (forced-colors: active), (prefers-reduced-motion: reduce) {
+  .cursor[data-mode] { display: none; }
+}
+
+/* Explore is a contrast lens, not an opaque badge: invert both the surface
+   and any lettering beneath it. Keep the label itself legible and the separate
+   dot hidden. Drag retains its theme-based solid treatment. */
+.cursor[data-mode='explore'] {
+  mix-blend-mode: difference;
+}
+.cursor[data-mode='explore'] .cursor__ring {
+  background: #fff;
+  border-color: transparent;
+}
+.cursor[data-mode='explore'] .cursor__label {
+  color: #000;
+}

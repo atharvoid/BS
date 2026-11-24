@@ -61,7 +61,7 @@ export function GlobePoster() {
           width={1600}
           height={1600}
           fetchPriority="high"
-          decoding="async"
+          decoding="sync"
           style={{ left: box.left, top: box.top, width: box.size, height: box.size }}
         />
       )}

@@ -1113,3 +1113,8 @@
     background: var(--action-deep);
   }
 }
+
+/* Stage hand-over: the still fades off the live scene (Stage.tsx). */
+.scene-poster { transition: opacity 400ms ease-out; }
+.scene-poster[data-leaving='true'] { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .scene-poster { transition: none; } }

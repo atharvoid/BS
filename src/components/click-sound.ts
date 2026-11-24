@@ -1,7 +1,9 @@
 /* Interface sound and background music, made in the browser with Web Audio.
  * No audio files are downloaded and nothing needs a licence.
  *
- * Three interface sounds:
+ * Four interface sounds:
+ *   mouse  a classic mouse click (press, then release), for the page links
+ *          in the header and menu: Products, Textiles, About
  *   tick   a small woody tap, for links and ordinary controls
  *   chime  two soft bell partials a fifth apart, for primary buttons
  *   dip    a low, soft drop, for opening a product area
@@ -61,7 +63,7 @@ export function audio(): AudioContext | null {
   return ctx
 }
 
-type Sound = 'tick' | 'chime' | 'dip'
+type Sound = 'mouse' | 'tick' | 'chime' | 'dip'
 
 function envelope(ac: AudioContext, t: number, peak: number, attack: number, release: number) {
   const g = ac.createGain()
@@ -80,6 +82,36 @@ export function playSound(kind: Sound = 'tick', force = false) {
   if (ac.state === 'suspended') void ac.resume()
   const t = ac.currentTime + 0.002
   const vary = 1 + (Math.random() - 0.5) * 0.06 // never quite the same twice
+
+  if (kind === 'mouse') {
+    // A classic mouse button: a crisp press and, a moment later, a quieter
+    // release. Each is a very short burst of bright noise with a little body.
+    for (const [at, peak, freq] of [[0, 0.11, 4200], [0.035, 0.05, 3600]] as const) {
+      const start = t + at
+      const src = ac.createBufferSource()
+      src.buffer = noise
+      const high = ac.createBiquadFilter()
+      high.type = 'bandpass'
+      high.frequency.value = freq * vary
+      high.Q.value = 0.9
+      const g = envelope(ac, start, peak, 0.0005, 0.006)
+      src.connect(high).connect(g).connect(out)
+      src.start(start)
+      src.stop(start + 0.02)
+      const body = ac.createOscillator()
+      body.type = 'square'
+      body.frequency.setValueAtTime(1900 * vary, start)
+      body.frequency.exponentialRampToValueAtTime(900, start + 0.006)
+      const bg = envelope(ac, start, peak * 0.18, 0.0005, 0.007)
+      const soft = ac.createBiquadFilter()
+      soft.type = 'lowpass'
+      soft.frequency.value = 5000
+      body.connect(soft).connect(bg).connect(out)
+      body.start(start)
+      body.stop(start + 0.012)
+    }
+    return
+  }
 
   if (kind === 'tick') {
     // Wood: a short triangle that drops in pitch, plus a breath of noise.
@@ -151,6 +183,7 @@ const TYPING = 'input:not([type="checkbox"]):not([type="radio"]):not([type="subm
 
 function soundFor(control: Element): Sound {
   if (control.matches('.vat__tab')) return 'dip'
+  if (control.matches('.nav__link, .drawer__link')) return 'mouse'
   if (control.matches('.btn, [type="submit"]')) return 'chime'
   return 'tick'
 }
