@@ -1,4 +1,3 @@
-import React from 'react'
 import { Link } from 'react-router-dom'
 import { useReveal } from '../components/useReveal'
 import { Arrow } from '../components/Nav'

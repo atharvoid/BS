@@ -1,5 +1,3 @@
-import type { CategoryMotif } from './three/categoryObjects'
-
 /**
  * Single source of truth for the words on this site.
  *
@@ -101,14 +99,8 @@ export const ENQUIRY_FIELDS = {
   },
 } as const
 
-const CATEGORY_ARTWORK: Record<CategoryId, { motif: CategoryMotif; note: string; to?: string }> = {
-  textiles: { motif: 'textiles', note: 'Our primary product line', to: '/textiles' },
-  handicrafts: { motif: 'handicrafts', note: 'Items and materials' },
-  'agriculture-food': { motif: 'agriculture', note: 'Crops and food products' },
-  'industrial-materials': { motif: 'industrial', note: 'Inputs and components' },
-  'organic-sustainable': { motif: 'organic', note: 'Certification and traceability' },
-  general: { motif: 'general', note: 'Other products' },
-}
+/** Categories with a page of their own. */
+const CATEGORY_PAGES: Partial<Record<CategoryId, string>> = { textiles: '/textiles' }
 
 /**
  * One picture per category, shown on a sample card inside the open swatch
@@ -144,7 +136,7 @@ export const IMAGE_CAPTION = 'Representative image, not a photograph of supplier
 
 export const CATEGORY_JOURNEY = CATEGORIES.map(category => ({
   ...category,
-  ...CATEGORY_ARTWORK[category.id],
+  to: CATEGORY_PAGES[category.id],
   image: CATEGORY_IMAGES[category.id],
 }))
 

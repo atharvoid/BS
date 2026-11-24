@@ -13,7 +13,6 @@ import { reducedMotion } from './motion'
 import { raycastGlobe } from './globe-raycast'
 import {
   carveVertex,
-  facingCamera,
   decodeRings,
   getLandMask,
   greatCircle,
@@ -187,12 +186,6 @@ const globeFrag = /* glsl */ `
 /* -------------------------------------------------------------------------- */
 /* Routes: great circles with a travelling comet                               */
 /* -------------------------------------------------------------------------- */
-
-const ROUTE_COLORS: Record<string, string> = {
-  saffron: '#e0a25e',
-  madder: '#c4624c',
-  verdigris: '#6fae94',
-}
 
 const ROUTE_HEX: Record<string, string> = {
   saffron: '#f0b26a',

@@ -31,22 +31,6 @@ export function llToVec(lon: number, lat: number, r = 1, target = new THREE.Vect
   return target.set(r * Math.cos(theta) * Math.sin(phi), r * Math.sin(theta), r * Math.cos(theta) * Math.cos(phi))
 }
 
-/**
- * Equirectangular UV to a sphere point, matching the mask's pixel layout:
- * u = 0 at 180W, v = 0 at the north pole. This is the same mapping three's
- * SphereGeometry uses, so a plane of vertices can be bent onto the sphere and
- * the coastline lines will not drift relative to the sampled mask.
- */
-export function uvToVec(u: number, v: number, r = 1, target = new THREE.Vector3()) {
-  const phi = (u - 0.5) * Math.PI * 2
-  const theta = (v - 0.5) * Math.PI
-  return target.set(
-    r * Math.cos(theta) * Math.sin(phi),
-    r * Math.sin(theta),
-    r * Math.cos(theta) * Math.cos(phi),
-  )
-}
-
 export type PackedLines = {
   counts: number[]
   data: string
@@ -167,25 +151,6 @@ export async function loadMaskPixels(): Promise<{ data: Uint8Array; width: numbe
   const res = await fetch(new URL('./geo/land.mask', import.meta.url))
   if (!res.ok) throw new Error('Could not load land coverage')
   return decodeMask(await res.arrayBuffer())
-}
-
-/**
- * Dot product between a point on the unit sphere and the direction from the
- * globe's centre to the camera expressed in the globe's own frame. Anything at
- * or below zero is on the far side: hidden, it would show through the ocean as
- * a tangle of stray lines, which three has no depth-buffer trick to avoid
- * because the lines sit outside the surface they belong to.
- */
-export function facingCamera(
-  group: THREE.Object3D,
-  camera: THREE.Camera,
-  point: THREE.Vector3,
-  target = new THREE.Vector3(),
-) {
-  group.updateWorldMatrix(true, false)
-  target.copy(camera.position)
-  group.worldToLocal(target)
-  return point.dot(target.normalize())
 }
 
 /** Merge rings into one LineSegments geometry, skipping antimeridian jumps. */

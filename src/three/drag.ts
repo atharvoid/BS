@@ -1,4 +1,3 @@
-import * as THREE from 'three'
 import type { ThreeEvent } from '@react-three/fiber'
 
 type Pointer = ThreeEvent<PointerEvent>
@@ -98,8 +97,4 @@ export function createDrag(tiltLimit = 0.44): DragState {
     if (event.pointerId === pointerId) state.cancel()
   }
   return state
-}
-
-export function damp(current: number, target: number, lambda: number, dt: number) {
-  return THREE.MathUtils.lerp(current, target, 1 - Math.exp(-lambda * dt))
 }

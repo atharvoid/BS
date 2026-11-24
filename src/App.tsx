@@ -113,7 +113,7 @@ function PageMetadata() {
     document.querySelector('meta[property="og:title"]')?.setAttribute('content', title)
     document.querySelector('meta[property="og:description"]')?.setAttribute('content', description)
     const publicPage = ['/', '/textiles', '/about', '/enquiry', '/privacy'].includes(pathname)
-    const preview = /(^localhost$|^127\.|\.e2b\.app$)/.test(location.hostname)
+    const preview = /^(localhost|127\.\d+\.\d+\.\d+|\[::1\])$/.test(location.hostname)
     document.querySelector('meta[name="robots"]')?.setAttribute('content', publicPage && !preview ? 'index,follow' : 'noindex,follow')
     // Never publish an invented domain. An optional verified deployment URL
     // overrides the current origin; query strings and fragments are excluded.

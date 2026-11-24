@@ -81,7 +81,6 @@ function initialQuality(): Quality {
 /** What the device managed to sustain, before motion preferences are applied. */
 let sustained: Quality = initialQuality()
 let reduced = motionQuery()?.matches ?? false
-let suspended = false
 const listeners = new Set<() => void>()
 
 /** A reduced-motion visitor is always served a still scene, whatever the device
@@ -107,7 +106,6 @@ let running = false
 let owners = 0
 let raf = 0
 let windowStart = 0
-let frames = 0
 let slowRun = 0
 let fastRun = 0
 let changedAt = 0
@@ -191,17 +189,13 @@ function step(time: number) {
   if (!running) return
   raf = requestAnimationFrame(step)
   if (document.hidden) {
-    frames = 0
     windowStart = time
     return
   }
   if (!windowStart) windowStart = time
-  frames += 1
   const elapsed = time - windowStart
   if (elapsed < WINDOW_MS) return
 
-  const fps = (frames * 1000) / elapsed
-  frames = 0
   windowStart = time
 
   /* A single long task during the window is enough to call it slow, whatever
@@ -275,10 +269,9 @@ function step(time: number) {
 }
 
 function start() {
-  if (running || suspended || typeof window === 'undefined' || typeof requestAnimationFrame !== 'function') return
+  if (running || typeof window === 'undefined' || typeof requestAnimationFrame !== 'function') return
   running = true
   windowStart = 0
-  frames = 0
   slowRun = 0
   fastRun = 0
   raf = requestAnimationFrame(step)
@@ -295,24 +288,13 @@ function stop() {
 export function watchPerformance() {
   owners += 1
   /* Nothing to sample while the visitor has asked for no motion. */
-  if (suspended || reduced) return
+  if (reduced) return
   start()
 }
 
 export function releasePerformance() {
   owners = Math.max(0, owners - 1)
   if (owners === 0) stop()
-}
-
-export function suspendPerformance() {
-  suspended = true
-  stop()
-}
-
-export function resumePerformance() {
-  if (!suspended) return
-  suspended = false
-  if (owners > 0) start()
 }
 
 /* -------------------------------------------------------------------------- */
@@ -343,7 +325,7 @@ if (typeof window !== 'undefined') {
        reading of "measure only while rendering" — and it means no work is being
        done on behalf of someone who asked for less of it. */
     if (reduced) stop()
-    else if (owners > 0 && !suspended) start()
+    else if (owners > 0) start()
     publish()
   })
   const nav = navigator as Navigator & { connection?: { saveData?: boolean; addEventListener?: (t: string, f: () => void) => void } }
@@ -355,7 +337,6 @@ if (typeof window !== 'undefined') {
   })
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-      frames = 0
       windowStart = 0
     }
   })

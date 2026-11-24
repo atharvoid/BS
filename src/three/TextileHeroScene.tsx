@@ -1,15 +1,13 @@
-import React from 'react'
 import { useThree } from '@react-three/fiber'
 import { useCompactLayout } from '../components/useCompactLayout'
 import { StageScene } from './Stage'
-import { ClothPanel, Draggable, Lights, Studio, getTextile } from './objects'
+import { ClothPanel, Draggable, Lights, Studio } from './objects'
 
 /* ==========================================================================
    The textiles page's 3D, on its own.
 
-   The cloth loads behind the scene boundary. The five flat woven swatches are
-   generated ahead of time by scripts/build-swatches.mjs and load as images;
-   reading the Fabric Types section never needs this renderer.
+   The cloth loads behind the scene boundary, so the page's text never waits
+   for the renderer.
    ========================================================================== */
 
 /** The textile hero: one cloth, framed into whichever half of the hero it owns. */

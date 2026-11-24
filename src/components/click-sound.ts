@@ -172,11 +172,6 @@ export function playSound(kind: Sound = 'tick', force = false) {
   src.stop(t + 0.3)
 }
 
-/** The site's ordinary click: the classic mouse click. */
-export function playClick(force = false) {
-  playSound('mouse', force)
-}
-
 const CONTROL = 'a[href], button, [role="button"], summary, select, label, input[type="checkbox"], input[type="radio"], input[type="submit"], [role="radio"], [role="option"], [role="combobox"]'
 const TYPING = 'input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]), textarea, [contenteditable="true"]'
 
