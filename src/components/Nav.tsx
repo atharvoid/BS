@@ -2,6 +2,8 @@ import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { BUSINESS } from '../content'
 import { Logo } from './Logo'
+import { ThemeToggle } from './ThemeToggle'
+import { SoundToggle } from './SoundToggle'
 import { useCompactLayout } from './useCompactLayout'
 
 const LINKS = [
@@ -116,6 +118,11 @@ export function Nav() {
             </Link>
           </div>
 
+          <div className="nav__theme">
+            <SoundToggle />
+            <ThemeToggle />
+          </div>
+
           <button
             ref={toggle}
             className="nav__toggle"
@@ -148,7 +155,7 @@ export function Nav() {
           ))}
         </nav>
         <div className="drawer__foot">
-          <Link to="/enquiry" className="btn btn--light drawer__cta" aria-current={current('/enquiry')} onClick={closeMenu}>
+          <Link to="/enquiry" className="btn drawer__cta" aria-current={current('/enquiry')} onClick={closeMenu}>
             Start an enquiry
             <Arrow />
           </Link>

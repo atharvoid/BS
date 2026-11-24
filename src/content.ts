@@ -16,24 +16,23 @@ export const BUSINESS = {
   email: 'bsexim.nexus@gmail.com',
   descriptor: 'Sourcing & trade coordination, India',
   status: 'Developing business',
-  owner: 'Bhupendra Sain',
-  ownerRole: 'Founder',
   location: 'India',
 } as const
 
 export const CATEGORIES = [
-  { id: 'textiles', label: 'Textiles & fabrics', hint: 'Tell us the fabric, intended use and finish. Include a sample reference or approximate quantity if you have one.' },
-  { id: 'handicrafts', label: 'Handicrafts & home decor', hint: 'Describe the item, material, dimensions and finish. Mention any reference images you have.' },
-  { id: 'agriculture-food', label: 'Agriculture & food', hint: 'Name the crop or food product. Include the grade, quantity and packing if known.' },
-  { id: 'industrial-materials', label: 'Industrial materials', hint: 'Name the material or component. Include its grade, specification or reference if available.' },
-  { id: 'organic-sustainable', label: 'Organic & sustainable products', hint: 'Name the product and any certification or traceability documents you need.' },
-  { id: 'general', label: 'Other sourcing requests', hint: 'Tell us what you need or supply, how it will be used and where it is going.' },
+  { id: 'textiles', label: 'Textiles & fabrics', scope: 'Fabrics, yarns, made-ups', hint: 'Tell us the fabric, intended use and finish. Include a sample reference or approximate quantity if you have one.' },
+  { id: 'handicrafts', label: 'Handicrafts & home decor', scope: 'Pottery, woodwork, decor', hint: 'Describe the item, material, dimensions and finish. Mention any reference images you have.' },
+  { id: 'agriculture-food', label: 'Agriculture & food', scope: 'Grains, spices, produce', hint: 'Name the crop or food product. Include the grade, quantity and packing if known.' },
+  { id: 'industrial-materials', label: 'Industrial materials', scope: 'Metals and components', hint: 'Name the material or component. Include its grade, specification or reference if available.' },
+  { id: 'organic-sustainable', label: 'Organic & sustainable products', scope: 'Certified, traceable goods', hint: 'Name the product and any certification or traceability documents you need.' },
+  { id: 'general', label: 'Other sourcing requests', scope: 'Anything else you need', hint: 'Tell us what you need or supply, how it will be used and where it is going.' },
 ] as const
 
 export type CategoryId = (typeof CATEGORIES)[number]['id']
 
 export function getCategory(id: string | null | undefined) {
-  return CATEGORIES.find((category) => category.id === id) ?? CATEGORIES[CATEGORIES.length - 1]
+  // No category given (or an unknown one): the first in the list.
+  return CATEGORIES.find((category) => category.id === id) ?? CATEGORIES[0]
 }
 
 /**
@@ -43,10 +42,10 @@ export function getCategory(id: string | null | undefined) {
  * exist.
  */
 export const FABRIC_TOPICS = [
-  { n: '01', title: 'Fabric and use', body: 'What are you making, and how should the fabric feel?', field: ['Fabric', 'Use'] },
-  { n: '02', title: 'Samples', body: 'Mention a sample or reference you would like to match.', field: ['Samples', 'Reference'] },
-  { n: '03', title: 'Quantity and packing', body: 'Include an approximate quantity if you have one.', field: ['Quantity', 'Packing'] },
-  { n: '04', title: 'Acceptance and terms', body: 'Which details need agreement before you can place an order?', field: ['Acceptance', 'Terms'] },
+  { n: '1', title: 'Fabric and use', body: 'What are you making, and how should the fabric feel?' },
+  { n: '2', title: 'Samples', body: 'Is there a sample or reference to match?' },
+  { n: '3', title: 'Quantity and packing', body: 'Roughly how much, and how should it be packed?' },
+  { n: '4', title: 'Acceptance and terms', body: 'What must be agreed before you order?' },
 ] as const
 
 export const FOCUS_AREAS = [
@@ -66,44 +65,6 @@ export const FOCUS_AREAS = [
   },
 ] as const
 
-export const STAGES = [
-  {
-    n: '01',
-    title: 'Share the requirement',
-    body: 'The buyer or supplier explains what they need or offer, and how it will be used. A finished specification is not required to begin. A short description is enough.',
-    field: ['What', 'Intended use', 'Location'],
-    object: 'bolt',
-    objectLabel: 'Unfolded bolt',
-  },
-  {
-    n: '02',
-    title: 'Review material options',
-    body: 'The requirement and potential supply options can be assessed together. Materials and samples may be discussed, along with references the two sides already trust.',
-    field: ['Composition', 'Construction', 'Samples'],
-    object: 'shuttle',
-    objectLabel: 'Weaving shuttle',
-  },
-  {
-    n: '03',
-    title: 'Agree the details',
-    body: 'The parties clarify specifications, quantities, acceptance criteria and commercial terms. What is agreed at this stage is what both sides can hold each other to.',
-    field: ['Quantity', 'Acceptance', 'Terms'],
-    object: 'spool',
-    objectLabel: 'Spun yarn bobbin',
-  },
-  {
-    n: '04',
-    title: 'Agree the next steps',
-    body: 'The enquiry establishes what sourcing, documentation and logistics coordination can be provided. Every item is confirmed case by case, in writing, before it is relied upon.',
-    field: ['Documentation', 'Logistics', 'Coordination'],
-    object: 'reed',
-    objectLabel: 'Brass reed',
-  },
-] as const
-
-export const PROCESS_CAVEAT =
-  'These stages describe a basis for discussion. They are not a guarantee that every service or supply option is available.'
-
 export const FIRST_MESSAGE = [
   'What you are looking for, or what you supply',
   'How it will be used',
@@ -111,45 +72,7 @@ export const FIRST_MESSAGE = [
   'The destination, or your business location',
 ] as const
 
-export const LATER_DISCUSSIONS = [
-  {
-    t: 'Material',
-    d: 'Composition, construction, weight, width and finish.',
-  },
-  {
-    t: 'Evidence',
-    d: 'Samples and references.',
-  },
-  {
-    t: 'Volume',
-    d: 'Quantity and packing.',
-  },
-  {
-    t: 'Terms',
-    d: 'Acceptance criteria and commercial terms.',
-  },
-] as const
-
-export const BOUNDARIES = [
-  {
-    t: 'Imagery is representative',
-    d: 'Textile photographs on this site are chosen to represent material families. They are not evidence of supplier stock, and they are not photographs of specific products on offer.',
-  },
-  {
-    t: 'Scope is set per enquiry',
-    d: 'Specific fabric options and the services that can be provided are discussed case by case. This site does not carry a catalogue of confirmed availability.',
-  },
-  {
-    t: 'No performance claims',
-    d: 'No certifications, customer numbers, shipment history, guaranteed quality or shipping performance are claimed here.',
-  },
-  {
-    t: 'Nothing automated',
-    d: 'There are no accounts, no payments, and no automatic tracking. A person reads each enquiry and replies from the business inbox.',
-  },
-] as const
-
-/** The five required answers. Kept in one place so the form and its copy cannot drift. */
+/** The six required answers. Kept in one place so the form and its copy cannot drift. */
 export const ENQUIRY_FIELDS = {
   role: {
     label: 'Which best describes you?',
@@ -171,6 +94,11 @@ export const ENQUIRY_FIELDS = {
   },
   name: { label: 'Your name', placeholder: 'Full name' },
   email: { label: 'Email address', hint: 'Replies come from bsexim.nexus@gmail.com.' },
+  phone: {
+    label: 'Phone number',
+    hint: 'Include the country code, so we can call or message you about the enquiry.',
+    placeholder: '+91 98765 43210',
+  },
 } as const
 
 const CATEGORY_ARTWORK: Record<CategoryId, { motif: CategoryMotif; note: string; to?: string }> = {
@@ -182,33 +110,60 @@ const CATEGORY_ARTWORK: Record<CategoryId, { motif: CategoryMotif; note: string;
   general: { motif: 'general', note: 'Other products' },
 }
 
+/**
+ * One picture per category, shown on a sample card inside the open swatch
+ * strip and in the larger view. To use a real photograph, put the file in
+ * public/photos/ and change `src`, `alt` and `kind` here; nothing else needs
+ * touching. Every image is captioned as representative, because none of them
+ * is a photograph of supplier stock.
+ */
+/* Photographs are AI-generated (arena.ai, prompts in docs/redesign/IMAGE-PROMPTS.md)
+   and saved at 1600px with an 800px `-small` version beside each. */
+export const CATEGORY_IMAGES: Record<CategoryId, { src: string; alt: string; kind: 'render' | 'photo' }> = {
+  textiles: { src: '/photos/textiles.webp', alt: 'A roll of indigo cotton twill with a folded swatch beside it', kind: 'photo' },
+  handicrafts: { src: '/photos/handicrafts.webp', alt: 'A blue-pottery vase painted with indigo flowers, beside a small carved wooden box', kind: 'photo' },
+  'agriculture-food': { src: '/photos/agriculture.webp', alt: 'Wheat ears and grain spilling from a jute sack, with turmeric root in a brass bowl', kind: 'photo' },
+  'industrial-materials': { src: '/photos/industrial.webp', alt: 'A coil of copper wire, steel bolts and a length of aluminium extrusion', kind: 'photo' },
+  'organic-sustainable': { src: '/photos/organic.webp', alt: 'Open cotton bolls on a dried stem', kind: 'photo' },
+  general: { src: '/photos/crate.webp', alt: 'A pine export crate with the BS EXIMNEXUS logo printed on its front', kind: 'photo' },
+}
+
+export const REGION_IMAGES = {
+  'tamil-nadu': { src: '/photos/region-tamil-nadu.webp', alt: 'Folded indigo handloom cotton with a fine check' },
+  gujarat: { src: '/photos/region-gujarat.webp', alt: 'Folded block-printed cotton in bronze and rust' },
+} as const
+
+/** The 800px version of a photo saved beside it, for srcset. */
+export const smallPhoto = (src: string) => src.replace(/\.webp$/, '-small.webp')
+
+export const IMAGE_CAPTION = 'Representative image, not a photograph of supplier stock.'
+
 export const CATEGORY_JOURNEY = CATEGORIES.map(category => ({
   ...category,
   ...CATEGORY_ARTWORK[category.id],
+  image: CATEGORY_IMAGES[category.id],
 }))
 
 export const ABOUT_BUSINESS = {
-  eyebrow: 'Desk coordinates',
-  title: 'Trade coordination and export sourcing in India.',
-  lede: 'BS EXIMNEXUS is an export sourcing and trade coordination desk based in India, founded by Bhupendra Sain.',
+  eyebrow: 'About',
+  title: 'Trade coordination and export sourcing in India',
+  lede: 'We connect overseas buyers and buyers in India with Indian suppliers, and help each side agree what is needed before anything is ordered.',
 } as const
 
-export const ABOUT_OWNER = {
-  name: 'Bhupendra Sain',
-  title: 'Founder, BS EXIMNEXUS',
-  summary: [
-    'Bhupendra Sain coordinates export sourcing from India. He works directly with overseas buyers, buyers in India, and production mills.',
-    'His work includes reviewing technical specifications, checking fabric swatches and production samples, agreeing on commercial terms in writing, and tracking orders through dispatch.',
-    'All enquiries are handled directly. Questions on specifications, samples, or order status receive written replies from the business mailbox.',
-  ],
-} as const
+/**
+ * The company's vision, in the client's own words. Leave `body` empty until
+ * the text arrives: the About page only shows this card when there is text,
+ * so nothing half-finished ever appears on the live site.
+ */
+export const ABOUT_VISION: { title: string; body: readonly string[] } = {
+  title: 'Our vision',
+  body: [],
+}
 
 export const ABOUT_DESK_FACTS = [
   { label: 'Business name', value: 'BS EXIMNEXUS' },
-  { label: 'Founder', value: 'Bhupendra Sain' },
   { label: 'Operating base', value: 'India' },
-  { label: 'Lead category', value: 'Textiles and fabrics' },
-  { label: 'Secondary scope', value: 'Handicrafts, agriculture, industrial materials' },
+  { label: 'Categories', value: 'Textiles and fabrics, handicrafts and home decor, agriculture and food, industrial materials, organic and sustainable products, and other sourcing requests' },
   { label: 'Direct email', value: 'bsexim.nexus@gmail.com' },
   { label: 'Trade terms', value: 'Agreed in writing per enquiry' },
 ] as const
@@ -216,17 +171,17 @@ export const ABOUT_DESK_FACTS = [
 export const ABOUT_STANDARDS = [
   {
     num: '01',
-    title: 'Specification review',
-    body: 'Each enquiry starts with exact specifications: material composition, yarn count, weight in GSM, width, and quantity.',
+    title: 'Specifications first',
+    body: 'Each enquiry starts with the specifics: what the product is, its grade or composition, the quantity, and where it is going.',
   },
   {
     num: '02',
-    title: 'Sample verification',
-    body: 'Physical swatches or lab dips are checked against buyer requirements before bulk production starts.',
+    title: 'Terms in writing',
+    body: 'Prices, minimum quantities, packing and delivery terms are confirmed in writing before anything ships.',
   },
   {
     num: '03',
-    title: 'Written terms',
-    body: 'Prices, minimum quantities, packaging specifications, and delivery terms are confirmed in writing before shipment.',
+    title: 'A person replies',
+    body: 'Every enquiry is read and answered by a person, by email from the business inbox.',
   },
 ] as const

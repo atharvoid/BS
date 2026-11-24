@@ -6,7 +6,7 @@ import path from 'node:path'
 // Capture with the asset-authoring build; never use a screenshot of the website.
 const root = process.argv[2]
 if (!root) throw new Error('Pass the directory containing matching white/black model captures.')
-const available = ['globe-mobile','globe-desktop','cloth-mobile','textiles','handicrafts','agriculture','industrial','organic','general']
+const available = ['globe-square','globe-mobile','globe-desktop','cloth-mobile','textiles','handicrafts','agriculture','industrial','organic','general']
 // Optional names allow replacement assets without rewriting unrelated posters.
 const selected = process.argv.slice(3).filter(arg => !arg.startsWith('--quality='))
 const quality = Number(process.argv.find(arg => arg.startsWith('--quality='))?.split('=')[1] ?? 90)

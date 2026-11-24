@@ -3,8 +3,7 @@ import { Stage } from '../three/Stage'
 import React from 'react'
 import { useReveal } from '../components/useReveal'
 import { Arrow } from '../components/Nav'
-import { FOCUS_AREAS } from '../content'
-import { RegionWeave } from '../components/RegionWeave'
+import { FOCUS_AREAS, REGION_IMAGES, smallPhoto } from '../content'
 import { FabricBrief } from '../components/FabricBrief'
 import { EnquiryForm, useEnquiryDraft } from '../components/EnquiryForm'
 
@@ -22,16 +21,17 @@ export default function Textiles() {
 
   return (
     <>
-      <section className="page-hero page-hero--textile page-hero--right on-dark grain">
+      <section className="page-hero page-hero--textile page-hero--right">
         <div className="page-hero__canvas">
           <Stage
             className="page-hero__stage"
-            label="Green woven cloth illustration"
+            label="Indigo woven cloth illustration"
             z={6.2}
             fov={36}
             fallback={<img className="cloth-poster" src="/posters/cloth-mobile.webp" srcSet="/posters/cloth-mobile-small.webp 500w, /posters/cloth-mobile.webp 1000w" sizes="(max-width:540px) 100vw, 500px" alt="" width={1000} height={800} />}
             load={loadHeroScene}
             finiteMotion
+            posterWhileLoading={false}
           />
           <p className="drag-hint" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none">
@@ -41,31 +41,32 @@ export default function Textiles() {
           </p>
         </div>
         <div className="shell page-hero__inner">
-          <p className="eyebrow">Textiles &amp; fabrics</p>
-          <h1 className="page-hero__title">Textiles and fabrics <em className="display-italic">from India</em>.</h1>
-          <p className="page-hero__lede">Explore the regions where we’re beginning our sourcing work.</p>
-          <Link to="/textiles#textile-enquiry" className="btn btn--light">Start a textile enquiry <Arrow /></Link>
+          <h1 className="page-hero__title">Textiles and fabrics from India</h1>
+          <p className="page-hero__lede">Cotton, silk and blended fabrics, starting with two of India’s textile regions. Tell us what you are making and we will take it from there.</p>
+          <div className="page-hero__actions">
+            <Link to="/textiles#textile-enquiry" className="btn">Start a textile enquiry <Arrow /></Link>
+          </div>
         </div>
       </section>
 
       <section className="areas on-indigo grain" id="areas">
         <div className="shell">
-          <div className="areas__head"><p className="eyebrow reveal">Initial sourcing areas</p><h2 className="areas__title reveal">Tamil Nadu and <em className="display-italic">Gujarat</em>.</h2></div>
+          <div className="areas__head"><p className="eyebrow reveal">Initial sourcing areas</p><h2 className="areas__title reveal">Tamil Nadu and Gujarat</h2></div>
           <div className="areas__grid">
             {FOCUS_AREAS.map((area, index) => (
               <article className="area reveal" key={area.id}>
                 <div className={'area__weave area__weave--' + area.id} aria-hidden="true">
-                  <RegionWeave motif={area.id} /><span className="area__grain" />
+                  <img className="area__photo" onLoad={(e) => { e.currentTarget.dataset.loaded = 'true' }} src={smallPhoto(REGION_IMAGES[area.id].src)} srcSet={`${smallPhoto(REGION_IMAGES[area.id].src)} 800w, ${REGION_IMAGES[area.id].src} 1600w`} sizes="(max-width: 760px) 100vw, 50vw" alt={REGION_IMAGES[area.id].alt} loading="lazy" decoding="async" width={800} height={533} />
                 </div>
                 <div className="area__text">
                   <p className="area__kicker">{area.kicker}</p>
                   <h3 className="area__name">{area.name}</h3>
-                  <p className="area__note">{index === 0 ? 'Tamil Nadu is an initial sourcing area for cotton, silk and blended fabric enquiries.' : 'Gujarat is an initial sourcing area for cotton, printed and dyed fabric enquiries.'}</p>
+                  <p className="area__note">{index === 0 ? 'Handloom and mill-made cotton, silk and blended fabrics.' : 'Cotton, block-printed and dyed fabrics, with a deep processing base.'}</p>
                 </div>
               </article>
             ))}
           </div>
-          <p className="areas__foot reveal">Suppliers elsewhere in India can also share what they offer.</p>
+          <p className="areas__foot reveal">Supplying from elsewhere in India? Tell us what you offer.</p>
         </div>
       </section>
 
@@ -74,9 +75,10 @@ export default function Textiles() {
       <section className="enquiry-body" id="textile-enquiry">
         <div className="shell">
           <div className="enquiry-body__textiles">
-            <h2>Enquire about textiles</h2>
-            <p>Use the <Link to="/textiles#fabric-details">example fabric brief</Link> to check what to include.</p>
-            <EnquiryForm />
+            <EnquiryForm
+              title="Enquire about textiles"
+              intro={<>Not sure what to include? See <Link to="/textiles#fabric-details">what to tell us about your fabric</Link>.</>}
+            />
           </div>
         </div>
       </section>

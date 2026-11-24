@@ -35,15 +35,17 @@ export type EnquiryDraft = {
   location: string
   name: string
   email: string
+  phone: string
 }
 
 const EMPTY: EnquiryDraft = {
-  subject: 'general',
+  subject: 'textiles',
   role: '',
   requirement: '',
   location: '',
   name: '',
   email: '',
+  phone: '',
 }
 
 type EnquiryContextValue = {
@@ -92,7 +94,14 @@ const ROLE_LABEL = Object.fromEntries(
   ENQUIRY_FIELDS.role.options.map((o) => [o.value, o.label]),
 ) as Record<string, string>
 
-export function EnquiryForm() {
+type FormProps = {
+  /** The category control, shown as the first field (the enquiry page). */
+  categoryField?: React.ReactNode
+  title?: string
+  intro?: React.ReactNode
+}
+
+export function EnquiryForm({ categoryField, title = 'Tell us what you need', intro = 'Every field helps us reply properly. It takes about two minutes.' }: FormProps) {
   const navigate = useNavigate()
   const { draft, setDraft, sending, setSending } = useEnquiryDraft()
   const [errors, setErrors] = React.useState<Errors>({})
@@ -126,6 +135,9 @@ export function EnquiryForm() {
     if (d.name.trim().length < 2) e.name = 'Please add your name.'
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email.trim()))
       e.email = 'Please check the email address. That is where the reply goes.'
+    // At least 7 digits; digits, spaces, + ( ) . - only; starts with + or a digit.
+    if ((d.phone.match(/\d/g) ?? []).length < 7 || !/^[+\d][\d\s().-]{5,24}$/.test(d.phone.trim()))
+      e.phone = 'Please add a phone number with its country code, for example +91 98765 43210.'
     return e
   }
 
@@ -160,6 +172,7 @@ export function EnquiryForm() {
       'Destination or business location': snapshot.location.trim(),
       name: snapshot.name.trim(),
       email: snapshot.email.trim(),
+      Phone: snapshot.phone.trim(),
       'Enquiry subject': category.label,
     }
 
@@ -197,160 +210,158 @@ export function EnquiryForm() {
     }
   }
 
+  const category = getCategory(draft.subject)
+  const describe = (...ids: (string | false | undefined)[]) => ids.filter(Boolean).join(' ') || undefined
+
   return (
-    <form ref={form} className="form" onSubmit={submit} noValidate>
+    <form ref={form} className="form" data-category={category.id} onSubmit={submit} noValidate aria-labelledby="form-title">
       <div className="form__head">
-        <p className="eyebrow eyebrow--index">{getCategory(draft.subject).label}</p>
-        <h2 className="form__title">
-          Tell us what <em className="display-italic">you need.</em>
-        </h2>
+        <h2 className="form__title" id="form-title">{title}</h2>
+        <p className="form__intro">{intro}</p>
       </div>
 
       {!enquiryAccessKey && <p className="notice">Online submission is unavailable. Email <a href={`mailto:${enquiryContact}`}>{enquiryContact}</a> to enquire.</p>}
-      <fieldset disabled={sending} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
-      {/* 1 — role */}
-      <fieldset className="field field--group" data-field="role">
-        <legend className="field__label" id="role-label">
-          <span className="field__num">01</span>
-          {ENQUIRY_FIELDS.role.label}
-          <span className="field__req" aria-hidden="true">required</span>
-        </legend>
-        <div className="choice-grid" role="radiogroup" aria-labelledby="role-label" aria-required="true" aria-invalid={!!errors.role} aria-describedby={errors.role ? "role-error" : undefined}>
-          {ENQUIRY_FIELDS.role.options.map((o) => (
-            <label
-              key={o.value}
-              className={`choice ${draft.role === o.value ? 'is-checked' : ''}`}
-            >
-              <input
-                type="radio"
-                name="role"
-                value={o.value}
-                checked={draft.role === o.value}
-                onChange={() => {
-                  setDraft((d) => ({ ...d, role: o.value }))
-                  setErrors((p) => ({ ...p, role: undefined }))
-                }}
-              />
-              <span className="choice__dot" aria-hidden="true" />
-              <span className="choice__text">
-                <strong>{o.label}</strong>
-                <span>{o.hint}</span>
-              </span>
-            </label>
-          ))}
-        </div>
-        {errors.role && <p className="field__error" id="role-error">{errors.role}</p>}
-      </fieldset>
+      <fieldset disabled={sending} className="form__body">
+        <p className="form__group" aria-hidden="true">The enquiry</p>
 
-      {/* 2 — requirement */}
-      <div className="field" data-field="requirement">
-        <label className="field__label" htmlFor="requirement">
-          <span className="field__num">02</span>
-          {ENQUIRY_FIELDS.requirement.label}
-          <span className="field__req" aria-hidden="true">required</span>
-        </label>
-        <p className="field__hint" id="requirement-hint">{getCategory(draft.subject).hint}</p>
-        <textarea
-          id="requirement"
-          aria-required="true"
-          rows={4}
-          value={draft.requirement}
-          onChange={set('requirement')}
-          placeholder={ENQUIRY_FIELDS.requirement.placeholder}
-          aria-describedby={`requirement-hint ${errors.requirement ? 'requirement-error' : ''}`}
-          aria-invalid={!!errors.requirement}
-          maxLength={2000}
-        />
-        <div className="field__foot">
-          {errors.requirement ? (
-            <p className="field__error" id="requirement-error">{errors.requirement}</p>
-          ) : (
-            <span className="field__counter">{draft.requirement.length} / 2000</span>
-          )}
-        </div>
-      </div>
+        {categoryField}
 
-      {/* 3 — location */}
-      <div className="field" data-field="location">
-        <label className="field__label" htmlFor="location">
-          <span className="field__num">03</span>
-          {ENQUIRY_FIELDS.location.label}
-          <span className="field__req" aria-hidden="true">required</span>
-        </label>
-        <p className="field__hint" id="location-hint">{ENQUIRY_FIELDS.location.hint}</p>
-        <input
-          id="location"
-          aria-required="true"
-          maxLength={160}
-          type="text"
-          value={draft.location}
-          onChange={set('location')}
-          placeholder={ENQUIRY_FIELDS.location.placeholder}
-          aria-describedby={`location-hint ${errors.location ? 'location-error' : ''}`}
-          aria-invalid={!!errors.location}
-          autoComplete="address-level2"
-        />
-        {errors.location && <p className="field__error" id="location-error">{errors.location}</p>}
-      </div>
+        <fieldset className="field field--group" data-field="role">
+          <legend className="field__label" id="role-label">{ENQUIRY_FIELDS.role.label}</legend>
+          <div className="choice-grid" role="radiogroup" aria-labelledby="role-label" aria-required="true" aria-invalid={!!errors.role} aria-describedby={errors.role ? 'role-error' : undefined}>
+            {ENQUIRY_FIELDS.role.options.map((o) => (
+              <label key={o.value} className={`choice ${draft.role === o.value ? 'is-checked' : ''}`}>
+                <input
+                  type="radio"
+                  name="role"
+                  value={o.value}
+                  checked={draft.role === o.value}
+                  onChange={() => {
+                    setDraft((d) => ({ ...d, role: o.value }))
+                    setErrors((p) => ({ ...p, role: undefined }))
+                  }}
+                />
+                <span className="choice__dot" aria-hidden="true" />
+                <span className="choice__text">
+                  <strong>{o.label}</strong>
+                  <span>{o.hint}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+          {errors.role && <p className="field__error" id="role-error">{errors.role}</p>}
+        </fieldset>
 
-      <div className="form__pair">
-        {/* 4 — name */}
-        <div className="field" data-field="name">
-          <label className="field__label" htmlFor="name">
-            <span className="field__num">04</span>
-            {ENQUIRY_FIELDS.name.label}
-            <span className="field__req" aria-hidden="true">required</span>
-          </label>
-          <input
-            id="name"
+        <div className="field" data-field="requirement">
+          <label className="field__label" htmlFor="requirement">{ENQUIRY_FIELDS.requirement.label}</label>
+          <p className="field__hint" id="requirement-hint">{category.hint}</p>
+          <textarea
+            id="requirement"
             aria-required="true"
-            maxLength={120}
+            rows={4}
+            value={draft.requirement}
+            onChange={set('requirement')}
+            placeholder={ENQUIRY_FIELDS.requirement.placeholder}
+            aria-describedby={describe('requirement-hint', errors.requirement && 'requirement-error')}
+            aria-invalid={!!errors.requirement}
+            maxLength={2000}
+          />
+          <div className="field__foot">
+            {errors.requirement ? (
+              <p className="field__error" id="requirement-error">{errors.requirement}</p>
+            ) : (
+              <span className="field__counter">{draft.requirement.length} / 2000</span>
+            )}
+          </div>
+        </div>
+
+        <div className="field" data-field="location">
+          <label className="field__label" htmlFor="location">{ENQUIRY_FIELDS.location.label}</label>
+          <p className="field__hint" id="location-hint">{ENQUIRY_FIELDS.location.hint}</p>
+          <input
+            id="location"
+            aria-required="true"
+            maxLength={160}
             type="text"
-            value={draft.name}
-            onChange={set('name')}
-            placeholder={ENQUIRY_FIELDS.name.placeholder}
-            aria-invalid={!!errors.name}
-            aria-describedby={errors.name ? 'name-error' : undefined}
-            autoComplete="name"
+            value={draft.location}
+            onChange={set('location')}
+            placeholder={ENQUIRY_FIELDS.location.placeholder}
+            aria-describedby={describe('location-hint', errors.location && 'location-error')}
+            aria-invalid={!!errors.location}
+            autoComplete="address-level2"
           />
-          {errors.name && <p className="field__error" id="name-error">{errors.name}</p>}
+          {errors.location && <p className="field__error" id="location-error">{errors.location}</p>}
         </div>
 
-        {/* 5 — email */}
-        <div className="field" data-field="email">
-          <label className="field__label" htmlFor="email">
-            <span className="field__num">05</span>
-            {ENQUIRY_FIELDS.email.label}
-            <span className="field__req" aria-hidden="true">required</span>
-          </label>
-          <input
-            id="email"
-            aria-required="true"
-            maxLength={254}
-            type="email"
-            value={draft.email}
-            onChange={set('email')}
-            placeholder="you@company.com"
-            aria-invalid={!!errors.email}
-            aria-describedby={errors.email ? 'email-error' : undefined}
-            autoComplete="email"
-            inputMode="email"
-          />
-          {errors.email && <p className="field__error" id="email-error">{errors.email}</p>}
+        <p className="form__group" aria-hidden="true">Your details</p>
+
+        <div className="form__pair">
+          <div className="field" data-field="name">
+            <label className="field__label" htmlFor="name">{ENQUIRY_FIELDS.name.label}</label>
+            <input
+              id="name"
+              aria-required="true"
+              maxLength={120}
+              type="text"
+              value={draft.name}
+              onChange={set('name')}
+              placeholder={ENQUIRY_FIELDS.name.placeholder}
+              aria-invalid={!!errors.name}
+              aria-describedby={describe(errors.name && 'name-error')}
+              autoComplete="name"
+            />
+            {errors.name && <p className="field__error" id="name-error">{errors.name}</p>}
+          </div>
+
+          <div className="field" data-field="email">
+            <label className="field__label" htmlFor="email">{ENQUIRY_FIELDS.email.label}</label>
+            <input
+              id="email"
+              aria-required="true"
+              maxLength={254}
+              type="email"
+              value={draft.email}
+              onChange={set('email')}
+              placeholder="you@company.com"
+              aria-invalid={!!errors.email}
+              aria-describedby={describe(errors.email && 'email-error')}
+              autoComplete="email"
+              inputMode="email"
+            />
+            {errors.email && <p className="field__error" id="email-error">{errors.email}</p>}
+          </div>
+
+          <div className="field" data-field="phone">
+            <label className="field__label" htmlFor="phone">{ENQUIRY_FIELDS.phone.label}</label>
+            <input
+              id="phone"
+              aria-required="true"
+              maxLength={25}
+              type="tel"
+              value={draft.phone}
+              onChange={set('phone')}
+              placeholder={ENQUIRY_FIELDS.phone.placeholder}
+              aria-invalid={!!errors.phone}
+              aria-describedby={describe('phone-hint', errors.phone && 'phone-error')}
+              autoComplete="tel"
+              inputMode="tel"
+            />
+            <p className="field__hint field__hint--after" id="phone-hint">{ENQUIRY_FIELDS.phone.hint}</p>
+            {errors.phone && <p className="field__error" id="phone-error">{errors.phone}</p>}
+          </div>
         </div>
-      </div>
 
-      <div className="form__submit">
-        <button className="btn btn--submit" type="submit" disabled={sending || !enquiryAccessKey}>
-          {sending ? 'Sending…' : 'Send enquiry'}
-          {!sending && (
-            <svg className="btn__arrow" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <path d="M2 12 12 2M5 2h7v7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" />
-            </svg>
-          )}
-        </button>
-      </div>
-
+        <div className="form__submit">
+          <button className="btn btn--submit" type="submit" disabled={sending || !enquiryAccessKey}>
+            {sending ? 'Sending…' : 'Send enquiry'}
+            {!sending && (
+              <svg className="btn__arrow" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M2 12 12 2M5 2h7v7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" />
+              </svg>
+            )}
+          </button>
+          <p className="form__note">A person reads every enquiry and replies by email.</p>
+        </div>
       </fieldset>
       <div aria-live="polite" className="form__status">
         {submitError && (

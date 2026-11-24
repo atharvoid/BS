@@ -18,34 +18,32 @@ const DISC = 60
 const DRAG_DISC = 56
 const RING = 18
 
-/** Which theme the pointer is over.
- *
- *  Sections declare it with `data-tone`; the CSS class `on-dark` is the older,
- *  equivalent signal and is honoured too, so no section has to be annotated
- *  twice. A page with neither is treated as light, which most of this site is.
- */
+/** Which kind of ground the pointer is over: dark or light.
+
+ *  Read from the colour actually painted, not from labels: the site has a
+ *  dark mode, so a section that is light by day is dark by night, and a
+ *  static `data-tone` would give the ring the wrong colour (a dark ring on a
+ *  dark hero). Walks up to the first element with a painted background, and
+ *  falls back to the page ground itself. */
+function luminanceOf(bg: string): number | null {
+  if (!bg || bg === 'transparent' || bg === 'rgba(0, 0, 0, 0)') return null
+  const match = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/)
+  if (!match) return null
+  if (match[4] !== undefined && Number(match[4]) < 0.5) return null
+  return (0.299 * Number(match[1]) + 0.587 * Number(match[2]) + 0.114 * Number(match[3])) / 255
+}
+
 function toneAt(hit: Element | null): 'dark' | 'light' {
   let curr: Element | null = hit
-  while (curr && curr !== document.documentElement) {
-    const el = curr as HTMLElement
-    if (el.dataset?.tone) return el.dataset.tone === 'dark' ? 'dark' : 'light'
-    if (el.classList.contains('on-dark') || el.classList.contains('on-indigo') || el.classList.contains('nav--lifted')) {
-      return 'dark'
-    }
-    const bg = getComputedStyle(el).backgroundColor
-    if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
-      const match = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
-      if (match) {
-        const r = Number(match[1])
-        const g = Number(match[2])
-        const b = Number(match[3])
-        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-        return luminance < 0.5 ? 'dark' : 'light'
-      }
-    }
+  while (curr) {
+    const lum = luminanceOf(getComputedStyle(curr).backgroundColor)
+    if (lum !== null) return lum < 0.5 ? 'dark' : 'light'
     curr = curr.parentElement
   }
-  return 'light'
+  const ground = luminanceOf(getComputedStyle(document.body).backgroundColor) ??
+    luminanceOf(getComputedStyle(document.documentElement).backgroundColor)
+  if (ground !== null) return ground < 0.5 ? 'dark' : 'light'
+  return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
 }
 
 /**
@@ -286,7 +284,7 @@ export function Cursor() {
     const observer = new MutationObserver(invalidate)
     observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'data-cursor', 'data-cursor-size'] })
     const introObserver = new MutationObserver(refresh)
-    introObserver.observe(root, { attributes: true, attributeFilter: ['data-intro-active'] })
+    introObserver.observe(root, { attributes: true, attributeFilter: ['data-intro-active', 'data-theme'] })
 
     window.addEventListener('pointermove', move, { passive: true })
     window.addEventListener('pointerdown', move, { passive: true })

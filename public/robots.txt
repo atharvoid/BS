@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /enquiry/acknowledgement
+
+Sitemap: https://bs-eximnexus.vercel.app/sitemap.xml

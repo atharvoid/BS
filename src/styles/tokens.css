@@ -1,7 +1,22 @@
 /* ==========================================================================
-   BS EXIMNEXUS — design tokens
-   Palette drawn from Indian textile dyes: indigo vat, madder root,
-   raw cotton, saffron, verdigris and brass.
+   BS EXIMNEXUS design tokens
+
+   DESIGN DIRECTION (read before changing anything here)
+   Product:   an India-based desk that turns a buyer's or supplier's need into
+              a sourcing conversation, across six product categories.
+   Character: saturated, exact, handmade.
+   World:     a bandhani and block-print dye yard: vats of indigo, madder and
+              turmeric, cloth drying in strips, tied-resist dots, chalk tallies.
+   Moment:    the swatch book on the homepage: six dyed cloth strips, one per
+              category, that open into that category's brief.
+   Signature: a row of bandhani dots, the only decorative divider on the
+              site. Plain hairlines stay only where they do a job: table
+              rows, list rows, form fields and the nav edge.
+   Concept:   every colour on the page is a dye with a job. Empty is undyed
+              cotton; choosing a category dyes it; nothing is coloured for
+              decoration.
+   Hard rule: a dye appears only where its category is meant. Gold, the
+              logo's own colour, is the one action colour. No shadows, decorative gradients or blur.
    ========================================================================== */
 
 :root {
@@ -27,6 +42,19 @@
   --verdigris: #4c7a68;
   --brass: #b0864a;
 
+  /* ---- One dye per category (contrast measured against --cotton) -------- */
+  /* Dark dyes carry cotton text (5.1:1 to 12:1); marigold carries ink text
+     (5.6:1). Gold is kept for actions, so no category dye is a gold. */
+  --dye-textiles: #1d2a45;     /* indigo vat */
+  --dye-handicrafts: #9c3a2d;  /* madder root */
+  --dye-agriculture: #d0762a;  /* marigold */
+  --dye-industrial: #4a4f55;   /* iron mordant */
+  --dye-organic: #3f6b5a;      /* verdigris */
+  --dye-general: #6e4b3a;      /* kattha brown */
+
+  /* The signature: a row of tied-resist dots. Used only as a divider. */
+  --dots: radial-gradient(circle, currentColor 1.6px, transparent 2.2px) 0 50% / 12px 12px repeat-x;
+
   /* ---- Semantic (light sections) --------------------------------------- */
   --bg: var(--cotton);
   --bg-lit: var(--cotton-lit);
@@ -37,8 +65,8 @@
   --rule: rgba(26, 22, 17, 0.14);
   --rule-soft: rgba(26, 22, 17, 0.075);
   --control-border: #837661;
-  --accent: var(--madder);
-  --accent-quiet: var(--saffron);
+  --accent: var(--indigo);
+  --accent-quiet: var(--fg-mute);
 
   /* ---- Type scale (fluid) ---------------------------------------------- */
   --fs-hero: clamp(2.9rem, 7.1vw, 7.6rem);
@@ -118,4 +146,57 @@
   --accent-quiet: var(--indigo-soft);
   color: var(--fg);
   background-color: var(--bg);
+}
+
+/* ==========================================================================
+   Theme layer
+   --paper is the light colour of text and marks that sit on a dye. It never
+   flips. Everything else that says "cotton" is the page ground, and flips in
+   dark mode, so most rules follow the theme without being touched.
+   ========================================================================== */
+:root {
+  --paper: #faf5ea;
+  --paper-soft: #e6ddcc;
+  --paper-deep: #e6dbc7;
+
+  /* Action colour: the logo's gold. A fill carries ink text (7.6:1; the
+     hover shade 5.8:1). As text on cotton it is printed deeper (4.9:1). */
+  --action: #c9a24a;
+  --action-deep: #b08a35;
+  --action-fg: var(--ink);
+  --action-text: #7a5f1c;
+
+  /* The logo is gold. On cotton the original gold (#dabc72) measures 1.55:1,
+     so light mode prints a deeper shade of the same gold (3.4:1). */
+  --gold: #dabc72;
+  --gold-on-light: #9a7a2c;
+  --logo: var(--gold-on-light);
+
+  color-scheme: light;
+}
+
+/* Dark mode: the dye yard at night. Ink ground, cotton text, the same six
+   dyes (indigo lifted so it still reads on ink), the original gold logo.
+   Contrast measured against #14110d: fg 15.3, soft 10.7, mute 6.6. */
+:root[data-theme='dark'] {
+  --cotton: #14110d;
+  --cotton-lit: #1c1813;
+  --cotton-deep: #26201a;
+  --cotton-shade: #3a3128;
+
+  --fg: #efe7d8;
+  --fg-soft: #cdc2ae;
+  --fg-mute: #a39880;
+  --rule: rgba(242, 235, 221, 0.14);
+  --rule-soft: rgba(242, 235, 221, 0.075);
+  --control-border: #6f6556;
+
+  --action: #dabc72;        /* ink text on it: 10.2:1 */
+  --action-deep: #c9a24a;
+  --action-text: #dabc72;   /* on the ground: 9.6:1 */
+  --accent: var(--action-text);
+  --dye-textiles: #34508c;  /* paper text on it: 7.2:1 */
+
+  --logo: var(--gold);
+  color-scheme: dark;
 }

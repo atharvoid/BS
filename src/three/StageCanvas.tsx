@@ -85,7 +85,7 @@ export default function StageCanvas({
 
 
   return (
-    <div ref={host} data-scene-ready={ready} data-motion={!visible || still || !permit ? "frozen" : "running"} style={{ width: '100%', height: '100%', visibility: ready ? 'visible' : 'hidden' }}>
+    <div ref={host} data-scene-ready={ready} data-motion={!visible || still || !permit ? "frozen" : "running"} style={{ width: '100%', height: '100%', visibility: ready ? 'visible' : 'hidden', opacity: ready ? 1 : 0, transition: 'opacity 450ms ease-out' }}>
     <Canvas
       /* No tone mapping pass: the globe palette is authored in display space,
          and ACES would wash the ocean out to grey. */

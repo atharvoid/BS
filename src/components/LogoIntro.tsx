@@ -2,7 +2,7 @@ import React from 'react'
 import { useLocation, useNavigationType } from 'react-router-dom'
 import { COMPACT_QUERY } from '../three/render-policy'
 import { Logo } from './Logo'
-import { setIntroPhase } from './intro-state'
+import { globeEntrance, setGlobeEntrance, setIntroPhase } from './intro-state'
 
 const DRAW = 1250
 const FILL_AT = 1000
@@ -55,6 +55,7 @@ export function LogoIntro() {
       return animation
     }
     const reveal = () => {
+      setIntroPhase('revealing')
       const fade = animate(surface, [{ opacity: 1 }, { opacity: 0 }], {
         duration: REVEAL,
         easing: 'cubic-bezier(.4,0,.2,1)',
@@ -96,6 +97,7 @@ export function LogoIntro() {
       intro.hidden = false
       intro.setAttribute('aria-hidden', matchMedia(COMPACT_QUERY).matches ? 'true' : 'false')
       intro.dataset.state = 'drawing'
+      setGlobeEntrance('pending')
       setIntroPhase('drawing')
       const origin = art.getBoundingClientRect()
       try {
@@ -164,6 +166,8 @@ export function LogoIntro() {
     return () => {
       brand.removeEventListener('click', replay)
       finish()
+      // Leaving the page mid-opening: a later visit shows the globe at rest.
+      if (globeEntrance() === 'pending') setGlobeEntrance('none')
     }
   }, [pathname, hash, key, navigationType])
 

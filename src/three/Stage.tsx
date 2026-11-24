@@ -42,6 +42,10 @@ type StageProps = {
   stableVisual?: boolean
   finiteMotion?: boolean
   continuous?: boolean
+  /** Show `fallback` while the scene loads (true), or only when 3D is
+   *  unavailable (false). Use false when the still cannot match the live
+   *  scene exactly, so the hand-over is never a visible change of size. */
+  posterWhileLoading?: boolean
 }
 
 /** How long a canvas may sit off screen before it is released. Browsers cap the
@@ -155,6 +159,7 @@ export function Stage({
   stableVisual = false,
   finiteMotion = false,
   continuous = false,
+  posterWhileLoading = true,
 }: StageProps & { load?: LiveLoader }) {
   const host = React.useRef<HTMLDivElement>(null)
   const [near, setNear] = React.useState(false)
@@ -167,8 +172,19 @@ export function Stage({
   const compact = useCompactLayout()
   const openingHold = React.useSyncExternalStore(onIntroChange, continuous ? isGlobeHeld : introActive, () => false)
   const [drawn, setDrawn] = React.useState(false)
+  /* The still image leaves by fading, not by vanishing. The live scene is
+     drawn underneath first, so the hand-over is a short dissolve: if the
+     live frame differs from the still by a pixel or a shade, the eye reads a
+     settle, not a flicker. */
+  const [posterGone, setPosterGone] = React.useState(false)
+  React.useEffect(() => {
+    if (!drawn) { setPosterGone(false); return }
+    const t = window.setTimeout(() => setPosterGone(true), 420)
+    return () => window.clearTimeout(t)
+  }, [drawn])
   const onReady = React.useCallback(() => setDrawn(true), [])
-  const onError = React.useCallback(() => setDrawn(false), [])
+  const [failed, setFailed] = React.useState(false)
+  const onError = React.useCallback(() => { setDrawn(false); setFailed(true) }, [])
   const timedMotion = !continuous && (compact || finiteMotion)
   const settled = useMotionWindow(label, drawn && visible && pageVisible, timedMotion)
   const adaptiveStill = useSceneStill()
@@ -305,7 +321,7 @@ export function Stage({
   return (
     <SceneContext.Provider value={session}>
       <div ref={host} className={className} style={style} data-webgl={ok}>
-        {!drawn && <div className="scene-poster">{fallback}</div>}
+        {!posterGone && (posterWhileLoading || !ok || failed || dead.current) && <div className="scene-poster" data-leaving={drawn}>{fallback}</div>}
         {ok ? (
           near && mounted ? (
             <Boundary onError={onError}>

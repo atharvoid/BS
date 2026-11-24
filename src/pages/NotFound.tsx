@@ -3,22 +3,22 @@ import { Arrow } from '../components/Nav'
 
 export default function NotFound() {
   return (
-    <section className="notfound on-dark grain">
+    <section className="notfound">
       <div className="shell notfound__inner">
         <p className="eyebrow">404</p>
         <h1 className="notfound__title">
-          Page <em className="display-italic">not found</em>.
+          Page not found
         </h1>
         <p className="notfound__lede">
-          The page you asked for is not part of this site.
+          This page doesn’t exist, or it has moved.
         </p>
         <div className="notfound__actions">
-          <Link to="/" className="btn btn--light">
+          <Link to="/" className="btn">
             Back to home
             <Arrow />
           </Link>
           <Link to="/#products" className="tlink">
-            Browse products
+            See what we source
           </Link>
         </div>
       </div>

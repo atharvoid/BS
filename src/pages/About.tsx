@@ -5,7 +5,7 @@ import { Arrow } from '../components/Nav'
 import {
   BUSINESS,
   ABOUT_BUSINESS,
-  ABOUT_OWNER,
+  ABOUT_VISION,
   ABOUT_STANDARDS,
   ABOUT_DESK_FACTS,
 } from '../content'
@@ -15,12 +15,10 @@ export default function About() {
 
   return (
     <div className="about-page">
-      <section className="about-hero on-dark grain">
+      <section className="about-hero">
         <div className="shell about-hero__inner">
           <p className="eyebrow eyebrow--bare">{ABOUT_BUSINESS.eyebrow}</p>
-          <h1 className="about-hero__title">
-            Trade coordination and export sourcing in <em className="display-italic">India</em>.
-          </h1>
+          <h1 className="about-hero__title">{ABOUT_BUSINESS.title}</h1>
           <p className="about-hero__lede">{ABOUT_BUSINESS.lede}</p>
         </div>
       </section>
@@ -28,11 +26,11 @@ export default function About() {
       <section className="about-desk-section" id="desk-coordinates">
         <div className="shell">
           <div className="about-desk-grid">
+            <div className="about-glance__intro">
+              <h2 className="about-glance__title">At a glance</h2>
+              <p className="about-glance__lede">The essentials, in one place. Everything else is agreed per enquiry, in writing.</p>
+            </div>
             <div className="about-desk-card reveal">
-              <div className="about-desk-card__head">
-                <span className="about-desk-card__eyebrow">Desk coordinates</span>
-                <span className="about-desk-card__contact">Direct contact</span>
-              </div>
               <table className="about-desk-table">
                 <tbody>
                   {ABOUT_DESK_FACTS.map((fact) => (
@@ -51,16 +49,16 @@ export default function About() {
               </table>
             </div>
 
-            <div className="about-founder-card reveal">
-              <span className="about-founder-card__badge">Founder</span>
-              <h2 className="about-founder-card__name">{ABOUT_OWNER.name}</h2>
-              <p className="about-founder-card__role">{ABOUT_OWNER.title}</p>
-              <div className="about-founder-card__bio">
-                {ABOUT_OWNER.summary.map((text, i) => (
-                  <p key={i}>{text}</p>
-                ))}
+            {ABOUT_VISION.body.length > 0 && (
+              <div className="about-founder-card about-vision reveal">
+                <h2 className="about-founder-card__name">{ABOUT_VISION.title}</h2>
+                <div className="about-founder-card__bio">
+                  {ABOUT_VISION.body.map((text, i) => (
+                    <p key={i}>{text}</p>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
@@ -68,15 +66,12 @@ export default function About() {
       <section className="about-process">
         <div className="shell">
           <div className="about-process__head">
-            <p className="eyebrow eyebrow--bare reveal">Working method</p>
-            <h2 className="about-process__title reveal">
-              How enquiries and orders are handled.
-            </h2>
+            <h2 className="about-process__title reveal">How we work</h2>
           </div>
           <div className="about-process__grid">
             {ABOUT_STANDARDS.map((std) => (
               <div key={std.num} className="about-process-card reveal">
-                <span className="about-process-card__num">{std.num}</span>
+                <span className="about-process-card__num" aria-hidden="true">{Number(std.num)}</span>
                 <h3 className="about-process-card__title">{std.title}</h3>
                 <p className="about-process-card__body">{std.body}</p>
               </div>
@@ -85,18 +80,15 @@ export default function About() {
         </div>
       </section>
 
-      <section className="about-cta on-dark grain" id="enquiry">
+      <section className="about-cta on-indigo" id="enquiry">
         <div className="shell">
           <div className="about-cta__inner">
-            <p className="eyebrow eyebrow--bare">Enquiry</p>
-            <h2 className="about-cta__title">
-              Send your sourcing <em className="display-italic">enquiry</em>.
-            </h2>
+            <h2 className="about-cta__title">Send your sourcing enquiry</h2>
             <p className="about-cta__lede">
-              Send your required materials, specifications, and delivery destination. Bhupendra Sain reviews each enquiry and replies directly by email.
+              Tell us the product, any specifications and where it is going. We reply by email.
             </p>
             <div className="about-cta__actions">
-              <Link to="/enquiry" className="btn btn--light">
+              <Link to="/enquiry" className="btn">
                 Start an enquiry
                 <Arrow />
               </Link>

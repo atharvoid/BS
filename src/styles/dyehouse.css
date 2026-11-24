@@ -1,0 +1,1157 @@
+/* ==========================================================================
+   Dye house layer. Loaded last; overrides the older charcoal-and-amber look.
+   Direction: see the comment at the top of tokens.css.
+
+   Rules this file follows:
+   - Undyed cotton is the ground. Ink is the text. Gold is the one action.
+   - The six category dyes appear only in the swatch book and on the page that
+     belongs to that category.
+   - Sentence case and the sans for interface text. Mono only for numbers.
+   - No shadows, no decorative gradients, no blur, no hover scaling.
+   ========================================================================== */
+
+/* ---- Type: labels stop shouting --------------------------------------- */
+.eyebrow,
+.tlink,
+.btn,
+.nav__link,
+.hero__secondary,
+.drawer__link {
+  font-family: var(--f-sans);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.eyebrow {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--fg-mute);
+}
+
+/* ---- Actions ------------------------------------------------------------ */
+.btn {
+  --btn-bg: var(--action);
+  --btn-fg: var(--action-fg);
+  border-radius: 3px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.85em 1.25em;
+  will-change: auto;
+}
+
+/* The hover is the dye rising: a deeper gold comes up from the hem. */
+.btn::before { background: var(--action-deep); }
+.btn:hover { transform: none; color: var(--btn-fg); }
+.btn:hover .btn__arrow { transform: translate(0.12em, -0.12em); }
+
+/* --light was the paper button for dark bands. Every primary action is now
+   the same gold button, on cotton and on indigo alike. */
+.btn--light { --btn-bg: var(--action); --btn-fg: var(--action-fg); }
+
+.btn--ghost { --btn-fg: var(--fg); border-color: var(--control-border); }
+.btn--ghost::before { background: var(--action); }
+.btn--ghost:hover { color: var(--action-fg); border-color: var(--action); }
+
+.btn--small { font-size: 0.875rem; padding: 0.6em 1em; }
+
+.tlink { font-size: 0.95rem; font-weight: 500; color: var(--action-text); }
+.on-dark .tlink,
+.on-indigo .tlink { color: var(--paper); }
+
+:focus-visible {
+  outline: 2px solid var(--action-text);
+  outline-offset: 3px;
+}
+.on-dark :focus-visible,
+.on-indigo :focus-visible,
+.drawer :focus-visible { outline-color: var(--gold); }
+
+/* ---- The signature: bandhani dots -------------------------------------- */
+.dots {
+  display: block;
+  height: 12px;
+  color: var(--fg-mute);
+  background: var(--dots);
+  opacity: 0.55;
+}
+
+/* ---- Scroll progress: one indigo thread -------------------------------- */
+.progress { background: var(--action-deep); opacity: 1; height: 2px; }
+
+/* ---- Navigation ---------------------------------------------------------- */
+.nav { color: var(--fg); }
+.nav::after { background: var(--rule); }
+.nav--lifted { background: var(--cotton); color: var(--fg); }
+.nav, .drawer { --accent: var(--action-text); }
+
+.nav .brand-logo { --brand-mark: var(--logo); --brand-name: var(--logo); }
+
+.nav__link { font-size: 0.95rem; opacity: 0.78; }
+.nav__link::after { height: 2px; }
+
+.nav .btn--small { --btn-bg: var(--action); --btn-fg: var(--action-fg); border: 0; }
+
+.nav__toggle-bar { background: currentColor; }
+
+.drawer { background: var(--indigo); color: var(--paper); }
+.drawer__link { font-family: var(--f-display); }
+.drawer__desc { color: #c3cadb; }
+
+/* ---- Hero: undyed cotton, the globe as an indigo vat -------------------- */
+.hero {
+  background: var(--cotton);
+  color: var(--fg);
+}
+
+/* The opening draws the mark on undyed cotton, in indigo. */
+.brand-intro { --brand-mark: var(--logo); --brand-name: var(--logo); }
+.intro-surface { background: var(--cotton); }
+.hero::before { content: none; }
+
+.hero__title { color: var(--fg); font-weight: 380; }
+.hero__lede { color: var(--fg-soft); font-weight: 400; max-width: 34rem; }
+
+.hero__secondary { color: var(--fg); font-size: 0.95rem; font-weight: 500; }
+.hero__secondary-ring { border-color: var(--control-border); }
+.hero__secondary:hover .hero__secondary-ring { border-color: var(--action-text); background: transparent; }
+
+.drag-hint { color: var(--fg-mute); }
+
+@media (max-width: 980px) {
+  /* The globe follows the words and never takes a whole phone screen. */
+  .hero__stage {
+    height: min(62vw, 300px);
+    min-height: min(62vw, 300px);
+  }
+}
+
+
+
+/* ---- Footer: the textile page's indigo, cloth folded at the end --------- */
+.footer.on-dark {
+  --bg: var(--indigo);
+  --fg: #eef0f6;
+  --fg-soft: #c3cadb;
+  --fg-mute: #a7b0c6;
+  --rule: rgba(238, 240, 246, 0.18);
+  background-color: var(--indigo);
+}
+.footer .eyebrow { color: var(--fg-mute); }
+.footer .footer__logo { --brand-mark: var(--gold); --brand-name: var(--gold); }
+.grain.footer::after { opacity: 0.08; }
+
+/* ---- Retire leftover decoration ----------------------------------------- */
+.brand:hover .brand__mark,
+.brand:hover .brand__mark span,
+.area:hover .area__weave,
+.area:hover .region-weave,
+.wall__item:hover .wall__frame img { transform: none; }
+
+.pulse { animation: none; box-shadow: none; }
+
+/* ---- Inner pages: every hero is undyed cotton --------------------------- */
+/* The old heroes were charcoal with hard-coded light text. They now sit on
+   cotton like the homepage; the textiles page carries its indigo in the
+   regions band below the hero, not in the hero itself. */
+.page-hero,
+.enquiry-hero,
+.about-hero,
+.ack,
+.notfound {
+  background: var(--cotton);
+  color: var(--fg);
+}
+.page-hero::before, .enquiry-hero::before, .about-hero::before,
+.ack::before, .notfound::before { content: none; }
+
+.page-hero__title,
+.enquiry-hero__title,
+.about-hero__title,
+.ack__title,
+.notfound__title { color: var(--fg); }
+
+.page-hero__lede,
+.enquiry-hero__lede,
+.about-hero__lede,
+.notfound__lede { color: var(--fg-soft); }
+
+.page-hero--textile .page-hero__title,
+.page-hero--textile .page-hero__lede,
+.page-hero--textile .page-hero__inner .eyebrow { color: inherit; }
+.page-hero--textile .page-hero__lede { color: var(--fg-soft); }
+
+.page-hero__fallback { background: var(--dye-textiles); }
+
+.enquiry-hero__aside { border-top-color: var(--rule); }
+.enquiry-hero__aside-label { color: var(--fg-mute); }
+.enquiry-hero__mail { color: var(--action-text); border-bottom-color: currentColor; }
+.enquiry-hero__mail:hover { color: var(--fg); border-color: var(--fg); }
+
+.ack__notice {
+  border-left-color: var(--action-text);
+  background: var(--cotton-lit);
+  color: var(--fg-soft);
+}
+.ack__notice strong { color: var(--fg); }
+.ack__notice a { color: var(--action-text); }
+
+/* The closing call on About is an action, so it takes the action colour. */
+.about-cta { background: var(--indigo); color: #eef0f6; }
+.about-cta__title { color: #eef0f6; }
+.about-cta__lede { color: #c3cadb; }
+.about-cta .btn--ghost { --btn-fg: var(--paper); border-color: rgba(250, 245, 234, 0.45); }
+
+/* Cards and briefs: no shadows, labels in the sans. */
+.brief, .brief *,
+.about-desk-card, .about-founder-card { box-shadow: none !important; }
+
+/* ---- About: labels in the sans, no borrowed category dyes --------------- */
+.about-desk-card__head,
+.about-desk-key,
+.about-founder-card__badge,
+.about-founder-card__role,
+.about-desk-val a {
+  font-family: var(--f-sans);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.about-desk-card__head { font-size: var(--fs-small); font-weight: 500; color: var(--fg-mute); }
+.about-desk-key { font-size: var(--fs-small); font-weight: 500; color: var(--fg-mute); }
+.about-founder-card__badge {
+  color: var(--fg-mute);
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: var(--fs-small);
+  font-weight: 500;
+}
+.about-founder-card__role { color: var(--fg-mute); font-size: var(--fs-small); }
+/* Madder belongs to handicrafts; step numbers are plain ink numerals. */
+.about-process-card__num { color: var(--fg-mute); font-variant-numeric: tabular-nums; }
+.about-desk-card, .about-founder-card { box-shadow: none; }
+
+/* ---- Enquiry: the chosen category dyes the top of the form -------------- */
+.form { --form-dye: var(--rule); border-top: 6px solid var(--form-dye); transition: border-color 420ms var(--ease-out); }
+.form[data-category='textiles'] { --form-dye: var(--dye-textiles); }
+.form[data-category='handicrafts'] { --form-dye: var(--dye-handicrafts); }
+.form[data-category='agriculture-food'] { --form-dye: var(--dye-agriculture); }
+.form[data-category='industrial-materials'] { --form-dye: var(--dye-industrial); }
+.form[data-category='organic-sustainable'] { --form-dye: var(--dye-organic); }
+.form[data-category='general'] { --form-dye: var(--dye-general); }
+.form .eyebrow--index { font-family: var(--f-sans); letter-spacing: 0; text-transform: none; }
+
+/* ---- Drag hint: a plain label on cotton, no glass ----------------------- */
+.drag-hint {
+  background: var(--cotton-lit);
+  border: 1px solid var(--rule);
+  color: var(--fg-soft);
+  font-family: var(--f-sans);
+  font-size: 0.8rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ---- Enquiry: the last mono-uppercase labels move to the sans ----------- */
+.enquiry-hero__aside-label,
+.field__req {
+  font-family: var(--f-sans);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: var(--fs-small);
+  color: var(--fg-mute);
+}
+/* Field numbers stay as numerals: mono is for numbers. */
+.field__num { letter-spacing: 0; color: var(--fg-mute); }
+
+/* ---- Theme toggle -------------------------------------------------------- */
+.theme-toggle {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+  color: var(--fg);
+  cursor: pointer;
+  flex: none;
+  transition: border-color 200ms var(--ease-out);
+}
+.theme-toggle:hover { border-color: var(--control-border); }
+.theme-toggle:focus-visible { outline: 2px solid var(--action-text); outline-offset: 3px; }
+
+.theme-toggle__icon { width: 20px; height: 20px; overflow: visible; }
+.theme-toggle__body { fill: currentColor; transition: r 420ms var(--ease-out); }
+.theme-toggle__shadow { transition: cx 420ms var(--ease-out), cy 420ms var(--ease-out); }
+.theme-toggle__rays {
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  transform-origin: 12px 12px;
+  transition: transform 420ms var(--ease-out), opacity 300ms var(--ease-out);
+}
+
+/* Dark: the sun grows into a full disc, a shadow slides over to leave a
+   crescent, and the rays turn and retract. */
+.theme-toggle[data-mode='dark'] .theme-toggle__body { r: 8px; }
+.theme-toggle[data-mode='dark'] .theme-toggle__shadow { cx: 17px; cy: 8px; }
+.theme-toggle[data-mode='dark'] .theme-toggle__rays { transform: rotate(45deg) scale(0.4); opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle__body, .theme-toggle__shadow, .theme-toggle__rays { transition: none; }
+}
+
+/* The page change spreads out as a circle from the button. */
+::view-transition-old(root),
+::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-new(root) { animation: theme-reveal 650ms var(--ease-in-out); }
+@keyframes theme-reveal {
+  from { clip-path: circle(0 at var(--vt-x, 100%) var(--vt-y, 0)); }
+  to { clip-path: circle(var(--vt-r, 150vmax) at var(--vt-x, 100%) var(--vt-y, 0)); }
+}
+
+.nav__theme { display: flex; align-items: center; margin-left: 0.25rem; }
+@media (max-width: 980px) {
+  .nav__theme { margin-left: auto; margin-right: 0.5rem; }
+}
+
+/* ---- Dark mode details the tokens cannot reach ------------------------- */
+:root[data-theme='dark'] .btn::before { background: var(--action-deep); }
+
+@keyframes card-pop {
+  from { opacity: 0; transform: translateY(18px) rotate(-6deg) scale(0.92); }
+  to { opacity: 1; transform: rotate(-1.6deg); }
+}
+
+/* ---- Lightbox ----------------------------------------------------------- */
+.lightbox {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  max-width: min(92vw, 60rem);
+  max-height: 92vh;
+  overflow: visible;
+}
+.lightbox::backdrop { background: rgba(20, 17, 13, 0.78); }
+.lightbox__card {
+  position: relative;
+  margin: 0;
+  padding: 10px 10px 14px;
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 3px;
+}
+.lightbox__card img {
+  display: block;
+  width: 100%;
+  max-height: 74vh;
+  object-fit: contain;
+  background: var(--paper-deep);
+}
+.lightbox__card figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  padding: 0.8rem 0.25rem 0;
+  font-size: var(--fs-small);
+  color: #4b4136;
+}
+.lightbox__card figcaption strong { font-family: var(--f-display); font-size: 1.15rem; font-weight: 500; color: var(--ink); }
+.lightbox__close {
+  all: unset;
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+}
+.lightbox__close svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.lightbox__close:focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .lightbox[open] .lightbox__card { animation: lightbox-in 360ms var(--ease-out); }
+  .lightbox[open]::backdrop { animation: lightbox-fade 300ms var(--ease-out); }
+}
+@keyframes lightbox-in { from { opacity: 0; transform: translateY(16px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes lightbox-fade { from { opacity: 0; } to { opacity: 1; } }
+
+@media (max-width: 760px) {
+  .lightbox__close { top: 6px; right: 6px; }
+}
+
+/* ==========================================================================
+   Standard layout and type (round two)
+   One rhythm, one heading scale, applied the same way on every page.
+     Page title (h1, inner pages) .. --fs-display
+     Home hero (h1) ................. --fs-hero
+     Section title (h2) ............. --fs-h2
+     Sub-title (h3, legal h2) ....... --fs-h3
+   Every content section: --section-y top and bottom.
+   Every inner-page hero: the same top (clears the nav) and bottom spacing.
+   All display headings: weight 400, the same tracking.
+   ========================================================================== */
+:root {
+  --hero-top: calc(4.6rem + clamp(2.5rem, 6vw, 5.5rem));
+  --hero-bottom: clamp(2.25rem, 4.5vw, 3.75rem);
+}
+
+/* Inner-page heroes */
+.page-hero,
+.enquiry-hero,
+.about-hero,
+.ack,
+.notfound {
+  padding-top: var(--hero-top);
+  padding-bottom: var(--hero-bottom);
+}
+.page-hero--textile { padding-bottom: var(--hero-bottom); }
+
+/* Content sections */
+.swatches,
+.purpose,
+.first-message,
+.areas,
+.brief,
+.about-desk-section,
+.about-process,
+.about-cta,
+.privacy {
+  padding-top: var(--section-y);
+  padding-bottom: var(--section-y);
+}
+/* The form follows its hero directly, so it only needs a bottom rhythm. */
+.enquiry-body { padding-top: clamp(1rem, 2vw, 1.5rem); padding-bottom: var(--section-y); }
+
+/* Headings */
+.hero__title,
+.page-hero__title,
+.enquiry-hero__title,
+.about-hero__title,
+.ack__title,
+.notfound__title,
+.swatches__head h2,
+.purpose__title,
+.first-message__title,
+.areas__title,
+.brief__title,
+.about-process__title,
+.about-cta__title,
+.enquiry-body__textiles h2 {
+  font-family: var(--f-display);
+  font-weight: 400;
+  font-variation-settings: var(--fraunces-tight);
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+.hero__title { font-size: var(--fs-hero); line-height: 0.98; }
+.page-hero__title,
+.enquiry-hero__title,
+.about-hero__title,
+.ack__title,
+.notfound__title { font-size: var(--fs-display); line-height: 1.02; }
+.swatches__head h2,
+.purpose__title,
+.first-message__title,
+.areas__title,
+.brief__title,
+.about-process__title,
+.about-cta__title,
+.enquiry-body__textiles h2 { font-size: var(--fs-h2); line-height: 1.08; }
+.privacy h2,
+.form__title { font-size: var(--fs-h3); line-height: 1.2; font-weight: 500; letter-spacing: -0.01em; }
+
+/* Ledes under page titles: one size and measure. */
+.hero__lede,
+.page-hero__lede,
+.enquiry-hero__lede,
+.about-hero__lede {
+  font-family: var(--f-serif);
+  font-size: var(--fs-lead);
+  line-height: 1.5;
+  max-width: 36rem;
+  margin-top: clamp(1rem, 1.8vw, 1.4rem);
+}
+
+/* ---- Fabric brief: the last mono-uppercase block ----------------------- */
+.brief__sheet,
+.brief__sheet-head,
+.brief__sheet-foot,
+.brief__tag,
+.brief__example,
+.brief__example-label,
+.brief__mail {
+  font-family: var(--f-sans);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.brief__sheet-head { font-size: var(--fs-small); font-weight: 500; color: var(--fg-mute); }
+.brief__tag { font-size: 0.8rem; color: var(--fg-mute); }
+.brief__example-label { font-size: 0.8rem; font-weight: 500; color: var(--fg-mute); }
+.brief__sheet-foot { font-size: var(--fs-small); line-height: 1.6; color: var(--fg-soft); }
+.brief__mail { font-size: 0.95rem; }
+.brief__num { letter-spacing: 0; color: var(--fg-mute); }
+
+/* Every hero's text starts on the same left edge as the rest of the site:
+   the full shell width, with the text itself limited by its own measure. */
+.page-hero--textile .page-hero__inner,
+.about-hero__inner { max-width: var(--maxw); }
+.page-hero__title,
+.about-hero__title,
+.enquiry-hero__title { max-width: 20ch; }
+@media (max-width: 980px) {
+  /* The theme toggle takes the free space; the menu button sits right beside it. */
+  .nav__toggle { margin-left: 0; }
+}
+
+/* About: until the vision text arrives the facts table stands alone. */
+.about-desk-grid:has(> :only-child) { grid-template-columns: minmax(0, 1fr); max-width: 56rem; }
+
+/* ---- Globe still image --------------------------------------------------- */
+/* Positioned by GlobePoster with the live scene's own arithmetic. */
+.globe-still { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.globe-still img { position: absolute; max-width: none; display: block; }
+
+/* ---- Opening: the hero enters as the logo cover fades ------------------- */
+/* The old entrance (copy rising on load) ran underneath the cover where no
+   one saw it. Now the copy waits off to the left while the logo draws and
+   slides in when the cover starts to fade, line by line. The globe's own
+   entrance is in GlobeScene (Frame); if the live globe is not ready yet, its
+   still image slides in from the right on the same cue. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero__eyebrow, .hero__line, .hero__lede, .hero__actions { animation: none; }
+
+  .hero__line, .hero__lede, .hero__actions {
+    transition: transform 1100ms cubic-bezier(.16, 1, .3, 1), opacity 900ms ease-out;
+  }
+  .hero__line:nth-child(2) { transition-delay: 90ms; }
+  .hero__lede { transition-delay: 200ms; }
+  .hero__actions { transition-delay: 300ms; }
+
+  :root[data-intro-phase='drawing'] :is(.hero__line, .hero__lede, .hero__actions),
+  :root[data-intro-phase='settling'] :is(.hero__line, .hero__lede, .hero__actions) {
+    opacity: 0;
+    transform: translate3d(-72px, 0, 0);
+    transition: none;
+  }
+
+}
+
+/* The still never shows at rest while the entrance is still to come (see
+   GlobePoster). If it takes the entrance, it slides in from the right. */
+.globe-still[data-entry='waiting'] img { visibility: hidden; }
+@media (prefers-reduced-motion: no-preference) {
+  .globe-still[data-entry='entering'] img { animation: globe-still-in 1300ms cubic-bezier(.16, 1, .3, 1) both; }
+}
+@keyframes globe-still-in {
+  from { transform: translate3d(60vw, 0, 0); opacity: 0; }
+  30% { opacity: 1; }
+  to { transform: none; opacity: 1; }
+}
+
+/* ---- Sound toggle -------------------------------------------------------- */
+.nav__theme { gap: 0.4rem; }
+.sound-toggle {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+  color: var(--fg);
+  cursor: pointer;
+  flex: none;
+  transition: border-color 200ms var(--ease-out);
+}
+.sound-toggle:hover { border-color: var(--control-border); }
+.sound-toggle:focus-visible { outline: 2px solid var(--action-text); outline-offset: 3px; }
+.sound-toggle__icon { width: 20px; height: 20px; overflow: visible; }
+.sound-toggle__speaker { fill: currentColor; }
+.sound-toggle__wave,
+.sound-toggle__slash { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.sound-toggle__wave { transform-origin: 12px 12px; transition: opacity 250ms var(--ease-out), transform 300ms var(--ease-out); }
+.sound-toggle__wave--2 { transition-delay: 60ms; }
+.sound-toggle__slash { stroke-dasharray: 8; stroke-dashoffset: 8; transition: stroke-dashoffset 300ms var(--ease-out); }
+.sound-toggle[data-on='false'] .sound-toggle__wave { opacity: 0; transform: scale(0.6); }
+.sound-toggle[data-on='false'] .sound-toggle__slash { stroke-dashoffset: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .sound-toggle__wave, .sound-toggle__slash { transition: none; }
+}
+
+.lightbox__card img { aspect-ratio: auto; }
+
+/* Textiles regions: real fabric photographs instead of the drawn weave. */
+.area__weave { background: var(--cotton-deep); }
+.area__photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.area__weave::after { background: none; }
+
+/* ==========================================================================
+   Enquiry form, second pass. One card: the category is its first field,
+   fields sit in two labelled groups, every input looks the same (the phone
+   field was missing from the old selector and fell back to the browser's
+   own style), and focus and selection use the gold action colour.
+   ========================================================================== */
+.form { border-top-width: 4px; padding: clamp(1.3rem, 3vw, 2.6rem); }
+.form__head { padding-bottom: clamp(1.1rem, 2vw, 1.5rem); }
+.form__title { margin-top: 0; }
+.form__intro { margin-top: 0.4rem; font-size: var(--fs-small); color: var(--fg-mute); }
+.form__body { border: 0; margin: 0; padding: 0; min-width: 0; }
+
+.form__group {
+  margin-top: clamp(1.6rem, 3vw, 2.2rem);
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--f-sans);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--fg-mute);
+}
+
+.form .field { border-bottom: 0; padding-block: clamp(1rem, 1.8vw, 1.35rem) 0; }
+.form .field--group { border-bottom: 0; }
+.field__label { margin-bottom: 0.35rem; }
+.field__hint { margin-bottom: 0.6rem; }
+.field__hint--after { margin: 0.45rem 0 0; }
+
+.field :is(input[type='text'], input[type='email'], input[type='tel'], textarea),
+.select__button {
+  width: 100%;
+  min-height: 3rem;
+  background: var(--cotton);
+  border: 1px solid var(--control-border);
+  border-radius: 3px;
+  padding: 0.75rem 0.9rem;
+  font-family: var(--f-sans);
+  font-size: 1rem;
+  color: var(--fg);
+  box-shadow: none;
+  transition: border-color 200ms var(--ease-out), background-color 200ms var(--ease-out);
+}
+.field :is(input, textarea)::placeholder { color: var(--fg-mute); opacity: 1; font-size: 0.95rem; }
+.field :is(input, textarea):hover { border-color: var(--fg-soft); }
+.field :is(input, textarea):focus,
+.select__button:focus-visible {
+  outline: 2px solid var(--action-text);
+  outline-offset: 1px;
+  border-color: var(--action-text);
+  background: var(--cotton-lit);
+  box-shadow: none;
+}
+.field :is(input, textarea)[aria-invalid='true'] { border-color: var(--madder); background: var(--cotton); }
+
+/* Browser autofill paints its own blue or yellow; keep the site's ground. */
+.field input:-webkit-autofill,
+.field input:-webkit-autofill:hover,
+.field input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--fg);
+  -webkit-box-shadow: 0 0 0 100px var(--cotton) inset;
+  caret-color: var(--fg);
+  transition: background-color 9999s;
+}
+
+.choice-grid { margin-top: 0.5rem; }
+.choice { background: var(--cotton); border-radius: 3px; }
+.choice:hover { transform: none; }
+.choice.is-checked { border-color: var(--action-deep); box-shadow: inset 0 0 0 1px var(--action-deep); background: var(--cotton-lit); }
+.choice.is-checked .choice__dot { border-color: var(--action-deep); }
+.choice__dot::after { background: var(--action-deep); }
+.choice input:focus-visible + .choice__dot { outline-color: var(--action-text); }
+
+.form__pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.form__submit { padding-top: clamp(1.6rem, 3vw, 2.2rem); gap: 1rem 1.4rem; }
+.form__note { font-size: var(--fs-small); line-height: 1.5; }
+.form__status .notice { margin-top: 1rem; }
+:root[data-theme='dark'] .notice--error { background: #2a1512; }
+
+@media (max-width: 640px) {
+  .form__pair { grid-template-columns: minmax(0, 1fr); }
+  .choice-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Enquiry hero: title and one line. The email alternative moved into the
+   side card, beside the form it replaces. */
+.enquiry-hero { padding-bottom: clamp(1.5rem, 3vw, 2.25rem); }
+.enquiry-hero__lede { max-width: 40rem; }
+
+.side-card { border-radius: 3px; }
+.side-card__title { font-family: var(--f-sans); font-size: 1rem; font-weight: 600; color: var(--fg); }
+.side-steps { margin-top: 0.9rem; gap: 0.7rem; }
+.side-steps li { grid-template-columns: 1.6rem 1fr; font-size: 0.92rem; }
+.side-steps span {
+  display: inline-grid;
+  place-items: center;
+  width: 1.3rem;
+  height: 1.3rem;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--control-border);
+  font-family: var(--f-sans);
+  font-size: 0.72rem;
+  letter-spacing: 0;
+  color: var(--fg-soft);
+}
+.side-card__alt { margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--rule); }
+.side-card__label { font-size: var(--fs-small); color: var(--fg-mute); }
+.side-card__mail { display: inline-block; margin-top: 0.2rem; color: var(--action-text); font-weight: 500; overflow-wrap: anywhere; border-bottom: 1px solid currentColor; }
+.side-card__mail:hover { color: var(--fg); }
+.side-card .tlink { display: inline-block; margin-top: 1.1rem; font-size: var(--fs-small); }
+
+/* ---- How an enquiry works (one section, replaces purpose + first-message) */
+.process {
+  padding-block: var(--section-y);
+  border-top: 1px solid var(--rule);
+  background: var(--cotton);
+  color: var(--fg);
+}
+.process__title {
+  font-family: var(--f-display);
+  font-weight: 400;
+  font-variation-settings: var(--fraunces-tight);
+  font-size: var(--fs-h2);
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+}
+.process__steps {
+  list-style: none;
+  margin: clamp(1.75rem, 3.5vw, 2.75rem) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1.25rem, 3vw, 3rem);
+}
+.process__steps li { padding-top: 1.1rem; border-top: 1px solid var(--rule); }
+.process__n {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--action);
+  color: var(--action-fg);
+  font-family: var(--f-sans);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.process__steps h3 { margin-top: 0.9rem; font-family: var(--f-sans); font-size: 1.1rem; font-weight: 600; letter-spacing: -0.01em; }
+.process__steps p { margin-top: 0.4rem; color: var(--fg-soft); max-width: 34ch; }
+
+.process__first {
+  margin-top: clamp(2.25rem, 5vw, 3.5rem);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  background: var(--cotton-lit);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 1.5rem clamp(2rem, 5vw, 4rem);
+  align-items: end;
+}
+.process__first-title { font-family: var(--f-sans); font-size: 1rem; font-weight: 600; }
+.process__list { list-style: none; margin: 0.8rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.55rem 1.5rem; }
+.process__list li { position: relative; padding-left: 1.2rem; color: var(--fg-soft); }
+.process__list li::before { content: ''; position: absolute; left: 0; top: 0.6em; width: 6px; height: 6px; border-radius: 50%; background: var(--action-deep); }
+.process__cta p { color: var(--fg-mute); font-size: var(--fs-small); margin-bottom: 0.9rem; }
+
+@media (max-width: 860px) {
+  .process__steps { grid-template-columns: minmax(0, 1fr); }
+  .process__first { grid-template-columns: minmax(0, 1fr); align-items: start; }
+}
+@media (max-width: 540px) {
+  .process__list { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Ghost buttons stay outlined: the gold fill above must not reach them. */
+.btn--ghost { --btn-bg: transparent; --btn-fg: var(--fg); border: 1px solid var(--control-border); }
+
+/* ---- Footer, compact ----------------------------------------------------- */
+.footer { padding-block: clamp(2.75rem, 5vw, 4.25rem) 1.6rem; }
+.footer__top {
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 1fr);
+  gap: 2rem clamp(2rem, 5vw, 5rem);
+  padding-bottom: clamp(2rem, 3.5vw, 3rem);
+  border-bottom-color: var(--rule);
+}
+.footer__brand .footer__logo { display: block; width: clamp(110px, 10vw, 150px); height: auto; }
+.footer__desc { margin-top: 1rem; color: var(--fg-soft); font-size: var(--fs-small); max-width: 28ch; }
+.footer__label {
+  margin-bottom: 0.8rem;
+  font-family: var(--f-sans);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--fg-mute);
+}
+.footer__list { gap: 0.5rem; font-size: 0.95rem; color: var(--fg); }
+.footer__list a:hover,
+.footer__privacy:hover,
+.footer__mail:hover { color: var(--gold); }
+.footer__mail { color: var(--fg); font-weight: 500; overflow-wrap: anywhere; border-bottom: 1px solid rgba(238, 240, 246, 0.35); }
+.footer__note { margin-top: 0.8rem; color: var(--fg-soft); font-size: var(--fs-small); max-width: 30ch; }
+.footer__base { border-top: 0; padding-top: 1.2rem; align-items: center; }
+.footer__base .small,
+.footer__privacy { color: var(--fg-mute); font-size: 0.8rem; }
+@media (max-width: 860px) {
+  .footer__top { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .footer__brand { grid-column: 1 / -1; }
+}
+@media (max-width: 480px) {
+  .footer__top { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---- About, tidied --------------------------------------------------------- */
+.about-desk-card__head {
+  display: block;
+  margin: 0;
+  font-family: var(--f-sans);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--fg-mute);
+}
+.about-process__title { margin-top: 0; }
+.about-process__head { margin-bottom: clamp(1.5rem, 3vw, 2.25rem); }
+.about-process-card { border-radius: 3px; }
+.about-desk-card { border-radius: 3px; overflow: hidden; }
+.about-cta__title { margin-top: 0; }
+
+/* ---- Textiles hero: one action, spaced from the lede ---------------------- */
+.page-hero__actions { margin-top: clamp(1.4rem, 2.4vw, 1.9rem); }
+.page-hero--textile .page-hero__lede { max-width: 36rem; }
+/* Region kickers in the sans, like every other label. */
+.area__kicker { font-family: var(--f-sans); font-size: var(--fs-small); letter-spacing: 0; text-transform: none; font-weight: 500; }
+/* A fieldset puts its legend above the padding, so space it with a margin. */
+.form .field--group { padding-top: 0; margin-top: clamp(1rem, 1.8vw, 1.35rem); }
+
+/* The globe rides through the theme reveal as a live layer (ThemeToggle). */
+::view-transition-group(hero-globe),
+::view-transition-new(hero-globe) { animation: none; }
+::view-transition-old(hero-globe) { display: none; }
+
+/* Headings and <main> receive focus after navigation so screen readers land
+   in the right place. They are not controls, so no focus ring. */
+[tabindex='-1']:focus,
+[tabindex='-1']:focus-visible { outline: none; }
+
+/* ==========================================================================
+   Hero, final pass
+   - A small eyebrow carries the literal search phrase; the headline carries
+     the promise, its second line set in Fraunces italic in deep gold.
+   - Three short facts under the actions, separated by bandhani dots.
+   - Phones: the globe sits in a square stage and is always whole.
+   ========================================================================== */
+.hero__eyebrow-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: clamp(1rem, 2vw, 1.6rem);
+  font-family: var(--f-sans);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--action-text);
+}
+.hero__eyebrow-line::before {
+  content: '';
+  width: 1.75rem;
+  height: 6px;
+  color: var(--action-deep);
+  background: radial-gradient(circle, currentColor 2px, transparent 2.6px) 0 50% / 7px 6px repeat-x;
+}
+.hero__title {
+  font-weight: 380;
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+  font-variation-settings: 'SOFT' 30, 'WONK' 0;
+}
+.hero__line--accent em {
+  font-style: italic;
+  font-weight: 340;
+  color: var(--action-text);
+  font-variation-settings: 'SOFT' 60, 'WONK' 1;
+  letter-spacing: -0.02em;
+  /* Italic overhang: keep the final stroke inside the line box. */
+  padding-right: 0.06em;
+}
+.hero__lede { max-width: 34rem; }
+
+.hero__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0;
+  margin: clamp(1.8rem, 3.2vw, 2.6rem) 0 0;
+  padding: 0;
+  list-style: none;
+  border: 0;
+  max-width: none;
+  font-family: var(--f-sans);
+  font-size: var(--fs-small);
+  color: var(--fg-mute);
+}
+.hero__facts li { display: inline-flex; align-items: center; }
+.hero__facts li + li::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  margin-inline: 0.8rem;
+  border-radius: 50%;
+  background: var(--action-deep);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero__eyebrow-line, .hero__facts { transition: transform 1100ms cubic-bezier(.16, 1, .3, 1), opacity 900ms ease-out; }
+  .hero__facts { transition-delay: 380ms; }
+  :root[data-intro-phase='drawing'] :is(.hero__eyebrow-line, .hero__facts),
+  :root[data-intro-phase='settling'] :is(.hero__eyebrow-line, .hero__facts) {
+    opacity: 0;
+    transform: translate3d(-72px, 0, 0);
+    transition: none;
+  }
+}
+
+@media (max-width: 980px) {
+  .hero { padding-top: 6.25rem; }
+  .hero__title { font-size: clamp(2.6rem, 12.5vw, 4.4rem); line-height: 1; }
+  .hero__eyebrow-line { margin-bottom: 0.9rem; }
+  .hero__facts { margin-top: 1.4rem; }
+  /* A square stage, so the whole globe fits with air around it. */
+  .hero__stage {
+    width: min(100%, 440px);
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+    margin: 1.25rem auto 0;
+  }
+}
+@media (max-width: 480px) {
+  .hero__facts { flex-direction: column; gap: 0.45rem; }
+  .hero__facts li + li::before { content: none; }
+  .hero__facts li::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    margin-right: 0.6rem;
+    border-radius: 50%;
+    background: var(--action-deep);
+  }
+}
+
+/* The open vat's number sits on a light part of some photographs. */
+.vat__num { text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45); }
+/* The original site's rise-in also targeted this class; the opening owns it now. */
+.hero__facts, .hero__eyebrow-line { animation: none; }
+
+/* ---- Textiles: the example brief, compact (FabricBrief.tsx) --------------- */
+.fbrief { padding-block: var(--section-y); background: var(--cotton); color: var(--fg); }
+.fbrief__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.4fr);
+  gap: 2rem clamp(2rem, 6vw, 6rem);
+  align-items: start;
+}
+.fbrief__title {
+  font-family: var(--f-display);
+  font-weight: 400;
+  font-variation-settings: var(--fraunces-tight);
+  font-size: var(--fs-h2);
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+  max-width: 14ch;
+}
+.fbrief__lede { margin: 1rem 0 1.6rem; color: var(--fg-soft); max-width: 34ch; }
+.fbrief__cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(0.75rem, 1.4vw, 1.1rem);
+}
+.fbrief__card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 0.75rem;
+  align-content: start;
+  padding: clamp(1.1rem, 2vw, 1.5rem);
+  background: var(--cotton-lit);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+}
+.fbrief__num {
+  grid-row: span 3;
+  display: inline-grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  background: var(--dye-textiles);
+  color: var(--paper);
+  font-family: var(--f-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.fbrief__field { font-family: var(--f-sans); font-size: 1.02rem; font-weight: 600; letter-spacing: -0.005em; margin-top: 0.25rem; }
+.fbrief__ask { margin-top: 0.3rem; color: var(--fg-soft); font-size: 0.94rem; line-height: 1.5; }
+.fbrief__example {
+  margin-top: 0.7rem;
+  font-family: var(--f-serif);
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--fg);
+}
+.fbrief__example span {
+  font-family: var(--f-sans);
+  font-style: normal;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--fg-mute);
+  margin-right: 0.25rem;
+}
+@media (max-width: 900px) {
+  .fbrief__grid { grid-template-columns: minmax(0, 1fr); }
+  .fbrief__title { max-width: none; }
+}
+@media (max-width: 560px) {
+  .fbrief__cards { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---- About, final pass: one ground, the same rhythm as the home page ---- */
+.about-desk-section,
+.about-process { background: var(--cotton); border-top: 1px solid var(--rule); }
+.about-desk-grid,
+.about-desk-grid:has(> :only-child) {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
+  gap: 2rem clamp(2rem, 6vw, 6rem);
+  max-width: none;
+  align-items: start;
+}
+.about-glance__title {
+  font-family: var(--f-display);
+  font-weight: 400;
+  font-variation-settings: var(--fraunces-tight);
+  font-size: var(--fs-h2);
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+}
+.about-glance__lede { margin-top: 0.9rem; color: var(--fg-soft); max-width: 30ch; }
+.about-desk-card { background: transparent; border: 0; border-top: 1px solid var(--rule); border-radius: 0; box-shadow: none; }
+.about-desk-row { border-bottom: 1px solid var(--rule); }
+.about-desk-row:last-child { border-bottom: 1px solid var(--rule); }
+.about-desk-key,
+.about-desk-val {
+  padding: 1.05rem 0;
+  vertical-align: top;
+  text-align: left;
+  font-family: var(--f-sans);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+.about-desk-key { width: 34%; padding-right: 1.5rem; color: var(--fg-mute); font-weight: 500; }
+.about-desk-val { color: var(--fg); }
+.about-desk-val a { font-size: inherit; color: var(--action-text); border-bottom: 1px solid currentColor; }
+/* The vision card, once its text arrives, spans under the facts. */
+.about-vision { grid-column: 1 / -1; }
+
+.about-process-card {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 1.1rem 0 0;
+}
+.about-process-card__num {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--action);
+  color: var(--action-fg);
+  font-family: var(--f-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.about-process-card__title { margin-top: 0.9rem; font-family: var(--f-sans); font-size: 1.1rem; font-weight: 600; letter-spacing: -0.01em; }
+.about-process-card__body { margin-top: 0.4rem; font-family: var(--f-sans); color: var(--fg-soft); font-size: 1rem; line-height: 1.55; max-width: 34ch; }
+
+@media (max-width: 900px) {
+  .about-desk-grid,
+  .about-desk-grid:has(> :only-child) { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 520px) {
+  .about-desk-row { display: grid; }
+  .about-desk-key { width: auto; padding: 0.9rem 0 0.1rem; }
+  .about-desk-val { padding: 0 0 0.9rem; }
+}
+
+/* One radius scale: 3px buttons, 4px fields and choices, 6px cards. */
+.form, .side-card, .process__first, .fbrief__card, .lightbox__card { border-radius: 6px; }
+.field :is(input[type='text'], input[type='email'], input[type='tel'], textarea), .select__button, .choice { border-radius: 4px; }
+.form { overflow: hidden; }
+@media (max-width: 480px) {
+  .hero__facts li::before,
+  .hero__facts li + li::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    margin: 0 0.6rem 0 0;
+    border-radius: 50%;
+    background: var(--action-deep);
+  }
+}
+
+/* Stage hand-over: the still fades off the live scene (Stage.tsx). */
+.scene-poster { transition: opacity 400ms ease-out; }
+.scene-poster[data-leaving='true'] { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .scene-poster { transition: none; } }
+
+/* ---- Header and in-page jumps ------------------------------------------------
+   A jump to a section lands it exactly under the header, and the header's
+   ground appears at once rather than fading in: a fading or short header
+   showed a strip of the hero (and the globe arriving in it) for a moment. */
+html { scroll-padding-top: 4.6rem; }
+@media (max-width: 980px) { html { scroll-padding-top: calc(4.1rem + env(safe-area-inset-top, 0px)); } }
+.nav { transition: color 220ms var(--ease-out); }
+.area__photo { transition: opacity 500ms var(--ease-out); }
+.area__photo:not([data-loaded]) { opacity: 0; }
+
+/* ==========================================================================
+   Hero, clean layout
+   Left: headline, one line of description, two actions, vertically centred.
+   Right: the globe, large and running off the right edge (globe-frame.ts),
+   its centre level with the copy. The frame keeps the globe clear of the
+   copy column, which is narrower than the share it reserves.
+   ========================================================================== */
+.hero { padding-block: 5rem; align-items: center; }
+.hero__inner { gap: 0; }
+.hero__copy { max-width: 52%; }
+.hero__title {
+  font-size: clamp(2.5rem, 4.15vw, 4.75rem);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.hero__line { display: block; }
+.hero__line--accent { margin-top: 0.06em; }
+.hero__lede { margin-top: clamp(1.25rem, 2vw, 1.6rem); max-width: 32rem; }
+.hero__actions { margin-top: clamp(1.75rem, 2.8vw, 2.25rem); }
+
+@media (max-width: 980px) {
+  .hero { padding-block: 6.25rem 2.5rem; }
+  .hero__copy { max-width: none; }
+  .hero__title { font-size: clamp(2.2rem, 8.6vw, 3.6rem); line-height: 1.06; }
+}

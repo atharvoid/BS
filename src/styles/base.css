@@ -193,10 +193,11 @@ input, textarea, select {
   line-height: 1.55;
 }
 
+/* Retired: one italic coloured word on every heading stopped being emphasis.
+   Kept as a no-op so old markup renders plainly. */
 .display-italic {
-  font-style: italic;
-  font-variation-settings: 'SOFT' 34, 'WONK' 1;
-  color: var(--accent);
+  font-style: inherit;
+  color: inherit;
 }
 
 .rule {

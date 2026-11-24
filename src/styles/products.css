@@ -278,7 +278,6 @@
 .sourcing__track {
   display: flex;
   width: max-content;
-  animation: sourcing-marquee 44s linear infinite;
 }
 
 .sourcing__group { display: flex; align-items: center; }
