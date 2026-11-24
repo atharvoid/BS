@@ -39,6 +39,11 @@ const DYES: Record<string, string> = {
 
 const HOVER_DWELL_MS = 140
 
+/** Photographs fade in once decoded, instead of snapping onto the dye. */
+const markLoaded = (event: React.SyntheticEvent<HTMLImageElement>) => {
+  event.currentTarget.dataset.loaded = 'true'
+}
+
 export function SwatchBook() {
   const [open, setOpen] = React.useState<string>(CATEGORY_JOURNEY[0].id)
   const [viewing, setViewing] = React.useState<LightboxImage | null>(null)
@@ -111,8 +116,8 @@ export function SwatchBook() {
                 onPointerLeave={() => window.clearTimeout(dwell.current)}
               >
                 <div className="vat__art" aria-hidden="true">
-                  <img className="vat__img vat__img--dyed" src={photo} alt="" loading="lazy" decoding="async" width={800} height={533} />
-                  <img className="vat__img vat__img--true" src={photo} srcSet={`${photo} 800w, ${item.image.src} 1600w`} sizes="(max-width: 760px) 100vw, 46vw" alt="" loading="lazy" decoding="async" width={800} height={533} />
+                  <img className="vat__img vat__img--dyed" onLoad={markLoaded} src={photo} alt="" loading="lazy" decoding="async" width={800} height={533} />
+                  <img className="vat__img vat__img--true" onLoad={markLoaded} src={photo} srcSet={`${photo} 800w, ${item.image.src} 1600w`} sizes="(max-width: 760px) 100vw, 46vw" alt="" loading="lazy" decoding="async" width={800} height={533} />
                   <span className="vat__shade" />
                 </div>
 

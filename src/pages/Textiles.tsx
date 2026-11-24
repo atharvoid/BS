@@ -31,6 +31,7 @@ export default function Textiles() {
             fallback={<img className="cloth-poster" src="/posters/cloth-mobile.webp" srcSet="/posters/cloth-mobile-small.webp 500w, /posters/cloth-mobile.webp 1000w" sizes="(max-width:540px) 100vw, 500px" alt="" width={1000} height={800} />}
             load={loadHeroScene}
             finiteMotion
+            posterWhileLoading={false}
           />
           <p className="drag-hint" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none">
@@ -55,7 +56,7 @@ export default function Textiles() {
             {FOCUS_AREAS.map((area, index) => (
               <article className="area reveal" key={area.id}>
                 <div className={'area__weave area__weave--' + area.id} aria-hidden="true">
-                  <img className="area__photo" src={smallPhoto(REGION_IMAGES[area.id].src)} srcSet={`${smallPhoto(REGION_IMAGES[area.id].src)} 800w, ${REGION_IMAGES[area.id].src} 1600w`} sizes="(max-width: 760px) 100vw, 50vw" alt={REGION_IMAGES[area.id].alt} loading="lazy" decoding="async" width={800} height={533} />
+                  <img className="area__photo" onLoad={(e) => { e.currentTarget.dataset.loaded = 'true' }} src={smallPhoto(REGION_IMAGES[area.id].src)} srcSet={`${smallPhoto(REGION_IMAGES[area.id].src)} 800w, ${REGION_IMAGES[area.id].src} 1600w`} sizes="(max-width: 760px) 100vw, 50vw" alt={REGION_IMAGES[area.id].alt} loading="lazy" decoding="async" width={800} height={533} />
                 </div>
                 <div className="area__text">
                   <p className="area__kicker">{area.kicker}</p>

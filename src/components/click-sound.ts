@@ -2,10 +2,9 @@
  * No audio files are downloaded and nothing needs a licence.
  *
  * Four interface sounds:
- *   mouse  a classic mouse click (press, then release), for the page links
- *          in the header and menu: Products, Textiles, About
- *   tick   a small woody tap, for links and ordinary controls
- *   chime  two soft bell partials a fifth apart, for primary buttons
+ *   mouse  a classic mouse click (press, then release): every ordinary click
+ *   tick   a small woody tap (kept, not currently used)
+ *   chime  two soft bell partials a fifth apart, for enquiry actions
  *   dip    a low, soft drop, for opening a product area
  *
  * Background music (ambient.ts) is a quiet tanpura-style drone with an
@@ -173,19 +172,22 @@ export function playSound(kind: Sound = 'tick', force = false) {
   src.stop(t + 0.3)
 }
 
-/** Kept for existing callers: the ordinary tick. */
+/** The site's ordinary click: the classic mouse click. */
 export function playClick(force = false) {
-  playSound('tick', force)
+  playSound('mouse', force)
 }
 
 const CONTROL = 'a[href], button, [role="button"], summary, select, label, input[type="checkbox"], input[type="radio"], input[type="submit"], [role="radio"], [role="option"], [role="combobox"]'
 const TYPING = 'input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]), textarea, [contenteditable="true"]'
 
+/* Enquiry actions chime, the product vats dip, and every other click on the
+   site is the classic mouse click. */
+const ENQUIRY = '.btn--submit, .vat__cta, a.btn[href^="/enquiry"], a.btn[href*="enquiry"]'
+
 function soundFor(control: Element): Sound {
   if (control.matches('.vat__tab')) return 'dip'
-  if (control.matches('.nav__link, .drawer__link')) return 'mouse'
-  if (control.matches('.btn, [type="submit"]')) return 'chime'
-  return 'tick'
+  if (control.matches(ENQUIRY)) return 'chime'
+  return 'mouse'
 }
 
 /** Listen once for the whole document. Returns a cleanup function. */

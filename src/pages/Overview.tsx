@@ -40,10 +40,9 @@ function Hero() {
 
       <div className="hero__inner shell">
         <div className="hero__copy">
-          <p className="hero__eyebrow-line">Sourcing and trade coordination, India</p>
           <h1 className="hero__title">
-            <span className="hero__line">Import. Export.</span>
-            <span className="hero__line hero__line--accent"><em>India on speed dial.</em></span>
+            <span className="hero__line">From India to the World:</span>
+            <span className="hero__line hero__line--accent"><em>Seamless Global Trade</em></span>
           </h1>
 
           <p className="hero__lede">
@@ -65,12 +64,6 @@ function Hero() {
               See what we source
             </Link>
           </div>
-
-          <ul className="hero__facts" aria-label="How we work">
-            <li>Six product areas</li>
-            <li>A person replies to every enquiry</li>
-            <li>Terms agreed in writing</li>
-          </ul>
         </div>
 
 

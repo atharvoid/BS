@@ -11,7 +11,7 @@ export function SoundToggle() {
   const toggle = () => {
     const next = !on
     setSound(next)
-    if (next) playSound('chime', true)
+    if (next) playSound('mouse', true)
   }
 
   return (

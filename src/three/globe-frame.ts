@@ -10,8 +10,7 @@
 
    Rules (unchanged from the scene's original framing):
    - Stacked (phones, <=980px wide): centred and whole, with a margin.
-   - Wide: as large as the height allows, kept clear of the copy column, with
-     the centre 0.78 of a radius in from the right edge so it crops off-screen.
+   - Wide: whole, in the right half, right edge on the content edge.
    ========================================================================== */
 
 export const GLOBE_CAMERA = { z: 7.4, fov: 36 } as const
@@ -19,7 +18,9 @@ export const GLOBE_CAMERA = { z: 7.4, fov: 36 } as const
 /** The globe's radius, in world units, in the square still-image capture. */
 export const CAPTURE_RADIUS = 1.9
 
-const COPY_MAX_PX = 720
+/** The shell's maximum width (--maxw) and the copy column's share of it. */
+const MAX_CONTENT_PX = 1560
+export const COPY_SHARE = 0.52
 
 export type GlobeFrame = { radius: number; x: number; y: number; stacked: boolean }
 
@@ -38,17 +39,20 @@ export function globeFrame(width: number, height: number, compact = false): Glob
        globe that filled the stage edge to edge was clipped top and bottom. */
     return { radius: Math.max(0.4, Math.min(viewport.height, viewport.width) * 0.42), x: 0, y: 0, stacked }
   }
-  /* 55% of the width is the copy column's share: on the light hero the
-     headline sits next to the sphere, and at 1024px the two were touching. */
-  const copyPx = Math.min(COPY_MAX_PX, width * 0.55) + 32
-  const copyWorld = (copyPx / width) * viewport.width
-  let radius = Math.min(
-    viewport.height * 0.38,
-    viewport.width * 0.36,
-    Math.max(0, (viewport.width - copyWorld) / 1.7),
-  )
-  radius = Math.max(0.4, radius, viewport.height * 0.16)
-  return { radius, x: viewport.width * 0.5 - radius * 0.78, y: -0.07, stacked }
+  /* Wide: the whole globe sits in the right half of the hero. Its right
+     edge lands exactly on the content edge (the same line as the header's
+     right-hand buttons), its left edge stays clear of the copy column, and
+     its centre is level with the hero's centre, which is where the copy is
+     centred too. */
+  const pxPerUnit = width / viewport.width
+  const gutter = Math.min(72, Math.max(18.4, width * 0.044))
+  const contentRight = (width + Math.min(width, MAX_CONTENT_PX)) / 2 - gutter
+  const copyRight = (width - Math.min(width, MAX_CONTENT_PX)) / 2 + gutter + (Math.min(width, MAX_CONTENT_PX) - gutter * 2) * COPY_SHARE
+  const roomPx = Math.max(0, contentRight - copyRight - 40)
+  const radiusPx = Math.min(roomPx / 2, height * 0.37)
+  const radius = Math.max(0.4, radiusPx / pxPerUnit)
+  const centerPx = contentRight - radius * pxPerUnit
+  return { radius, x: (centerPx - width / 2) / pxPerUnit, y: 0, stacked }
 }
 
 /**

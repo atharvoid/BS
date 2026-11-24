@@ -311,3 +311,10 @@
 
 /* Dark mode: the dyes are the same; the page around them darkens. */
 :root[data-theme='dark'] .vats-section { border-top-color: var(--rule); }
+
+/* Photographs fade in once decoded (SwatchBook marks them), so a vat never
+   snaps from flat dye to a picture. The dye is the placeholder. */
+.vat__img--dyed { transition: opacity 500ms var(--ease-out), transform 1200ms var(--ease-out); }
+.vat__img--true { transition: --bandhani 1000ms cubic-bezier(.6, 0, .25, 1) 120ms, opacity 500ms var(--ease-out); }
+.vat__img:not([data-loaded]) { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .vat__img--dyed, .vat__img--true { transition: none; } }
