@@ -20,18 +20,19 @@ export const BUSINESS = {
 } as const
 
 export const CATEGORIES = [
-  { id: 'textiles', label: 'Textiles & fabrics', hint: 'Tell us the fabric, intended use and finish. Include a sample reference or approximate quantity if you have one.' },
-  { id: 'handicrafts', label: 'Handicrafts & home decor', hint: 'Describe the item, material, dimensions and finish. Mention any reference images you have.' },
-  { id: 'agriculture-food', label: 'Agriculture & food', hint: 'Name the crop or food product. Include the grade, quantity and packing if known.' },
-  { id: 'industrial-materials', label: 'Industrial materials', hint: 'Name the material or component. Include its grade, specification or reference if available.' },
-  { id: 'organic-sustainable', label: 'Organic & sustainable products', hint: 'Name the product and any certification or traceability documents you need.' },
-  { id: 'general', label: 'Other sourcing requests', hint: 'Tell us what you need or supply, how it will be used and where it is going.' },
+  { id: 'textiles', label: 'Textiles & fabrics', scope: 'Fabrics, yarns, made-ups', hint: 'Tell us the fabric, intended use and finish. Include a sample reference or approximate quantity if you have one.' },
+  { id: 'handicrafts', label: 'Handicrafts & home decor', scope: 'Pottery, woodwork, decor', hint: 'Describe the item, material, dimensions and finish. Mention any reference images you have.' },
+  { id: 'agriculture-food', label: 'Agriculture & food', scope: 'Grains, spices, produce', hint: 'Name the crop or food product. Include the grade, quantity and packing if known.' },
+  { id: 'industrial-materials', label: 'Industrial materials', scope: 'Metals and components', hint: 'Name the material or component. Include its grade, specification or reference if available.' },
+  { id: 'organic-sustainable', label: 'Organic & sustainable products', scope: 'Certified, traceable goods', hint: 'Name the product and any certification or traceability documents you need.' },
+  { id: 'general', label: 'Other sourcing requests', scope: 'Anything else you need', hint: 'Tell us what you need or supply, how it will be used and where it is going.' },
 ] as const
 
 export type CategoryId = (typeof CATEGORIES)[number]['id']
 
 export function getCategory(id: string | null | undefined) {
-  return CATEGORIES.find((category) => category.id === id) ?? CATEGORIES[CATEGORIES.length - 1]
+  // No category given (or an unknown one): the first in the list.
+  return CATEGORIES.find((category) => category.id === id) ?? CATEGORIES[0]
 }
 
 /**
@@ -64,87 +65,11 @@ export const FOCUS_AREAS = [
   },
 ] as const
 
-export const STAGES = [
-  {
-    n: '01',
-    title: 'Share the requirement',
-    body: 'The buyer or supplier explains what they need or offer, and how it will be used. A finished specification is not required to begin. A short description is enough.',
-    field: ['What', 'Intended use', 'Location'],
-    object: 'bolt',
-    objectLabel: 'Unfolded bolt',
-  },
-  {
-    n: '02',
-    title: 'Review material options',
-    body: 'The requirement and potential supply options can be assessed together. Materials and samples may be discussed, along with references the two sides already trust.',
-    field: ['Composition', 'Construction', 'Samples'],
-    object: 'shuttle',
-    objectLabel: 'Weaving shuttle',
-  },
-  {
-    n: '03',
-    title: 'Agree the details',
-    body: 'The parties clarify specifications, quantities, acceptance criteria and commercial terms. What is agreed at this stage is what both sides can hold each other to.',
-    field: ['Quantity', 'Acceptance', 'Terms'],
-    object: 'spool',
-    objectLabel: 'Spun yarn bobbin',
-  },
-  {
-    n: '04',
-    title: 'Agree the next steps',
-    body: 'The enquiry establishes what sourcing, documentation and logistics coordination can be provided. Every item is confirmed case by case, in writing, before it is relied upon.',
-    field: ['Documentation', 'Logistics', 'Coordination'],
-    object: 'reed',
-    objectLabel: 'Brass reed',
-  },
-] as const
-
-export const PROCESS_CAVEAT =
-  'These stages describe a basis for discussion. They are not a guarantee that every service or supply option is available.'
-
 export const FIRST_MESSAGE = [
   'What you are looking for, or what you supply',
   'How it will be used',
   'A reference you already like, if you have one',
   'The destination, or your business location',
-] as const
-
-export const LATER_DISCUSSIONS = [
-  {
-    t: 'Material',
-    d: 'Composition, construction, weight, width and finish.',
-  },
-  {
-    t: 'Evidence',
-    d: 'Samples and references.',
-  },
-  {
-    t: 'Volume',
-    d: 'Quantity and packing.',
-  },
-  {
-    t: 'Terms',
-    d: 'Acceptance criteria and commercial terms.',
-  },
-] as const
-
-export const BOUNDARIES = [
-  {
-    t: 'Imagery is representative',
-    d: 'Textile photographs on this site are chosen to represent material families. They are not evidence of supplier stock, and they are not photographs of specific products on offer.',
-  },
-  {
-    t: 'Scope is set per enquiry',
-    d: 'Specific fabric options and the services that can be provided are discussed case by case. This site does not carry a catalogue of confirmed availability.',
-  },
-  {
-    t: 'No performance claims',
-    d: 'No certifications, customer numbers, shipment history, guaranteed quality or shipping performance are claimed here.',
-  },
-  {
-    t: 'Nothing automated',
-    d: 'There are no accounts, no payments, and no automatic tracking. A person reads each enquiry and replies from the business inbox.',
-  },
 ] as const
 
 /** The six required answers. Kept in one place so the form and its copy cannot drift. */
@@ -220,9 +145,9 @@ export const CATEGORY_JOURNEY = CATEGORIES.map(category => ({
 }))
 
 export const ABOUT_BUSINESS = {
-  eyebrow: 'Desk coordinates',
+  eyebrow: 'About',
   title: 'Trade coordination and export sourcing in India',
-  lede: 'BS EXIMNEXUS is an export sourcing and trade coordination desk based in India.',
+  lede: 'We connect overseas buyers and buyers in India with Indian suppliers, and help each side agree what is needed before anything is ordered.',
 } as const
 
 /**
@@ -246,12 +171,17 @@ export const ABOUT_DESK_FACTS = [
 export const ABOUT_STANDARDS = [
   {
     num: '01',
-    title: 'Specification review',
-    body: 'Each enquiry starts with exact specifications: material composition, yarn count, weight in GSM, width, and quantity.',
+    title: 'Specifications first',
+    body: 'Each enquiry starts with the specifics: what the product is, its grade or composition, the quantity, and where it is going.',
   },
   {
     num: '02',
-    title: 'Written terms',
-    body: 'Prices, minimum quantities, packaging specifications, and delivery terms are confirmed in writing before shipment.',
+    title: 'Terms in writing',
+    body: 'Prices, minimum quantities, packing and delivery terms are confirmed in writing before anything ships.',
+  },
+  {
+    num: '03',
+    title: 'A person replies',
+    body: 'Every enquiry is read and answered by a person, by email from the business inbox.',
   },
 ] as const

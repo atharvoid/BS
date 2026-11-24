@@ -40,10 +40,11 @@ export default function Textiles() {
           </p>
         </div>
         <div className="shell page-hero__inner">
-          <p className="eyebrow">Textiles &amp; fabrics</p>
           <h1 className="page-hero__title">Textiles and fabrics from India</h1>
-          <p className="page-hero__lede">Explore the regions where we’re beginning our sourcing work.</p>
-          <Link to="/textiles#textile-enquiry" className="btn">Start a textile enquiry <Arrow /></Link>
+          <p className="page-hero__lede">Cotton, silk and blended fabrics, starting with two of India’s textile regions. Tell us what you are making and we will take it from there.</p>
+          <div className="page-hero__actions">
+            <Link to="/textiles#textile-enquiry" className="btn">Start a textile enquiry <Arrow /></Link>
+          </div>
         </div>
       </section>
 
@@ -73,9 +74,10 @@ export default function Textiles() {
       <section className="enquiry-body" id="textile-enquiry">
         <div className="shell">
           <div className="enquiry-body__textiles">
-            <h2>Enquire about textiles</h2>
-            <p>Use the <Link to="/textiles#fabric-details">example fabric brief</Link> to check what to include.</p>
-            <EnquiryForm />
+            <EnquiryForm
+              title="Enquire about textiles"
+              intro={<>Not sure what to include? See the <Link to="/textiles#fabric-details">example fabric brief</Link> above.</>}
+            />
           </div>
         </div>
       </section>

@@ -28,6 +28,32 @@ export function isGlobeHeld() {
   return phase === 'drawing'
 }
 
+/* The globe's entrance, owned by whichever globe gets there first.
+   none:    no entrance this load (back navigation, reduced motion): show at rest.
+   pending: the opening is playing; nothing may show the globe at rest yet.
+   live:    the 3D globe has taken the entrance and is flying in.
+   poster:  the 3D globe was not ready in time; the still image slides in.
+   Whichever claims it, the other never shows a resting globe in its place. */
+export type Entrance = 'none' | 'pending' | 'live' | 'poster'
+let entrance: Entrance = 'none'
+
+export function globeEntrance() {
+  return entrance
+}
+
+export function setGlobeEntrance(next: Entrance) {
+  if (entrance === next) return
+  entrance = next
+  listeners.forEach(listener => listener())
+}
+
+/** Take the pending entrance for one globe. True if this caller got it. */
+export function claimGlobeEntrance(by: 'live' | 'poster') {
+  if (entrance !== 'pending') return false
+  setGlobeEntrance(by)
+  return true
+}
+
 export function onIntroChange(listener: () => void) {
   listeners.add(listener)
   return () => {

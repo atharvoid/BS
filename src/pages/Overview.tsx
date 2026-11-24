@@ -81,27 +81,40 @@ export default function Overview() {
     <>
       <Hero />
       <SwatchBook />
-      <section className="purpose" id="process">
-        <div className="shell purpose__grid">
-          <h2 className="purpose__title">How an enquiry works</h2>
-          <div className="purpose__body">
-            <ol className="purpose__steps">
-              <li><strong>Share your requirement.</strong> Tell us what you need or supply, any specifications you have, and where the goods are going.</li>
-              <li><strong>We review the details.</strong> We’ll reply from our business inbox to discuss the product and any missing information.</li>
-              <li><strong>Discuss availability and terms.</strong> Quantities, samples and commercial terms depend on the enquiry.</li>
-            </ol>
-          </div>
-        </div>
-      </section>
-      <section className="first-message">
-        <div className="shell first-message__grid">
-          <h2 className="first-message__title">A first message needs four things</h2>
-          <div>
-            <ul className="first-message__list">
-              {FIRST_MESSAGE.map((item) => <li key={item}>{item}</li>)}
-            </ul>
-            <p className="first-message__note">A finished specification is not required to begin.</p>
-            <Link to="/enquiry" className="btn">Start an enquiry <Arrow /></Link>
+      {/* One section for how it works: three steps, then what a first
+          message needs, then the action. (Was two sections saying much the
+          same thing twice.) */}
+      <section className="process" id="process" aria-labelledby="process-title">
+        <div className="shell">
+          <h2 className="process__title" id="process-title">How an enquiry works</h2>
+          <ol className="process__steps">
+            <li>
+              <span className="process__n" aria-hidden="true">1</span>
+              <h3>Share your requirement</h3>
+              <p>What you need or supply, any specifications you have, and where the goods are going.</p>
+            </li>
+            <li>
+              <span className="process__n" aria-hidden="true">2</span>
+              <h3>We review the details</h3>
+              <p>A person replies by email to discuss the product and anything missing.</p>
+            </li>
+            <li>
+              <span className="process__n" aria-hidden="true">3</span>
+              <h3>Agree availability and terms</h3>
+              <p>Quantities, samples and commercial terms are agreed case by case, in writing.</p>
+            </li>
+          </ol>
+          <div className="process__first">
+            <div>
+              <h3 className="process__first-title">Your first message only needs</h3>
+              <ul className="process__list">
+                {FIRST_MESSAGE.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+            </div>
+            <div className="process__cta">
+              <p>A finished specification is not required to begin.</p>
+              <Link to="/enquiry" className="btn">Start an enquiry <Arrow /></Link>
+            </div>
           </div>
         </div>
       </section>

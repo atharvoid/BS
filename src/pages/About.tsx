@@ -18,9 +18,7 @@ export default function About() {
       <section className="about-hero">
         <div className="shell about-hero__inner">
           <p className="eyebrow eyebrow--bare">{ABOUT_BUSINESS.eyebrow}</p>
-          <h1 className="about-hero__title">
-            Trade coordination and export sourcing in India
-          </h1>
+          <h1 className="about-hero__title">{ABOUT_BUSINESS.title}</h1>
           <p className="about-hero__lede">{ABOUT_BUSINESS.lede}</p>
         </div>
       </section>
@@ -29,10 +27,7 @@ export default function About() {
         <div className="shell">
           <div className="about-desk-grid">
             <div className="about-desk-card reveal">
-              <div className="about-desk-card__head">
-                <span className="about-desk-card__eyebrow">Desk coordinates</span>
-                <span className="about-desk-card__contact">Direct contact</span>
-              </div>
+              <h2 className="about-desk-card__head">At a glance</h2>
               <table className="about-desk-table">
                 <tbody>
                   {ABOUT_DESK_FACTS.map((fact) => (
@@ -68,10 +63,7 @@ export default function About() {
       <section className="about-process">
         <div className="shell">
           <div className="about-process__head">
-            <p className="eyebrow eyebrow--bare reveal">Working method</p>
-            <h2 className="about-process__title reveal">
-              How enquiries are handled
-            </h2>
+            <h2 className="about-process__title reveal">How we work</h2>
           </div>
           <div className="about-process__grid">
             {ABOUT_STANDARDS.map((std) => (
@@ -88,15 +80,12 @@ export default function About() {
       <section className="about-cta on-indigo" id="enquiry">
         <div className="shell">
           <div className="about-cta__inner">
-            <p className="eyebrow eyebrow--bare">Enquiry</p>
-            <h2 className="about-cta__title">
-              Send your sourcing enquiry
-            </h2>
+            <h2 className="about-cta__title">Send your sourcing enquiry</h2>
             <p className="about-cta__lede">
-              Send your required materials, specifications, and delivery destination. A person reviews each enquiry and replies directly by email.
+              Tell us the product, any specifications and where it is going. We reply by email.
             </p>
             <div className="about-cta__actions">
-              <Link to="/enquiry" className="btn btn--light">
+              <Link to="/enquiry" className="btn">
                 Start an enquiry
                 <Arrow />
               </Link>

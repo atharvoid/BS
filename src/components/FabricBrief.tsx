@@ -59,7 +59,6 @@ export function FabricBrief() {
       <div className="shell">
         <div className="brief__grid">
           <div className="brief__intro">
-            <p className="eyebrow reveal">Before you write</p>
             <h2 className="brief__title reveal">
               What to tell us about your fabric
             </h2>
@@ -80,9 +79,7 @@ export function FabricBrief() {
 
           <div className="brief__sheet reveal">
             <div className="brief__sheet-head">
-              <span className="brief__sheet-label">Enquiry brief</span>
-              <span className="brief__sheet-rule" aria-hidden="true" />
-              <span className="brief__sheet-meta">Four fields</span>
+              <span className="brief__sheet-label">An example brief</span>
             </div>
 
             <ol className="brief__rows" ref={track}>
@@ -95,7 +92,6 @@ export function FabricBrief() {
                   <div className="brief__row-head">
                     <span className="brief__num">{topic.n}</span>
                     <h3 className="brief__field">{topic.title}</h3>
-                    <span className="brief__tag">{topic.field.join(' · ')}</span>
                   </div>
                   <p className="brief__ask">{topic.body}</p>
                   <p className="brief__example">

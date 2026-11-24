@@ -5,17 +5,19 @@ import { Arrow } from './Nav'
 import { Lightbox, type LightboxImage } from './Lightbox'
 
 /* The swatch book: one undyed cotton strip per category, each with its dye
-   showing only at the hem. Opening a strip dyes the whole cloth and shows what
-   to tell us about that category. Plain disclosure buttons underneath, so it
-   works with a keyboard, a screen reader, and with motion turned off. */
+   showing only at the hem, where a few words say what the category covers.
+   Opening a strip dyes the whole cloth and shows what to tell us about that
+   category, with a link straight into the enquiry form for it. Plain
+   disclosure buttons underneath, so it works with a keyboard, a screen
+   reader, and with motion turned off. */
 
-const DYES: Record<string, { token: string; name: string; tone: 'dark' | 'light' }> = {
-  textiles: { token: 'textiles', name: 'Indigo', tone: 'dark' },
-  handicrafts: { token: 'handicrafts', name: 'Madder', tone: 'dark' },
-  'agriculture-food': { token: 'agriculture', name: 'Turmeric', tone: 'light' },
-  'industrial-materials': { token: 'industrial', name: 'Iron', tone: 'dark' },
-  'organic-sustainable': { token: 'organic', name: 'Verdigris', tone: 'dark' },
-  general: { token: 'general', name: 'Brass', tone: 'light' },
+const DYES: Record<string, { token: string; tone: 'dark' | 'light' }> = {
+  textiles: { token: 'textiles', tone: 'dark' },
+  handicrafts: { token: 'handicrafts', tone: 'dark' },
+  'agriculture-food': { token: 'agriculture', tone: 'light' },
+  'industrial-materials': { token: 'industrial', tone: 'dark' },
+  'organic-sustainable': { token: 'organic', tone: 'dark' },
+  general: { token: 'general', tone: 'dark' },
 }
 
 const preloaded = new Set<string>()
@@ -43,7 +45,6 @@ export function SwatchBook() {
           {CATEGORY_JOURNEY.map((item, i) => {
             const dye = DYES[item.id]
             const isOpen = open === item.id
-            const href = item.to ?? `/enquiry?category=${item.id}`
             return (
               <div
                 key={item.id}
@@ -68,7 +69,7 @@ export function SwatchBook() {
                   >
                     <span className="strip__num">{String(i + 1).padStart(2, '0')}</span>
                     <span className="strip__label">{item.label}</span>
-                    <span className="strip__dye">{dye.name}</span>
+                    <span className="strip__dye">{item.scope}</span>
                     <span className="strip__marker" aria-hidden="true" />
                   </button>
                 </h3>
@@ -92,10 +93,13 @@ export function SwatchBook() {
                     </span>
                   </button>
                   <p>{item.hint}</p>
-                  <Link to={href} className="strip__link">
-                    {item.to ? 'Read about textiles' : 'Start this enquiry'}
-                    <Arrow />
-                  </Link>
+                  <div className="strip__links">
+                    <Link to={`/enquiry?category=${item.id}`} className="strip__link">
+                      Enquire about this
+                      <Arrow />
+                    </Link>
+                    {item.to && <Link to={item.to} className="strip__more">More on textiles</Link>}
+                  </div>
                 </div>
               </div>
             )
@@ -103,7 +107,7 @@ export function SwatchBook() {
         </div>
 
         <p className="swatches__note">
-          The colours are dyes and the pictures are representative, not products. Availability and terms are discussed for each enquiry.
+          Pictures are representative, not products on offer. Availability and terms are discussed for each enquiry.
         </p>
       </div>
       <Lightbox image={viewing} onClose={() => setViewing(null)} />

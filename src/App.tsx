@@ -99,11 +99,11 @@ function PageMetadata() {
   const { pathname } = useLocation()
   React.useEffect(() => {
     const pages: Record<string, [string, string]> = {
-      '/': ['BS EXIMNEXUS | Import and export sourcing in India', 'India-focused sourcing and trade coordination for buyers and suppliers.'],
-      '/textiles': ['Textiles and fabrics | BS EXIMNEXUS', 'Explore fabric types and textile sourcing areas in India.'],
-      '/about': ['About the business | BS EXIMNEXUS', 'Sourcing coordination, business background, and trade operations in India.'],
+      '/': ['BS EXIMNEXUS | Import and export sourcing in India', 'Sourcing and trade coordination in India for overseas buyers, buyers in India and Indian suppliers: textiles, handicrafts, food, industrial materials and more.'],
+      '/textiles': ['Textiles and fabrics | BS EXIMNEXUS', 'Source cotton, silk and blended fabrics from India, starting with Tamil Nadu and Gujarat.'],
+      '/about': ['About | BS EXIMNEXUS', 'An India-based sourcing and trade coordination desk. How we work with buyers and suppliers.'],
       '/enquiry': ['Start an enquiry | BS EXIMNEXUS', 'Describe what you need or supply to start a sourcing enquiry.'],
-      '/privacy': ['Enquiry privacy | BS EXIMNEXUS', 'How enquiry information is handled.'],
+      '/privacy': ['Privacy | BS EXIMNEXUS', 'How details sent through the enquiry form are used.'],
       '/enquiry/acknowledgement': ['Enquiry acknowledgement | BS EXIMNEXUS', 'Submission status for this browser session.'],
     }
     const [title, description] = pages[pathname] ?? ['Page not found | BS EXIMNEXUS', 'This page is not part of the BS EXIMNEXUS website.']

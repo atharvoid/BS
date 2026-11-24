@@ -1,7 +1,7 @@
 import { globeYaw, globeUserYaw } from './globe-pose'
 import { globeFrame, CAPTURE_RADIUS } from './globe-frame'
 import { useSceneDrag } from './useSceneDrag'
-import { onIntroChange, isGlobeHeld, introPhase } from '../components/intro-state'
+import { onIntroChange, isGlobeHeld, introPhase, claimGlobeEntrance, setGlobeEntrance } from '../components/intro-state'
 import { createGlobeGate } from './globe-gate'
 import { useSceneSession } from './SceneSession'
 import React from 'react'
@@ -748,19 +748,34 @@ function Frame({ children, compact = false, capture = false }: { children: React
 
   const outer = React.useRef<THREE.Group>(null)
   const spin = React.useRef<THREE.Group>(null)
-  /* waiting: parked off-screen; running: flying in (t = start time); done: at rest. */
-  const entry = React.useRef<{ state: 'waiting' | 'running' | 'done'; t: number }>({
-    state: !capture && !reducedMotion() && (introPhase() === 'drawing' || introPhase() === 'settling') ? 'waiting' : 'done',
-    t: 0,
-  })
+  /* waiting: parked off-screen; running: flying in (t = start time); done: at rest.
+     The entrance is claimed from intro-state, so it plays whenever this scene
+     arrives: during the opening (it waits for the cover to lift), or after it
+     (it flies in at once). A late scene never pops in at rest. */
+  const entry = React.useRef<{ state: 'waiting' | 'running' | 'done'; t: number }>({ state: 'done', t: 0 })
+  const claimed = React.useRef(false)
+  if (!claimed.current) {
+    claimed.current = true
+    if (!capture && !reducedMotion() && claimGlobeEntrance('live')) {
+      const phase = introPhase()
+      entry.current = phase === 'drawing' || phase === 'settling'
+        ? { state: 'waiting', t: 0 }
+        : { state: 'running', t: performance.now() }
+    }
+  }
 
   React.useEffect(() => onIntroChange(() => {
     const phase = introPhase()
+    /* The logo was clicked and the opening is replaying: take the entrance again. */
+    if (entry.current.state === 'done' && !capture && (phase === 'drawing') && claimGlobeEntrance('live')) {
+      entry.current = { state: 'waiting', t: 0 }
+      session?.invalidate.current()
+    }
     if (entry.current.state === 'waiting' && (phase === 'revealing' || phase === 'idle')) {
       entry.current = { state: 'running', t: performance.now() }
       session?.invalidate.current()
     }
-  }), [session])
+  }), [session, capture])
 
   useFrame(() => {
     const g = outer.current, r = spin.current
@@ -771,7 +786,10 @@ function Frame({ children, compact = false, capture = false }: { children: React
     else if (e.state === 'running') {
       /* Wall-clock time, so a slow device lands on time rather than late. */
       p = Math.min(1, (performance.now() - e.t) / 1000 / ENTRY_S)
-      if (p >= 1) e.state = 'done'
+      if (p >= 1) {
+        e.state = 'done'
+        setGlobeEntrance('none')
+      }
       session?.invalidate.current()
     }
     /* Off to the right by the width of the view plus the globe, so it starts

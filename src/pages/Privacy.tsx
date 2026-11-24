@@ -53,13 +53,10 @@ export default function Privacy() {
     <>
       <section className="page-hero page-hero--plain">
         <div className="shell page-hero__inner">
-          <p className="eyebrow">Enquiry privacy</p>
-          <h1 className="page-hero__title">
-            What happens to an enquiry
-          </h1>
+          <h1 className="page-hero__title">Privacy</h1>
           <p className="page-hero__lede">
-            A short, specific notice. It covers only the enquiry form on this site. There are no
-            accounts or payments on this website.
+            How the details you send through the enquiry form are used. There are no accounts or
+            payments on this website.
           </p>
         </div>
       </section>
