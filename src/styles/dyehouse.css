@@ -747,6 +747,13 @@
 /* Headings and <main> receive focus after navigation so screen readers land
    in the right place. They are not controls, so no focus ring. */
 [tabindex='-1']:focus,
+/* The nav is lifted above it and takes the same circle as the page. It is
+   fixed at the viewport's top-left, so the circle's coordinates line up. */
+::view-transition-group(theme-nav) { animation: none; }
+::view-transition-old(theme-nav),
+::view-transition-new(theme-nav) { animation: none; mix-blend-mode: normal; }
+::view-transition-new(theme-nav) { animation: theme-reveal 650ms var(--ease-in-out) both; }
+
 [tabindex='-1']:focus-visible { outline: none; }
 
 /* ==========================================================================

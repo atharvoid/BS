@@ -42,7 +42,7 @@ function remember(theme: Theme) {
 
 /* The switch in progress, if any: the theme it opened and the one the
    visitor now wants, which differ after a click sends the circle back. */
-type Swap = { to: Theme; target: Theme; reveal: Animation | null }
+type Swap = { to: Theme; target: Theme; reveal: Animation | null; layers: Animation[] }
 let swap: Swap | null = null
 
 const freezeFades = () => { document.documentElement.dataset.themeSwitching = '' }
@@ -55,7 +55,7 @@ const turnable = (live: Swap | null): live is Swap =>
 function turnBack(live: Swap): Theme {
   const next: Theme = live.target === 'dark' ? 'light' : 'dark'
   live.target = next
-  live.reveal?.reverse()
+  for (const layer of live.layers) layer.reverse()
   remember(next)
   return next
 }
@@ -94,30 +94,42 @@ function press(button: HTMLElement, setTheme: (theme: Theme) => void) {
   root.setProperty('--vt-r', `${radius}px`)
   /* The reveal works on a still snapshot of the old page, which would freeze
      the turning globe or cloth for the length of the circle. Lifting the 3D
-     stage out of the snapshot as its own live layer keeps it moving. */
-  const stage = document.querySelector<HTMLElement>('.hero__stage, .page-hero__stage')
-  stage?.style.setProperty('view-transition-name', 'theme-stage')
+     stage out of the snapshot as its own live layer keeps it moving, but only
+     while some of it is on screen.
 
-  const mine: Swap = { to: next, target: next, reveal: null }
+     A lifted layer is drawn above the whole page, so the fixed nav is lifted
+     too: it is the later layer, so it stays on top of the globe instead of the
+     globe painting over the menu. It takes the same circle (dyehouse.css). */
+  const found = document.querySelector<HTMLElement>('.hero__stage, .page-hero__stage')
+  const area = found?.getBoundingClientRect()
+  const stage = area && area.bottom > 0 && area.top < innerHeight ? found : null
+  const nav = document.querySelector<HTMLElement>('.nav')
+  stage?.style.setProperty('view-transition-name', 'theme-stage')
+  nav?.style.setProperty('view-transition-name', 'theme-nav')
+
+  const mine: Swap = { to: next, target: next, reveal: null, layers: [] }
   swap = mine
   const transition = doc.startViewTransition(() => flushSync(commit))
   transition.ready.then(() => {
-    const reveal = document.getAnimations().find((a) =>
-      (a.effect as KeyframeEffect | null)?.pseudoElement === '::view-transition-new(root)') ?? null
+    const circles = document.getAnimations().filter((a) =>
+      /^::view-transition-new((root|theme-nav))$/.test((a.effect as KeyframeEffect | null)?.pseudoElement ?? ''))
+    const reveal = circles.find((a) => (a.effect as KeyframeEffect).pseudoElement === '::view-transition-new(root)') ?? null
     mine.reveal = reveal
+    mine.layers = circles
     if (!reveal) return
     /* When a circle that was sent back closes, put the page back under it.
        The new layer is fully clipped by then, so nothing shows. */
     reveal.addEventListener('finish', () => {
       if (mine.target !== current()) applyTheme(mine.target)
     })
-    if (mine.target !== mine.to) reveal.reverse()
+    if (mine.target !== mine.to) for (const layer of circles) layer.reverse()
   }, () => { /* skipped: the page is already in the new theme */ })
   transition.finished.finally(() => {
     if (swap !== mine) return
     swap = null
     if (mine.target !== current()) applyTheme(mine.target)
     stage?.style.removeProperty('view-transition-name')
+    nav?.style.removeProperty('view-transition-name')
     releaseFades()
   })
 }
