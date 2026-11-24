@@ -117,17 +117,19 @@ const CATEGORY_ARTWORK: Record<CategoryId, { motif: CategoryMotif; note: string;
  * touching. Every image is captioned as representative, because none of them
  * is a photograph of supplier stock.
  */
-/* Photographs are AI-generated (arena.ai, prompts in docs/redesign/IMAGE-PROMPTS.md)
-   and saved at 1600px with an 800px `-small` version beside each. */
+/* Most photographs are AI-generated (arena.ai, prompts in docs/redesign/IMAGE-PROMPTS.md).
+   Industrial and general are real photographs from Unsplash (free licence;
+   credits in docs/redesign/IMAGE-CREDITS.md). All are
+   saved at 1600px with an 800px `-small` version beside each. */
 /** `focus` is the CSS object-position: which part of the photo stays in view
  * when a vat crops it. Defaults to the centre. */
 export const CATEGORY_IMAGES: Record<CategoryId, { src: string; alt: string; kind: 'render' | 'photo'; focus?: string }> = {
   textiles: { src: '/photos/textiles.webp', alt: 'A roll of indigo cotton twill with a folded swatch beside it', kind: 'photo' },
   handicrafts: { src: '/photos/handicrafts.webp', alt: 'A blue-pottery vase painted with indigo flowers, beside a small carved wooden box', kind: 'photo' },
   'agriculture-food': { src: '/photos/agriculture.webp', alt: 'Wheat ears and grain spilling from a jute sack, with turmeric root in a brass bowl', kind: 'photo' },
-  'industrial-materials': { src: '/photos/industrial.webp', alt: 'A coil of copper wire, steel bolts and a length of aluminium extrusion', kind: 'photo' },
+  'industrial-materials': { src: '/photos/industrial.webp', alt: 'A close coil of bright copper wire filling the frame', kind: 'photo' },
   'organic-sustainable': { src: '/photos/organic.webp', alt: 'Open cotton bolls on a dried stem', kind: 'photo' },
-  general: { src: '/photos/crate.webp', alt: 'A pine export crate with the BS EXIMNEXUS logo printed on its front', kind: 'photo' },
+  general: { src: '/photos/general.webp', alt: 'A wall of stacked shipping containers in red, yellow and green', kind: 'photo' },
 }
 
 export const REGION_IMAGES = {
