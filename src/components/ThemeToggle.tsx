@@ -10,7 +10,18 @@ import { flushSync } from 'react-dom'
  * The change spreads out as a circle from the button using a view
  * transition; browsers without it, and visitors who prefer reduced motion,
  * get an instant switch. The icon itself morphs: the sun's rays retract and a
- * shadow slides across to leave a crescent. */
+ * shadow slides across to leave a crescent.
+ *
+ * Two things keep the switch from flickering:
+ * - While it runs, <html data-theme-switching> turns off every colour fade
+ *   on the page (see dyehouse.css). Otherwise buttons, borders and fields
+ *   would fade in from the old theme's colours inside the new circle.
+ * - A click while the circle is still spreading sends it back to the button
+ *   rather than starting a new one. Starting over would make the browser cut
+ *   the first circle short, snapping the whole page to the new theme for a
+ *   moment before the second circle begins. While a view transition runs the
+ *   browser sends every click to <html>, not the button, so those clicks are
+ *   caught at the document and matched to the button by position. */
 
 type Theme = 'light' | 'dark'
 const KEY = 'bs-theme'
@@ -25,8 +36,109 @@ function applyTheme(theme: Theme) {
     ?.setAttribute('content', theme === 'dark' ? '#14110d' : '#f2ebdd')
 }
 
+function remember(theme: Theme) {
+  try { localStorage.setItem(KEY, theme) } catch { /* storage blocked */ }
+}
+
+/* The switch in progress, if any: the theme it opened and the one the
+   visitor now wants, which differ after a click sends the circle back. */
+type Swap = { to: Theme; target: Theme; reveal: Animation | null }
+let swap: Swap | null = null
+
+const freezeFades = () => { document.documentElement.dataset.themeSwitching = '' }
+const releaseFades = () => { delete document.documentElement.dataset.themeSwitching }
+
+/* The circle can be turned round until it has fully opened. */
+const turnable = (live: Swap | null): live is Swap =>
+  live !== null && live.reveal?.playState !== 'finished'
+
+function turnBack(live: Swap): Theme {
+  const next: Theme = live.target === 'dark' ? 'light' : 'dark'
+  live.target = next
+  live.reveal?.reverse()
+  remember(next)
+  return next
+}
+
+/* One press of the toggle, however it arrives. */
+function press(button: HTMLElement, setTheme: (theme: Theme) => void) {
+  // Mid-switch: turn the circle round instead of starting another.
+  if (turnable(swap)) { setTheme(turnBack(swap)); return }
+
+  const next: Theme = current() === 'dark' ? 'light' : 'dark'
+  setTheme(next)
+  remember(next)
+
+  const commit = () => {
+    freezeFades()
+    applyTheme(next)
+    setTheme(next)
+  }
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+  const doc = document as Document & { startViewTransition?: (cb: () => void) => ViewTransition }
+  if (reduce || !doc.startViewTransition) {
+    commit()
+    // Let the new colours land before fades come back.
+    requestAnimationFrame(() => requestAnimationFrame(releaseFades))
+    return
+  }
+
+  const box = button.getBoundingClientRect()
+  const x = box.left + box.width / 2
+  const y = box.top + box.height / 2
+  const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))
+  const root = document.documentElement.style
+  root.setProperty('--vt-x', `${x}px`)
+  root.setProperty('--vt-y', `${y}px`)
+  root.setProperty('--vt-r', `${radius}px`)
+  /* The reveal works on a still snapshot of the old page, which would freeze
+     the turning globe or cloth for the length of the circle. Lifting the 3D
+     stage out of the snapshot as its own live layer keeps it moving. */
+  const stage = document.querySelector<HTMLElement>('.hero__stage, .page-hero__stage')
+  stage?.style.setProperty('view-transition-name', 'theme-stage')
+
+  const mine: Swap = { to: next, target: next, reveal: null }
+  swap = mine
+  const transition = doc.startViewTransition(() => flushSync(commit))
+  transition.ready.then(() => {
+    const reveal = document.getAnimations().find((a) =>
+      (a.effect as KeyframeEffect | null)?.pseudoElement === '::view-transition-new(root)') ?? null
+    mine.reveal = reveal
+    if (!reveal) return
+    /* When a circle that was sent back closes, put the page back under it.
+       The new layer is fully clipped by then, so nothing shows. */
+    reveal.addEventListener('finish', () => {
+      if (mine.target !== current()) applyTheme(mine.target)
+    })
+    if (mine.target !== mine.to) reveal.reverse()
+  }, () => { /* skipped: the page is already in the new theme */ })
+  transition.finished.finally(() => {
+    if (swap !== mine) return
+    swap = null
+    if (mine.target !== current()) applyTheme(mine.target)
+    stage?.style.removeProperty('view-transition-name')
+    releaseFades()
+  })
+}
+
 export function ThemeToggle() {
   const [theme, setTheme] = React.useState<Theme>(current)
+  const button = React.useRef<HTMLButtonElement>(null)
+
+  /* Clicks on the button made mid-switch, or pressed mid-switch and released
+     after, arrive at <html> (see above). */
+  React.useEffect(() => {
+    const onStrayClick = (event: MouseEvent) => {
+      const el = button.current
+      if (!el || event.target !== document.documentElement) return
+      const r = el.getBoundingClientRect()
+      if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) return
+      press(el, setTheme)
+    }
+    document.addEventListener('click', onStrayClick)
+    return () => document.removeEventListener('click', onStrayClick)
+  }, [])
 
   // Follow the system setting until the visitor makes a choice of their own.
   React.useEffect(() => {
@@ -43,36 +155,7 @@ export function ThemeToggle() {
     return () => query.removeEventListener('change', onChange)
   }, [])
 
-  const toggle = (event: React.MouseEvent<HTMLButtonElement>) => {
-    const next: Theme = theme === 'dark' ? 'light' : 'dark'
-    const commit = () => {
-      applyTheme(next)
-      setTheme(next)
-      try { localStorage.setItem(KEY, next) } catch { /* storage blocked */ }
-    }
-
-    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
-    const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown }
-    if (reduce || !doc.startViewTransition) { commit(); return }
-
-    const box = event.currentTarget.getBoundingClientRect()
-    const x = box.left + box.width / 2
-    const y = box.top + box.height / 2
-    const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))
-    const root = document.documentElement.style
-    root.setProperty('--vt-x', `${x}px`)
-    root.setProperty('--vt-y', `${y}px`)
-    root.setProperty('--vt-r', `${radius}px`)
-    /* The reveal works on a still snapshot of the old page, which would freeze
-       the turning globe for the length of the circle. Lifting the globe out
-       of the snapshot as its own live layer keeps it turning throughout. */
-    const globe = document.querySelector<HTMLElement>('.hero__stage')
-    if (globe) globe.style.setProperty('view-transition-name', 'hero-globe')
-    const transition = doc.startViewTransition(() => flushSync(commit)) as { finished?: Promise<void> } | undefined
-    const release = () => globe?.style.removeProperty('view-transition-name')
-    if (transition?.finished) transition.finished.finally(release)
-    else release()
-  }
+  const toggle = (event: React.MouseEvent<HTMLButtonElement>) => press(event.currentTarget, setTheme)
 
   const dark = theme === 'dark'
   return (
@@ -80,6 +163,7 @@ export function ThemeToggle() {
       type="button"
       className="theme-toggle"
       data-mode={theme}
+      ref={button}
       onClick={toggle}
       aria-pressed={dark}
       title={dark ? 'Switch to light mode' : 'Switch to dark mode'}

@@ -30,24 +30,7 @@
   align-items: end;
   margin-bottom: clamp(1.75rem, 3.5vw, 2.75rem);
 }
-.vats-head__eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-family: var(--f-sans);
-  font-size: var(--fs-small);
-  font-weight: 600;
-  color: var(--action-text);
-}
-.vats-head__eyebrow::before {
-  content: '';
-  width: 1.75rem;
-  height: 6px;
-  color: var(--action-deep);
-  background: radial-gradient(circle, currentColor 2px, transparent 2.6px) 0 50% / 7px 6px repeat-x;
-}
 .vats-head__title {
-  margin-top: 0.75rem;
   font-family: var(--f-display);
   font-weight: 400;
   font-variation-settings: var(--fraunces-tight);

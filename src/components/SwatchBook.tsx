@@ -89,7 +89,6 @@ export function SwatchBook() {
       <div className="shell">
         <header className="vats-head">
           <div>
-            <p className="vats-head__eyebrow">Six areas, one desk</p>
             <h2 id="vats-title" className="vats-head__title">What do you want to source?</h2>
           </div>
           <p className="vats-head__lede">

@@ -305,7 +305,14 @@
 /* The page change spreads out as a circle from the button. */
 ::view-transition-old(root),
 ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
-::view-transition-new(root) { animation: theme-reveal 650ms var(--ease-in-out); }
+/* both: a circle sent back by a second click holds at nothing until the
+   switch ends, instead of springing open for a frame (ThemeToggle). */
+::view-transition-new(root) { animation: theme-reveal 650ms var(--ease-in-out) both; }
+/* While the theme flips, colours change at once; only the toggle icon keeps
+   its morph. Fades left on would start from the old theme's colours. */
+:root[data-theme-switching] *:not(.theme-toggle__body, .theme-toggle__shadow, .theme-toggle__rays),
+:root[data-theme-switching] *::before,
+:root[data-theme-switching] *::after { transition: none !important; }
 @keyframes theme-reveal {
   from { clip-path: circle(0 at var(--vt-x, 100%) var(--vt-y, 0)); }
   to { clip-path: circle(var(--vt-r, 150vmax) at var(--vt-x, 100%) var(--vt-y, 0)); }
@@ -833,10 +840,10 @@
 /* A fieldset puts its legend above the padding, so space it with a margin. */
 .form .field--group { padding-top: 0; margin-top: clamp(1rem, 1.8vw, 1.35rem); }
 
-/* The globe rides through the theme reveal as a live layer (ThemeToggle). */
-::view-transition-group(hero-globe),
-::view-transition-new(hero-globe) { animation: none; }
-::view-transition-old(hero-globe) { display: none; }
+/* The globe or cloth rides through the theme reveal as a live layer (ThemeToggle). */
+::view-transition-group(theme-stage),
+::view-transition-new(theme-stage) { animation: none; }
+::view-transition-old(theme-stage) { display: none; }
 
 /* Headings and <main> receive focus after navigation so screen readers land
    in the right place. They are not controls, so no focus ring. */
