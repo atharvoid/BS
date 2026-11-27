@@ -138,6 +138,27 @@ export const CATEGORY_JOURNEY = CATEGORIES.map(category => ({
   ...category,
   to: CATEGORY_PAGES[category.id],
   image: CATEGORY_IMAGES[category.id],
+/**
+ * "Colour, clay and cloth": four photographs on the home page of the kind of
+ * goods buyers ask about. Taken by the business in Indian retail; they are
+ * representative only (each says so), and the titles name kinds of goods,
+ * never a material, maker or stock. `width`/`height` are the files' own.
+ */
+export const CRAFT = {
+  title: 'Colour, clay and cloth',
+  lede: 'The kind of pieces buyers ask us to find: printed textiles, homeware and decor from makers across India.',
+  note: 'Representative photographs, not stock on offer.',
+  items: [
+    { id: 'rugs', src: '/photos/craft-rugs.webp', width: 960, height: 720, category: 'textiles', title: 'Printed rugs and runners', alt: 'Printed rugs hung on a rack: palm trees on rust, and ikat-style motifs on deep green' },
+    { id: 'tray', src: '/photos/craft-tray.webp', width: 720, height: 640, category: 'handicrafts', title: 'Painted and printed trays', alt: 'A round blue-rimmed tray printed with Pichwai-style cows on a red ground' },
+    { id: 'vessels', src: '/photos/craft-vessels.webp', width: 560, height: 500, category: 'handicrafts', title: 'Vessels and vases', alt: 'Matte grey and black clay-finish jars with ribbed sides' },
+    { id: 'tableware', src: '/photos/craft-tableware.webp', width: 1130, height: 400, category: 'handicrafts', title: 'Printed tableware', alt: 'Stacked tumblers and bowls printed with flowers, birds and palms, brass inside' },
+  ],
+} as const satisfies {
+  title: string; lede: string; note: string
+  items: readonly { id: string; src: string; width: number; height: number; category: CategoryId; title: string; alt: string }[]
+}
+
 }))
 
 export const ABOUT_BUSINESS = {

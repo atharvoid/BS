@@ -4,6 +4,7 @@ import { Stage } from '../three/Stage'
 import { useParallax } from '../components/useParallax'
 import { Arrow } from '../components/Nav'
 import { SwatchBook } from '../components/SwatchBook'
+import { CraftBand } from '../components/CraftBand'
 import { GlobePoster } from '../components/GlobePoster'
 import { FIRST_MESSAGE } from '../content'
 
@@ -80,6 +81,7 @@ export default function Overview() {
     <>
       <Hero />
       <SwatchBook />
+      <CraftBand />
       {/* One section for how it works: three steps, then what a first
           message needs, then the action. (Was two sections saying much the
           same thing twice.) */}

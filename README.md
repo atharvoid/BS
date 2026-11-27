@@ -102,6 +102,13 @@ window. Both still respond to dragging. Reduced motion and Save Data show stills
 **The product areas** on the home page are six "vats": photographs toned with
 each category's dye colour, opened one at a time (`SwatchBook.tsx`).
 
+**Colour, clay and cloth** follows them: a mosaic of four photographs of the
+kind of goods buyers ask about, each opening a larger view (`CraftBand.tsx`,
+`src/styles/craft.css`, words in `CRAFT` in `src/content.ts`). The tiles rise
+in with CSS scroll-driven animation, so no script runs for it. Where the
+photos came from is in `docs/redesign/IMAGE-CREDITS.md`;
+`scripts/photos.test.mjs` checks every named photo exists at its declared size.
+
 ### Stable renders and performance
 
 The homepage globe retains its drawing resolution,

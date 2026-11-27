@@ -1,0 +1,203 @@
+/* ==========================================================================
+   Colour, clay and cloth (CraftBand.tsx)
+
+   A mosaic of four photographs. The row heights follow the photographs'
+   own shapes, so very little of any picture is cropped: the rugs and the
+   near-square tray share a tall first row; the vessels and the long strip of
+   tableware share a shorter second one.
+   ========================================================================== */
+
+.craft {
+  padding-block: var(--section-y);
+  background: var(--cotton);
+  color: var(--fg);
+  border-top: 1px solid var(--rule);
+}
+
+.craft__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 1.25rem clamp(2rem, 6vw, 6rem);
+  align-items: end;
+  margin-bottom: clamp(1.75rem, 3.5vw, 2.75rem);
+}
+.craft__title {
+  font-family: var(--f-display);
+  font-weight: 400;
+  font-variation-settings: var(--fraunces-tight);
+  font-size: var(--fs-display);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.craft__lede { color: var(--fg-soft); max-width: 32rem; font-size: var(--fs-body); line-height: 1.6; }
+
+.craft__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: clamp(16rem, 34vw, 31rem) clamp(11rem, 21vw, 19rem);
+  gap: clamp(0.4rem, 0.7vw, 0.65rem);
+}
+.craft__item--rugs { grid-column: 1 / span 7; }
+.craft__item--tray { grid-column: 8 / span 5; }
+.craft__item--vessels { grid-column: 1 / span 4; }
+.craft__item--tableware { grid-column: 5 / span 8; }
+
+.craft__item { position: relative; min-width: 0; }
+
+.craft__open {
+  all: unset;
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+  /* Shown while the photograph loads, so an empty tile is never a hole. */
+  background: var(--cotton-deep);
+  cursor: zoom-in;
+  isolation: isolate;
+}
+.craft__open:focus-visible { outline: 2px solid var(--action-text); outline-offset: 3px; }
+
+.craft__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.015);
+  transition: opacity 600ms var(--ease-out), transform 1100ms var(--ease-out);
+}
+.craft__img[data-loaded='true'] { opacity: 1; transform: none; }
+.craft__item--tray .craft__img { object-position: 50% 55%; }
+.craft__item--vessels .craft__img { object-position: 50% 62%; }
+.craft__item--tableware .craft__img { object-position: 50% 70%; }
+
+/* The words sit on a shade at the foot, so they read on any photograph. */
+.craft__cap {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  display: grid;
+  gap: 0.2rem;
+  padding: clamp(2.5rem, 5vw, 4rem) clamp(1rem, 1.8vw, 1.5rem) clamp(0.9rem, 1.6vw, 1.3rem);
+  background: linear-gradient(to top, rgba(14, 11, 8, 0.72), rgba(14, 11, 8, 0.38) 55%, transparent);
+  color: #fbf7ef;
+  text-align: left;
+}
+.craft__cat {
+  font-family: var(--f-sans);
+  font-size: 0.78rem;
+  font-weight: 500;
+  opacity: 0.88;
+}
+.craft__name {
+  font-family: var(--f-display);
+  font-variation-settings: var(--fraunces-tight);
+  font-size: clamp(1.15rem, 1.7vw, 1.6rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.craft__zoom {
+  position: absolute;
+  top: clamp(0.7rem, 1.2vw, 1rem);
+  right: clamp(0.7rem, 1.2vw, 1rem);
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: rgba(14, 11, 8, 0.45);
+  color: #fbf7ef;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 260ms var(--ease-out), transform 260ms var(--ease-out);
+}
+.craft__zoom svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+
+@media (hover: hover) {
+  .craft__open:hover .craft__img[data-loaded='true'] { transform: scale(1.035); }
+  .craft__open:hover .craft__zoom { opacity: 1; transform: none; }
+}
+.craft__open:focus-visible .craft__zoom { opacity: 1; transform: none; }
+
+.craft__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem 2rem;
+  margin-top: 1.1rem;
+}
+.craft__note { font-size: var(--fs-small); color: var(--fg-mute); }
+.craft__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-block: 0.6rem;
+  margin-block: -0.6rem;
+  font-family: var(--f-sans);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--action-text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+  transition: text-decoration-color 200ms var(--ease-out);
+}
+.craft__link:hover { text-decoration-color: currentColor; }
+.craft__link .btn__arrow { width: 0.8em; height: 0.8em; transition: transform 260ms var(--ease-out); }
+.craft__link:hover .btn__arrow { transform: translate(2px, -2px); }
+.craft__link:focus-visible { outline: 2px solid var(--action-text); outline-offset: 3px; border-radius: 2px; }
+
+/* The tiles rise into place as they scroll in, tied to the scroll itself, so
+   there is no script and nothing waits for a timer. Browsers without
+   scroll-driven animation simply show them. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .craft__item {
+      animation: craft-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 5% entry 70%;
+    }
+    @keyframes craft-rise {
+      from { opacity: 0; transform: translateY(28px); }
+    }
+  }
+}
+
+/* ---- Tablets and phones: two columns, each photograph at its own shape --- */
+@media (max-width: 900px) {
+  .craft__head { grid-template-columns: 1fr; align-items: start; }
+  .craft__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; }
+  .craft__item--rugs,
+  .craft__item--tableware { grid-column: 1 / -1; }
+  .craft__item--tray,
+  .craft__item--vessels { grid-column: auto; }
+  .craft__item--rugs { aspect-ratio: 4 / 3; }
+  .craft__item--tray,
+  .craft__item--vessels { aspect-ratio: 1; }
+  .craft__item--tableware { aspect-ratio: 2.4; }
+  /* Always visible on touch: there is no hover to reveal it. */
+  .craft__zoom { opacity: 1; transform: none; width: 2rem; height: 2rem; }
+}
+
+@media (max-width: 520px) {
+  .craft__cat { font-size: 0.72rem; }
+  .craft__name { font-size: 1.05rem; }
+  .craft__item--tray .craft__cap,
+  .craft__item--vessels .craft__cap { padding-inline: 0.8rem; padding-top: 2rem; }
+  /* On the two small squares the category line would cover the picture;
+     the title alone says enough there. */
+  .craft__item--tray .craft__cat,
+  .craft__item--vessels .craft__cat { display: none; }
+}
