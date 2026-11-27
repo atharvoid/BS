@@ -1233,6 +1233,7 @@ fieldset .field__label { float: none; }
 }
 
 .notfound__actions {
+  align-items: center;
   display: flex;
   gap: 1.5rem;
   flex-wrap: wrap;

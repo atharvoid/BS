@@ -17,7 +17,7 @@ function TextileObject({ aside = false }: { aside?: boolean }) {
   const narrow = viewport.aspect < 1.2
   // The page-hero canvas only occupies the right-hand column on wide screens,
   // so the object is centred in its own canvas rather than the page.
-  const scale = narrow ? 0.82 : Math.min(1, 0.66 + viewport.aspect * 0.16)
+  const scale = narrow ? 0.92 : Math.min(1.05, 0.72 + viewport.aspect * 0.16)
   const x = narrow || !aside ? 0 : -Math.min(0.5, viewport.width * 0.04)
 
   return (
