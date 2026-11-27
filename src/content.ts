@@ -51,15 +51,13 @@ export const FOCUS_AREAS = [
     id: 'tamil-nadu',
     name: 'Tamil Nadu',
     kicker: 'South India',
-    note: 'An initial sourcing area. Handloom and mill-made cotton, silk and blended fabrics are among the material families commonly associated with the region.',
-    hint: 'Discussed per enquiry. Not a stock list.',
+    note: 'Handloom and mill-made cotton, silk and blended fabrics.',
   },
   {
     id: 'gujarat',
     name: 'Gujarat',
     kicker: 'West India',
-    note: 'An initial sourcing area. Cotton, printed and dyed fabric traditions and a dense processing base are among the reasons enquiries often reference it.',
-    hint: 'Discussed per enquiry. Not a stock list.',
+    note: 'Cotton, block-printed and dyed fabrics, with a deep processing base.',
   },
 ] as const
 
@@ -138,6 +136,8 @@ export const CATEGORY_JOURNEY = CATEGORIES.map(category => ({
   ...category,
   to: CATEGORY_PAGES[category.id],
   image: CATEGORY_IMAGES[category.id],
+}))
+
 /**
  * "Colour, clay and cloth": four photographs on the home page of the kind of
  * goods buyers ask about. Taken by the business in Indian retail; they are
@@ -158,8 +158,6 @@ export const CRAFT = {
   title: string; lede: string; note: string
   items: readonly { id: string; src: string; width: number; height: number; category: CategoryId; title: string; alt: string }[]
 }
-
-}))
 
 export const ABOUT_BUSINESS = {
   eyebrow: 'About',

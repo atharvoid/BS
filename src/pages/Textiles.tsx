@@ -51,7 +51,7 @@ export default function Textiles() {
         <div className="shell">
           <div className="areas__head"><p className="eyebrow reveal">Initial sourcing areas</p><h2 className="areas__title reveal">Tamil Nadu and Gujarat</h2></div>
           <div className="areas__grid">
-            {FOCUS_AREAS.map((area, index) => (
+            {FOCUS_AREAS.map((area) => (
               <article className="area reveal" key={area.id}>
                 <div className={'area__weave area__weave--' + area.id} aria-hidden="true">
                   <img className="area__photo" onLoad={(e) => { e.currentTarget.dataset.loaded = 'true' }} src={smallPhoto(REGION_IMAGES[area.id].src)} srcSet={`${smallPhoto(REGION_IMAGES[area.id].src)} 800w, ${REGION_IMAGES[area.id].src} 1600w`} sizes="(max-width: 760px) 100vw, 50vw" alt={REGION_IMAGES[area.id].alt} loading="lazy" decoding="async" width={800} height={533} />
@@ -59,12 +59,12 @@ export default function Textiles() {
                 <div className="area__text">
                   <p className="area__kicker">{area.kicker}</p>
                   <h3 className="area__name">{area.name}</h3>
-                  <p className="area__note">{index === 0 ? 'Handloom and mill-made cotton, silk and blended fabrics.' : 'Cotton, block-printed and dyed fabrics, with a deep processing base.'}</p>
+                  <p className="area__note">{area.note}</p>
                 </div>
               </article>
             ))}
           </div>
-          <p className="areas__foot reveal">Supplying from elsewhere in India? Tell us what you offer.</p>
+          <p className="areas__foot reveal">Supplying from elsewhere in India? <Link to="/enquiry">Tell us what you offer</Link>.</p>
         </div>
       </section>
 

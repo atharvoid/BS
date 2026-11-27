@@ -551,6 +551,15 @@
   color: #b9c2d6;
   max-width: 56ch;
 }
+.areas__foot a {
+  color: #eef0f6;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+  text-decoration-color: rgba(238, 240, 246, 0.45);
+  transition: text-decoration-color 200ms var(--ease-out);
+}
+.areas__foot a:hover { text-decoration-color: currentColor; }
 
 /* --------------------------------------------------------------------------
    Process — how an enquiry works
