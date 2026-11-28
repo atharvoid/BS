@@ -1,4 +1,5 @@
 import { TextTransitions } from './components/TextTransitions'
+import { RouteVeil } from './components/RouteVeil'
 import React from 'react'
 import { Route, Routes, useLocation, useNavigationType } from 'react-router-dom'
 import { Nav } from './components/Nav'
@@ -144,6 +145,7 @@ export default function App() {
       </a>
       <ScrollManager />
       <TextTransitions />
+      <RouteVeil />
       <PageMetadata />
       <LogoIntro />
       <Cursor />

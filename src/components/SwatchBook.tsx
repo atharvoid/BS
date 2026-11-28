@@ -91,10 +91,6 @@ export function SwatchBook() {
           <div>
             <h2 id="vats-title" className="vats-head__title">What do you want to source?</h2>
           </div>
-          <p className="vats-head__lede">
-            Open an area to see what it covers and what to put in your first message. Each enquiry
-            is discussed case by case.
-          </p>
         </header>
 
         <ol className="vats" aria-label="Product areas">
@@ -169,9 +165,6 @@ export function SwatchBook() {
           })}
         </ol>
 
-        <p className="vats-note">
-          Photographs are representative, not products on offer. Availability and terms are agreed for each enquiry.
-        </p>
       </div>
       <Lightbox image={viewing} onClose={() => setViewing(null)} />
     </section>

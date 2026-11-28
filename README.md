@@ -102,12 +102,20 @@ window. Both still respond to dragging. Reduced motion and Save Data show stills
 **The product areas** on the home page are six "vats": photographs toned with
 each category's dye colour, opened one at a time (`SwatchBook.tsx`).
 
-**Colour, clay and cloth** follows them: a mosaic of four photographs of the
-kind of goods buyers ask about, each opening a larger view (`CraftBand.tsx`,
-`src/styles/craft.css`, words in `CRAFT` in `src/content.ts`). The tiles rise
-in with CSS scroll-driven animation, so no script runs for it. Where the
-photos came from is in `docs/redesign/IMAGE-CREDITS.md`;
-`scripts/photos.test.mjs` checks every named photo exists at its declared size.
+**Colour, clay and cloth** follows them: a pinned, scroll-driven sequence of
+four photographs (`CraftBand.tsx`, `src/styles/craft.css`, words in `CRAFT` in
+`src/content.ts`). While the section holds the screen, each photograph unrolls
+upward into its frame with its words rising beside it, then rolls away as the
+next arrives, and the ground takes a trace of each piece's colour. Scroll
+position becomes two CSS variables per plate; CSS does the drawing. Without
+script, with reduced motion, or on very short screens it is a plain list.
+Tabbing to a plate's link scrolls that plate into view. Where the photos came
+from is in `docs/redesign/IMAGE-CREDITS.md`; `scripts/photos.test.mjs` checks
+every named photo exists at its declared size.
+
+**Between pages**, a length of indigo cloth with the new page's name and a gold
+hem lifts off the page (`RouteVeil.tsx`). It plays after the new page has
+rendered, never takes a click, and is off for reduced motion.
 
 ### Stable renders and performance
 
