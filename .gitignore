@@ -16,3 +16,4 @@ npm-debug.log*
 # Local review captures and TypeScript build info
 output/
 *.tsbuildinfo
+.vercel
