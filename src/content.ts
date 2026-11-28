@@ -147,10 +147,10 @@ export const CATEGORY_JOURNEY = CATEGORIES.map(category => ({
 export const CRAFT = {
   title: 'Craft, up close',
   items: [
-    { id: 'rugs', src: '/photos/craft-rugs.webp', width: 1600, height: 1200, category: 'textiles', tone: '#b4532a', title: 'Printed rugs and runners', line: 'Palm groves on rust, ikat on deep green: floor pieces in print and weave.', alt: 'Printed rugs hung on a rack: palm trees on rust, and ikat-style motifs on deep green' },
-    { id: 'tray', src: '/photos/craft-tray.webp', width: 1330, height: 1182, category: 'handicrafts', tone: '#c23a4a', title: 'Painted and printed trays', line: 'Pichwai cows on madder red, held in a lacquer-blue rim.', alt: 'A round blue-rimmed tray printed with Pichwai-style cows on a red ground' },
-    { id: 'vessels', src: '/photos/craft-vessels.webp', width: 1327, height: 1185, category: 'handicrafts', tone: '#6f6a62', title: 'Vessels and vases', line: 'Ribbed clay forms in matte ash and charcoal.', alt: 'Matte grey and black clay-finish jars with ribbed sides' },
-    { id: 'tableware', src: '/photos/craft-tableware.webp', width: 1600, height: 566, category: 'handicrafts', tone: '#2c4a7a', title: 'Printed tableware', line: 'Tumblers and bowls in flower, bird and palm prints, lined in brass.', alt: 'Stacked tumblers and bowls printed with flowers, birds and palms, brass inside' },
+    { id: 'rugs', src: '/photos/craft-rugs-hd.webp', width: 1600, height: 1200, category: 'textiles', tone: '#b4532a', title: 'Printed rugs and runners', line: 'Palm groves on rust, ikat on deep green: floor pieces in print and weave.', alt: 'Printed rugs hung on a rack: palm trees on rust, and ikat-style motifs on deep green' },
+    { id: 'tray', src: '/photos/craft-tray-hd.webp', width: 1330, height: 1182, category: 'handicrafts', tone: '#c23a4a', title: 'Painted and printed trays', line: 'Pichwai cows on madder red, held in a lacquer-blue rim.', alt: 'A round blue-rimmed tray printed with Pichwai-style cows on a red ground' },
+    { id: 'vessels', src: '/photos/craft-vessels-hd.webp', width: 1600, height: 1315, category: 'handicrafts', tone: '#6f6a62', title: 'Vessels and vases', line: 'Ribbed clay forms in matte ash and charcoal.', alt: 'Matte grey and black clay-finish jars with ribbed sides' },
+    { id: 'tableware', src: '/photos/craft-tableware-hd.webp', width: 1600, height: 1200, category: 'handicrafts', tone: '#2c4a7a', title: 'Printed tableware', line: 'Tumblers and bowls in flower, bird and palm prints, lined in brass.', alt: 'Stacked tumblers and bowls printed with flowers, birds and palms, brass inside, in front of wooden stands holding printed trays' },
   ],
 } as const satisfies {
   title: string

@@ -104,9 +104,9 @@ each category's dye colour, opened one at a time (`SwatchBook.tsx`).
 
 **Craft, up close** follows them: a pinned, scroll-driven sequence of
 four photographs (`CraftBand.tsx`, `src/styles/craft.css`, words in `CRAFT` in
-`src/content.ts`). While the section holds the screen, each photograph fades
-in and settles, with its words rising beside it, then fades away as the
-next arrives, and the ground takes a trace of each piece's colour. Scroll
+`src/content.ts`). While the section holds the screen, each photograph weaves
+in as seven warp strips, alternate strips from above and below, centre first,
+with its words rising beside it, then unweaves as the next arrives, and the ground takes a trace of each piece's colour. Scroll
 position becomes two CSS variables per plate; CSS does the drawing. Without
 script, with reduced motion, or on very short screens it is a plain list.
 Tabbing to a plate's link scrolls that plate into view. Where the photos came
@@ -115,7 +115,9 @@ every named photo exists at its declared size.
 
 **Between pages**, a length of indigo cloth with the new page's name and a gold
 hem lifts off the page (`RouteVeil.tsx`). It plays after the new page has
-rendered, never takes a click, and is off for reduced motion.
+rendered (about 1.5 s in all), never takes a click, and is off for reduced
+motion. The craft sequence opts out of the site-wide text reveal
+(`data-text-reveal="off"`), which would otherwise flash its hidden numbers.
 
 ### Stable renders and performance
 

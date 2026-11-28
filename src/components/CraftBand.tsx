@@ -21,6 +21,27 @@ const N = CRAFT.items.length
 /** How much of each plate's viewport of scroll is spent bringing it in. */
 const ENTER = 0.62
 const half = (n: number) => Math.round(n / 2)
+
+/* The weave. Each photograph is cut into vertical warp strips, each a full
+   copy of the frame clipped to its own column, so at rest they meet exactly
+   and read as one picture. Alternate strips travel from above and below, and
+   the ones nearest the centre move first (--o is 0 at the centre, 1 at the
+   edges). The browser fetches the image once for all of them. */
+const SLAT_COUNT = 7
+const SLATS = Array.from({ length: SLAT_COUNT }, (_, k) => {
+  const left = (k / SLAT_COUNT) * 100
+  const right = ((SLAT_COUNT - 1 - k) / SLAT_COUNT) * 100
+  const mid = (SLAT_COUNT - 1) / 2
+  return {
+    k,
+    style: {
+      // A hair of overlap so no seam of background shows between strips.
+      clipPath: `inset(0 calc(${right.toFixed(4)}% - 0.5px) 0 calc(${left.toFixed(4)}% - 0.5px))`,
+      '--dir': k % 2 ? -1 : 1,
+      '--o': (Math.abs(k - mid) / mid).toFixed(3),
+    } as React.CSSProperties,
+  }
+})
 const clamp = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v)
 /** Eases each hand-over in and out, so a photograph starts and settles gently. */
 const ease = (t: number) => t * t * (3 - 2 * t)
@@ -98,6 +119,9 @@ export function CraftBand() {
     <section
       className={`craft${sequenced ? ' craft--seq' : ''}`}
       aria-labelledby="craft-title"
+      // The sequence animates its own words; the site-wide text reveal would
+      // briefly show the hidden plates' numbers and lines over the active one.
+      data-text-reveal="off"
       style={{ '--n': N, '--tone': tone } as React.CSSProperties}
     >
       <div className="craft__track" ref={track}>
@@ -126,17 +150,21 @@ export function CraftBand() {
                   style={{ '--ratio': item.width / item.height } as React.CSSProperties}
                 >
                   <figure className="craft__frame">
-                    <img
-                      className="craft__img"
-                      src={small}
-                      srcSet={`${small} ${half(item.width)}w, ${item.src} ${item.width}w`}
-                      sizes="(max-width: 900px) 100vw, 60vw"
-                      alt={item.alt}
-                      width={item.width}
-                      height={item.height}
-                      loading="lazy"
-                      decoding="async"
-                    />
+                    {SLATS.map((slat) => (
+                      <span key={slat.k} className="craft__slat" style={slat.style} aria-hidden={slat.k > 0 || undefined}>
+                        <img
+                          className="craft__img"
+                          src={small}
+                          srcSet={`${small} ${half(item.width)}w, ${item.src} ${item.width}w`}
+                          sizes="(max-width: 900px) 100vw, 60vw"
+                          alt={slat.k === 0 ? item.alt : ''}
+                          width={item.width}
+                          height={item.height}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </span>
+                    ))}
                   </figure>
                   <div className="craft__words">
                     <span className="craft__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>

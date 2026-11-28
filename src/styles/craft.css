@@ -5,8 +5,8 @@
    - .craft (no script, or reduced motion): the four plates as a plain list,
      photograph and words side by side, alternating.
    - .craft--seq: a tall track with a pinned stage. Each plate's photograph
-     fades in and settles (--r, 0 to 1) and fades out drifting up as the
-     next arrives (--x, 0 to 1); its words rise line by line while
+     weaves in strip by strip (--r, 0 to 1) and unweaves as the next
+     arrives (--x, 0 to 1); its words rise line by line while
      it is the active plate. Both numbers come from the scroll position.
    ========================================================================== */
 
@@ -79,18 +79,28 @@
   overflow: hidden;
   border-radius: 4px;
   background: var(--cotton-deep);
-  /* Arriving: fades in and rises a little. Leaving: fades out and drifts up. */
-  opacity: clamp(0, var(--r) - var(--x) * 1.6, 1);
-  transform: translateY(calc((1 - var(--r)) * 3.5rem - var(--x) * 2.5rem));
-  will-change: opacity, transform;
+  position: relative;
+}
+
+/* The weave (see SLATS in CraftBand.tsx). Each strip has its own arrival
+   (--in) and departure (--out), staggered from the centre outwards; a strip
+   travels its full height, alternate strips in opposite directions, and the
+   picture inside it moves a little slower than the strip for depth. */
+.craft__slat {
+  --in: clamp(0, var(--r) * 1.7 - var(--o) * 0.7, 1);
+  --out: clamp(0, var(--x) * 1.7 - var(--o) * 0.7, 1);
+  --travel: calc((1 - var(--in)) - var(--out));
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  transform: translateY(calc(var(--travel) * 101% * var(--dir)));
 }
 .craft__img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* The photograph settles from a slight zoom as it arrives. */
-  transform: scale(calc(1.08 - 0.08 * var(--r) + 0.03 * var(--x)));
+  transform: translateY(calc(var(--travel) * -28% * var(--dir)));
 }
 .craft__words {
   grid-column: 9 / span 4;
@@ -185,6 +195,8 @@
   padding-block: 0;
   margin-top: clamp(1rem, 2.5vh, 2rem);
 }
+.craft--seq .craft__frame { background: transparent; }
+.craft--seq .craft__slat { will-change: transform; }
 .craft--seq .craft__plate {
   --r: 0;
   position: absolute;
