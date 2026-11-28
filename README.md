@@ -102,10 +102,10 @@ window. Both still respond to dragging. Reduced motion and Save Data show stills
 **The product areas** on the home page are six "vats": photographs toned with
 each category's dye colour, opened one at a time (`SwatchBook.tsx`).
 
-**Colour, clay and cloth** follows them: a pinned, scroll-driven sequence of
+**Craft, up close** follows them: a pinned, scroll-driven sequence of
 four photographs (`CraftBand.tsx`, `src/styles/craft.css`, words in `CRAFT` in
-`src/content.ts`). While the section holds the screen, each photograph unrolls
-upward into its frame with its words rising beside it, then rolls away as the
+`src/content.ts`). While the section holds the screen, each photograph fades
+in and settles, with its words rising beside it, then fades away as the
 next arrives, and the ground takes a trace of each piece's colour. Scroll
 position becomes two CSS variables per plate; CSS does the drawing. Without
 script, with reduced motion, or on very short screens it is a plain list.

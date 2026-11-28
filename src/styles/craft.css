@@ -1,12 +1,12 @@
 /* ==========================================================================
-   Colour, clay and cloth (CraftBand.tsx)
+   Craft, up close (CraftBand.tsx)
 
    Two layouts from one markup:
    - .craft (no script, or reduced motion): the four plates as a plain list,
      photograph and words side by side, alternating.
    - .craft--seq: a tall track with a pinned stage. Each plate's photograph
-     unrolls upward into its frame (--r, 0 to 1) and rolls away through the
-     top as the next arrives (--x, 0 to 1); its words rise line by line while
+     fades in and settles (--r, 0 to 1) and fades out drifting up as the
+     next arrives (--x, 0 to 1); its words rise line by line while
      it is the active plate. Both numbers come from the scroll position.
    ========================================================================== */
 
@@ -79,15 +79,18 @@
   overflow: hidden;
   border-radius: 4px;
   background: var(--cotton-deep);
-  clip-path: inset(calc((1 - var(--r)) * 100%) 0 calc(var(--x) * 100%) 0);
+  /* Arriving: fades in and rises a little. Leaving: fades out and drifts up. */
+  opacity: clamp(0, var(--r) - var(--x) * 1.6, 1);
+  transform: translateY(calc((1 - var(--r)) * 3.5rem - var(--x) * 2.5rem));
+  will-change: opacity, transform;
 }
 .craft__img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: translateY(calc(var(--x) * -10%)) scale(calc(1.2 - 0.2 * var(--r)));
-  transform-origin: 50% 100%;
+  /* The photograph settles from a slight zoom as it arrives. */
+  transform: scale(calc(1.08 - 0.08 * var(--r) + 0.03 * var(--x)));
 }
 .craft__words {
   grid-column: 9 / span 4;

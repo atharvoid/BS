@@ -139,18 +139,18 @@ export const CATEGORY_JOURNEY = CATEGORIES.map(category => ({
 }))
 
 /**
- * "Colour, clay and cloth": four photographs on the home page of the kind of
+ * "Craft, up close": four photographs on the home page of the kind of
  * goods buyers ask about. Taken by the business in Indian retail; they are
  * representative only (each says so), and the titles name kinds of goods,
  * never a material, maker or stock. `width`/`height` are the files' own.
  */
 export const CRAFT = {
-  title: 'Colour, clay and cloth',
+  title: 'Craft, up close',
   items: [
-    { id: 'rugs', src: '/photos/craft-rugs.webp', width: 960, height: 720, category: 'textiles', tone: '#b4532a', title: 'Printed rugs and runners', line: 'Palm groves on rust, ikat on deep green: floor pieces in print and weave.', alt: 'Printed rugs hung on a rack: palm trees on rust, and ikat-style motifs on deep green' },
-    { id: 'tray', src: '/photos/craft-tray.webp', width: 720, height: 640, category: 'handicrafts', tone: '#c23a4a', title: 'Painted and printed trays', line: 'Pichwai cows on madder red, held in a lacquer-blue rim.', alt: 'A round blue-rimmed tray printed with Pichwai-style cows on a red ground' },
-    { id: 'vessels', src: '/photos/craft-vessels.webp', width: 560, height: 500, category: 'handicrafts', tone: '#6f6a62', title: 'Vessels and vases', line: 'Ribbed clay forms in matte ash and charcoal.', alt: 'Matte grey and black clay-finish jars with ribbed sides' },
-    { id: 'tableware', src: '/photos/craft-tableware.webp', width: 1130, height: 400, category: 'handicrafts', tone: '#2c4a7a', title: 'Printed tableware', line: 'Tumblers and bowls in flower, bird and palm prints, lined in brass.', alt: 'Stacked tumblers and bowls printed with flowers, birds and palms, brass inside' },
+    { id: 'rugs', src: '/photos/craft-rugs.webp', width: 1600, height: 1200, category: 'textiles', tone: '#b4532a', title: 'Printed rugs and runners', line: 'Palm groves on rust, ikat on deep green: floor pieces in print and weave.', alt: 'Printed rugs hung on a rack: palm trees on rust, and ikat-style motifs on deep green' },
+    { id: 'tray', src: '/photos/craft-tray.webp', width: 1330, height: 1182, category: 'handicrafts', tone: '#c23a4a', title: 'Painted and printed trays', line: 'Pichwai cows on madder red, held in a lacquer-blue rim.', alt: 'A round blue-rimmed tray printed with Pichwai-style cows on a red ground' },
+    { id: 'vessels', src: '/photos/craft-vessels.webp', width: 1327, height: 1185, category: 'handicrafts', tone: '#6f6a62', title: 'Vessels and vases', line: 'Ribbed clay forms in matte ash and charcoal.', alt: 'Matte grey and black clay-finish jars with ribbed sides' },
+    { id: 'tableware', src: '/photos/craft-tableware.webp', width: 1600, height: 566, category: 'handicrafts', tone: '#2c4a7a', title: 'Printed tableware', line: 'Tumblers and bowls in flower, bird and palm prints, lined in brass.', alt: 'Stacked tumblers and bowls printed with flowers, birds and palms, brass inside' },
   ],
 } as const satisfies {
   title: string

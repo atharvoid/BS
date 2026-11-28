@@ -13,11 +13,15 @@ container photo is cropped to 3:2 from the centre.
 
 ## Photographs supplied by the business
 
-The four photographs in the home page's "Colour, clay and cloth" band were
+The four photographs in the home page's "Craft, up close" band were
 taken by the business and supplied for the site (28 Nov 2026). Each is
 cropped to the goods alone, with shelf price strips, store signage and
-other products left out, then saved at its native size (never enlarged) plus
-a half-size `-small` copy.
+other products left out. Each crop was then enhanced (29 Nov 2026) with AI
+image models on arena.ai: upscaled, sharpened and cleaned of noise, with the
+prompt requiring the same subject, composition, colours and motifs and
+nothing added. The rugs used Seedream 5.0 Pro, the others Arena's "Max"
+router. Each result was checked against its crop for changed content, then
+saved at up to 1600 px wide plus a half-size `-small` copy.
 
 | File | Source photo | Crop (x, y, w, h) |
 |---|---|---|
